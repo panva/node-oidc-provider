@@ -1,9 +1,9 @@
-import { strict as assert } from 'node:assert';
+import { describe, before, afterEach, beforeEach, it, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { parse as parseUrl } from 'node:url';
 
 import { createSandbox } from 'sinon';
 import base64url from 'base64url';
-import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import bootstrap, { skipConsent } from '../test_helper.js';
@@ -18,20 +18,22 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=refresh_token', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  afterEach(() => timekeeper.reset());
-  afterEach(function () {
-    this.provider.removeAllListeners();
-  });
-  afterEach(sinon.restore);
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
-  beforeEach(function () { return this.login({ scope: 'openid email offline_access' }); });
-  afterEach(function () { return this.logout(); });
-  skipConsent();
+  afterEach(() => timekeeper.reset(), { timeout: 3000 });
+  afterEach(() => {
+    fixture.provider.removeAllListeners();
+  }, { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
-  beforeEach(function (done) {
-    this.agent.get('/auth')
+  beforeEach(() => fixture.login({ scope: 'openid email offline_access' }), { timeout: 3000 });
+  afterEach(() => fixture.logout(), { timeout: 3000 });
+  skipConsent(fixture);
+
+  beforeEach((_t, done) => {
+    fixture.agent.get('/auth')
       .query({
         client_id: 'client',
         scope: 'openid email offline_access',
@@ -48,7 +50,7 @@ describe('grant_type=refresh_token', () => {
 
         const { query: { code } } = parseUrl(authResponse.headers.location, true);
 
-        return this.agent.post(route)
+        return fixture.agent.post(route)
           .auth('client', 'secret')
           .type('form')
           .send({
@@ -58,26 +60,26 @@ describe('grant_type=refresh_token', () => {
           })
           .expect(200)
           .expect((response) => {
-            expect(response.body).to.have.property('refresh_token');
-            const jti = this.getTokenJti(response.body.refresh_token);
-            this.refreshToken = this.TestAdapter.for('RefreshToken').syncFind(jti);
-            expect(this.refreshToken).to.have.property('gty', 'authorization_code');
-            this.rt = response.body.refresh_token;
+            assert.ok('refresh_token' in Object(response.body));
+            const jti = fixture.getTokenJti(response.body.refresh_token);
+            fixture.refreshToken = fixture.TestAdapter.for('RefreshToken').syncFind(jti);
+            ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(fixture.refreshToken);
+            fixture.rt = response.body.refresh_token;
           })
           .end(done);
       });
-  });
+  }, { timeout: 3000 });
 
-  afterEach(function () {
-    this.provider.removeAllListeners();
-  });
+  afterEach(() => {
+    fixture.provider.removeAllListeners();
+  }, { timeout: 3000 });
 
-  it('returns the right stuff', function () {
-    const { rt } = this;
+  it('returns the right stuff', { timeout: 3000 }, () => {
+    const { rt } = fixture;
     const spy = sinon.spy();
-    this.provider.on('grant.success', spy);
+    fixture.provider.on('grant.success', spy);
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         refresh_token: rt,
@@ -86,27 +88,27 @@ describe('grant_type=refresh_token', () => {
       .type('form')
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect(({ body }) => {
-        expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+        assert.deepEqual(new Set(Object.keys(body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope']));
         const refreshIdToken = JSON.parse(base64url.decode(body.id_token.split('.')[1]));
-        expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
-        expect(body).to.have.property('refresh_token').that.is.a('string');
+        ((actual) => { assert.ok('nonce' in Object(actual)); assert.equal(actual.nonce, 'foobarnonce'); })(refreshIdToken);
+        ((actual) => { assert.ok('refresh_token' in Object(actual)); assert.equal(typeof actual.refresh_token, 'string'); })(body);
       });
   });
 
-  it('populates ctx.oidc.entities', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
-      expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
-      expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
+  it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+    fixture.assertOnce((ctx) => {
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken']));
+      ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.RefreshToken);
+      ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code refresh_token'); })(ctx.oidc.entities.AccessToken);
     }, done);
 
-    this.agent.post(route)
+    fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
-        refresh_token: this.rt,
+        refresh_token: fixture.rt,
         grant_type: 'refresh_token',
       })
       .type('form')
@@ -114,24 +116,28 @@ describe('grant_type=refresh_token', () => {
   });
 
   describe('validates', () => {
-    context('', () => {
-      before(function () {
-        const { ttl } = i(this.provider).configuration;
-        this.prev = ttl.RefreshToken;
+    const fixture1 = Object.create(fixture);
+
+    describe('', () => {
+      const fixture2 = Object.create(fixture1);
+
+      before(() => {
+        const { ttl } = i(fixture2.provider).configuration;
+        fixture2.prev = ttl.RefreshToken;
         ttl.RefreshToken = 5;
-      });
+      }, { timeout: 3000 });
 
-      after(function () {
-        i(this.provider).configuration.ttl.RefreshToken = this.prev;
-      });
+      after(() => {
+        i(fixture2.provider).configuration.ttl.RefreshToken = fixture2.prev;
+      }, { timeout: 3000 });
 
-      it('validates the refresh token is not expired', function () {
+      it('validates the refresh token is not expired', { timeout: 3000 }, () => {
         timekeeper.travel(Date.now() + (10 * 1000));
-        const { rt } = this;
+        const { rt } = fixture2;
         const spy = sinon.spy();
-        this.provider.on('grant.error', spy);
+        fixture2.provider.on('grant.error', spy);
 
-        return this.agent.post(route)
+        return fixture2.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -140,21 +146,21 @@ describe('grant_type=refresh_token', () => {
           .type('form')
           .expect(400)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('refresh token is expired');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'refresh token is expired');
           })
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
       });
     });
 
-    it('validates that token belongs to client', function () {
-      const { rt } = this;
+    it('validates that token belongs to client', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client2', 'secret')
         .send({
           refresh_token: rt,
@@ -163,20 +169,20 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'client mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('scopes are not getting extended (single)', function () {
-      const { rt } = this;
+    it('scopes are not getting extended (single)', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -186,18 +192,18 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_scope');
-          expect(response.body).to.have.property('error_description', 'refresh token missing requested scope');
-          expect(response.body).to.have.property('scope', 'profile');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_scope'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'refresh token missing requested scope'); })(response.body);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'profile'); })(response.body);
         });
     });
 
-    it('scopes are not getting extended (multiple)', function () {
-      const { rt } = this;
+    it('scopes are not getting extended (multiple)', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -207,19 +213,19 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_scope');
-          expect(response.body).to.have.property('error_description', 'refresh token missing requested scopes');
-          expect(response.body).to.have.property('scope', 'profile address');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_scope'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'refresh token missing requested scopes'); })(response.body);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'profile address'); })(response.body);
         });
     });
 
-    it('scopes can get slimmer (1/2) - no openid scope, ID Token is not issued', function () {
-      const { rt } = this;
+    it('scopes can get slimmer (1/2) - no openid scope, ID Token is not issued', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
       const spy = sinon.spy();
-      this.provider.on('access_token.saved', spy);
-      this.provider.on('access_token.issued', spy);
+      fixture1.provider.on('access_token.saved', spy);
+      fixture1.provider.on('access_token.issued', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -229,20 +235,20 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(({ body }) => {
-          expect(spy.firstCall.args[0]).to.have.property('kind', 'AccessToken');
-          expect(spy.firstCall.args[0]).to.have.property('scope', 'email');
-          expect(body).to.have.property('scope', 'email');
-          expect(body).not.to.have.property('id_token');
+          ((actual) => { assert.ok('kind' in Object(actual)); assert.equal(actual.kind, 'AccessToken'); })(spy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'email'); })(spy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'email'); })(body);
+          assert.ok(!('id_token' in Object(body)));
         });
     });
 
-    it('scopes can get slimmer (2/2) - openid scope is present, ID Token is issued', function () {
-      const { rt } = this;
+    it('scopes can get slimmer (2/2) - openid scope is present, ID Token is issued', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
       const spy = sinon.spy();
-      this.provider.on('access_token.saved', spy);
-      this.provider.on('access_token.issued', spy);
+      fixture1.provider.on('access_token.saved', spy);
+      fixture1.provider.on('access_token.issued', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -252,18 +258,18 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(({ body }) => {
-          expect(spy.firstCall.args[0]).to.have.property('kind', 'AccessToken');
-          expect(spy.firstCall.args[0]).to.have.property('scope', 'openid email');
-          expect(body).to.have.property('scope', 'openid email');
-          expect(body).to.have.property('id_token');
+          ((actual) => { assert.ok('kind' in Object(actual)); assert.equal(actual.kind, 'AccessToken'); })(spy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email'); })(spy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email'); })(body);
+          assert.ok('id_token' in Object(body));
         });
     });
 
-    it('passes the slimmed down scope to the account claims helper', function () {
-      const { rt } = this;
+    it('passes the slimmed down scope to the account claims helper', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
       const claims = sinon.spy(Account.prototype, 'claims');
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -273,22 +279,22 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(({ body }) => {
-          expect(body).to.have.property('scope', 'openid');
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid'); })(body);
           const idToken = claims.getCalls().find(({ args: [use] }) => use === 'id_token');
           assert(idToken, 'account claims were not resolved for the ID Token');
           // and not the refresh token's original 'openid email offline_access'
-          expect(idToken.args[1]).to.equal('openid');
+          assert.equal(idToken.args[1], 'openid');
         });
     });
 
-    it('validates account is still there', function () {
-      const { rt } = this;
-      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
+    it('validates account is still there', { timeout: 3000 }, () => {
+      const { rt } = fixture1;
+      sinon.stub(i(fixture1.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -297,17 +303,16 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('refresh token invalid (referenced account not found)');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'refresh token invalid (referenced account not found)');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
   });
 
-  it('refresh_token presence', function () {
-    return this.agent.post(route)
+  it('refresh_token presence', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'refresh_token',
@@ -315,16 +320,15 @@ describe('grant_type=refresh_token', () => {
       .type('form')
       .expect(400)
       .expect((response) => {
-        expect(response.body).to.have.property('error', 'invalid_request');
-        expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
-        expect(response.body).to.have.property('error_description').and.matches(/refresh_token/);
-      });
-  });
+        ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+        ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /missing required parameter/); })(response.body);
+        ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /refresh_token/); })(response.body);
+      }));
 
-  it('code being "found"', function () {
+  it('code being "found"', { timeout: 3000 }, () => {
     const spy = sinon.spy();
-    this.provider.on('grant.error', spy);
-    return this.agent.post(route)
+    fixture.provider.on('grant.error', spy);
+    return fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'refresh_token',
@@ -333,50 +337,52 @@ describe('grant_type=refresh_token', () => {
       .type('form')
       .expect(400)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(errorDetail(spy)).to.equal('refresh token not found');
+        assert.equal(spy.calledOnce, true);
+        assert.equal(errorDetail(spy), 'refresh token not found');
       })
       .expect((response) => {
-        expect(response.body).to.have.property('error', 'invalid_grant');
+        ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
       });
   });
 
   describe('rotateRefreshToken=true', () => {
-    before(function () {
-      i(this.provider).configuration.rotateRefreshToken = true;
-    });
+    const fixture3 = Object.create(fixture);
 
-    after(function () {
-      i(this.provider).configuration.rotateRefreshToken = false;
-    });
+    before(() => {
+      i(fixture3.provider).configuration.rotateRefreshToken = true;
+    }, { timeout: 3000 });
 
-    it('populates ctx.oidc.entities', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
-        expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
-        expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
-        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
+    after(() => {
+      i(fixture3.provider).configuration.rotateRefreshToken = false;
+    }, { timeout: 3000 });
+
+    it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+      fixture3.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken']));
+        assert.notDeepEqual(ctx.oidc.entities.RotatedRefreshToken, ctx.oidc.entities.RefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.RotatedRefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code refresh_token'); })(ctx.oidc.entities.RefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code refresh_token'); })(ctx.oidc.entities.AccessToken);
       }, done);
 
-      this.agent.post(route)
+      fixture3.agent.post(route)
         .auth('client', 'secret')
         .send({
-          refresh_token: this.rt,
+          refresh_token: fixture3.rt,
           grant_type: 'refresh_token',
         })
         .type('form')
         .end(() => {});
     });
 
-    it('issues a new refresh token and consumes the old one', function () {
-      const { rt } = this;
+    it('issues a new refresh token and consumes the old one', { timeout: 3000 }, () => {
+      const { rt } = fixture3;
       const consumeSpy = sinon.spy();
       const issueSpy = sinon.spy();
-      this.provider.on('refresh_token.consumed', consumeSpy);
-      this.provider.on('refresh_token.saved', issueSpy);
+      fixture3.provider.on('refresh_token.consumed', consumeSpy);
+      fixture3.provider.on('refresh_token.saved', issueSpy);
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -385,27 +391,27 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(consumeSpy.calledOnce).to.be.true;
-          expect(issueSpy.called).to.be.true;
+          assert.equal(consumeSpy.calledOnce, true);
+          assert.equal(issueSpy.called, true);
         })
         .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope']));
           const refreshIdToken = JSON.parse(base64url.decode(response.body.id_token.split('.')[1]));
-          expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
-          expect(response.body).to.have.property('refresh_token').not.equal(rt);
+          ((actual) => { assert.ok('nonce' in Object(actual)); assert.equal(actual.nonce, 'foobarnonce'); })(refreshIdToken);
+          ((actual) => { assert.ok('refresh_token' in Object(actual)); assert.notEqual(actual.refresh_token, rt); })(response.body);
         });
     });
 
-    it('the new refresh token has identical scope to the old one', function () {
-      const { rt } = this;
+    it('the new refresh token has identical scope to the old one', { timeout: 3000 }, () => {
+      const { rt } = fixture3;
       const consumeSpy = sinon.spy();
       const issueSpy = sinon.spy();
-      this.provider.on('refresh_token.consumed', consumeSpy);
-      this.provider.on('refresh_token.saved', issueSpy);
-      this.provider.on('access_token.saved', issueSpy);
-      this.provider.on('access_token.issued', issueSpy);
+      fixture3.provider.on('refresh_token.consumed', consumeSpy);
+      fixture3.provider.on('refresh_token.saved', issueSpy);
+      fixture3.provider.on('access_token.saved', issueSpy);
+      fixture3.provider.on('access_token.issued', issueSpy);
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -414,23 +420,23 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(consumeSpy.calledOnce).to.be.true;
-          expect(issueSpy.calledTwice).to.be.true;
-          expect(consumeSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
-          expect(issueSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
+          assert.equal(consumeSpy.calledOnce, true);
+          assert.equal(issueSpy.calledTwice, true);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(consumeSpy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(issueSpy.firstCall.args[0]);
         });
     });
 
-    it('the new refresh token has identical scope to the old one even if the access token is requested with less scopes', function () {
-      const { rt } = this;
+    it('the new refresh token has identical scope to the old one even if the access token is requested with less scopes', { timeout: 3000 }, () => {
+      const { rt } = fixture3;
       const consumeSpy = sinon.spy();
       const issueSpy = sinon.spy();
-      this.provider.on('refresh_token.consumed', consumeSpy);
-      this.provider.on('refresh_token.saved', issueSpy);
-      this.provider.on('access_token.saved', issueSpy);
-      this.provider.on('access_token.issued', issueSpy);
+      fixture3.provider.on('refresh_token.consumed', consumeSpy);
+      fixture3.provider.on('refresh_token.saved', issueSpy);
+      fixture3.provider.on('access_token.saved', issueSpy);
+      fixture3.provider.on('access_token.issued', issueSpy);
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -440,24 +446,24 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(consumeSpy.calledOnce).to.be.true;
-          expect(issueSpy.calledTwice).to.be.true;
-          expect(consumeSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
-          expect(issueSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
-          expect(issueSpy.secondCall.args[0]).to.have.property('scope', 'openid');
+          assert.equal(consumeSpy.calledOnce, true);
+          assert.equal(issueSpy.calledTwice, true);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(consumeSpy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(issueSpy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid'); })(issueSpy.secondCall.args[0]);
         });
     });
 
-    it('revokes the complete grant if the old token is used again', function () {
-      const { rt } = this;
+    it('revokes the complete grant if the old token is used again', { timeout: 3000 }, () => {
+      const { rt } = fixture3;
 
       const grantRevokeSpy = sinon.spy();
       const tokenDestroySpy = sinon.spy();
-      this.provider.on('grant.revoked', grantRevokeSpy);
-      this.provider.on('refresh_token.destroyed', tokenDestroySpy);
+      fixture3.provider.on('grant.revoked', grantRevokeSpy);
+      fixture3.provider.on('refresh_token.destroyed', tokenDestroySpy);
 
       return assert.rejects(Promise.all([
-        this.agent.post(route)
+        fixture3.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -465,7 +471,7 @@ describe('grant_type=refresh_token', () => {
           })
           .type('form')
           .expect(200), // one of them will fail.
-        this.agent.post(route)
+        fixture3.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -474,51 +480,53 @@ describe('grant_type=refresh_token', () => {
           .type('form')
           .expect(200), // one of them will fail.
       ]), () => {
-        expect(grantRevokeSpy.calledOnce).to.be.true;
-        expect(tokenDestroySpy.calledOnce).to.be.true;
+        assert.equal(grantRevokeSpy.calledOnce, true);
+        assert.equal(tokenDestroySpy.calledOnce, true);
         return true;
       });
     });
   });
 
   describe('rotateRefreshToken is a function (returns true)', () => {
-    beforeEach(function () {
-      i(this.provider).configuration.rotateRefreshToken = sinon.mock().returns(true);
-    });
+    const fixture4 = Object.create(fixture);
 
-    afterEach(function () {
-      const spy = i(this.provider).configuration.rotateRefreshToken;
-      i(this.provider).configuration.rotateRefreshToken = false;
-      expect(spy.calledOnce).to.be.true;
-    });
+    beforeEach(() => {
+      i(fixture4.provider).configuration.rotateRefreshToken = sinon.mock().returns(true);
+    }, { timeout: 3000 });
 
-    it('populates ctx.oidc.entities', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken');
-        expect(ctx.oidc.entities.RotatedRefreshToken).not.to.eql(ctx.oidc.entities.RefreshToken);
-        expect(ctx.oidc.entities.RotatedRefreshToken).to.have.property('gty', 'authorization_code');
-        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code refresh_token');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
+    afterEach(() => {
+      const spy = i(fixture4.provider).configuration.rotateRefreshToken;
+      i(fixture4.provider).configuration.rotateRefreshToken = false;
+      assert.equal(spy.calledOnce, true);
+    }, { timeout: 3000 });
+
+    it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+      fixture4.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AccessToken', 'RotatedRefreshToken', 'RefreshToken']));
+        assert.notDeepEqual(ctx.oidc.entities.RotatedRefreshToken, ctx.oidc.entities.RefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.RotatedRefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code refresh_token'); })(ctx.oidc.entities.RefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code refresh_token'); })(ctx.oidc.entities.AccessToken);
       }, done);
 
-      this.agent.post(route)
+      fixture4.agent.post(route)
         .auth('client', 'secret')
         .send({
-          refresh_token: this.rt,
+          refresh_token: fixture4.rt,
           grant_type: 'refresh_token',
         })
         .type('form')
         .end(() => {});
     });
 
-    it('issues a new refresh token and consumes the old one', function () {
-      const { rt } = this;
+    it('issues a new refresh token and consumes the old one', { timeout: 3000 }, () => {
+      const { rt } = fixture4;
       const consumeSpy = sinon.spy();
       const issueSpy = sinon.spy();
-      this.provider.on('refresh_token.consumed', consumeSpy);
-      this.provider.on('refresh_token.saved', issueSpy);
+      fixture4.provider.on('refresh_token.consumed', consumeSpy);
+      fixture4.provider.on('refresh_token.saved', issueSpy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -527,25 +535,25 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(consumeSpy.calledOnce).to.be.true;
-          expect(issueSpy.called).to.be.true;
+          assert.equal(consumeSpy.calledOnce, true);
+          assert.equal(issueSpy.called, true);
         })
         .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope']));
           const refreshIdToken = JSON.parse(base64url.decode(response.body.id_token.split('.')[1]));
-          expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
-          expect(response.body).to.have.property('refresh_token').not.equal(rt);
+          ((actual) => { assert.ok('nonce' in Object(actual)); assert.equal(actual.nonce, 'foobarnonce'); })(refreshIdToken);
+          ((actual) => { assert.ok('refresh_token' in Object(actual)); assert.notEqual(actual.refresh_token, rt); })(response.body);
         });
     });
 
-    it('the new refresh token has identical scope to the old one', function () {
-      const { rt } = this;
+    it('the new refresh token has identical scope to the old one', { timeout: 3000 }, () => {
+      const { rt } = fixture4;
       const consumeSpy = sinon.spy();
       const issueSpy = sinon.spy();
-      this.provider.on('refresh_token.consumed', consumeSpy);
-      this.provider.on('refresh_token.saved', issueSpy);
+      fixture4.provider.on('refresh_token.consumed', consumeSpy);
+      fixture4.provider.on('refresh_token.saved', issueSpy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -554,23 +562,23 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(consumeSpy.calledOnce).to.be.true;
-          expect(issueSpy.called).to.be.true;
-          expect(consumeSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
-          expect(issueSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
+          assert.equal(consumeSpy.calledOnce, true);
+          assert.equal(issueSpy.called, true);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(consumeSpy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(issueSpy.firstCall.args[0]);
         });
     });
 
-    it('the new refresh token has identical scope to the old one even if the access token is requested with less scopes', function () {
-      const { rt } = this;
+    it('the new refresh token has identical scope to the old one even if the access token is requested with less scopes', { timeout: 3000 }, () => {
+      const { rt } = fixture4;
       const consumeSpy = sinon.spy();
       const issueSpy = sinon.spy();
-      this.provider.on('refresh_token.consumed', consumeSpy);
-      this.provider.on('refresh_token.saved', issueSpy);
-      this.provider.on('access_token.saved', issueSpy);
-      this.provider.on('access_token.issued', issueSpy);
+      fixture4.provider.on('refresh_token.consumed', consumeSpy);
+      fixture4.provider.on('refresh_token.saved', issueSpy);
+      fixture4.provider.on('access_token.saved', issueSpy);
+      fixture4.provider.on('access_token.issued', issueSpy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client', 'secret')
         .send({
           refresh_token: rt,
@@ -580,24 +588,24 @@ describe('grant_type=refresh_token', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          expect(consumeSpy.calledOnce).to.be.true;
-          expect(issueSpy.calledTwice).to.be.true;
-          expect(consumeSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
-          expect(issueSpy.firstCall.args[0]).to.have.property('scope', 'openid email offline_access');
-          expect(issueSpy.secondCall.args[0]).to.have.property('scope', 'openid');
+          assert.equal(consumeSpy.calledOnce, true);
+          assert.equal(issueSpy.calledTwice, true);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(consumeSpy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid email offline_access'); })(issueSpy.firstCall.args[0]);
+          ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid'); })(issueSpy.secondCall.args[0]);
         });
     });
 
-    it('revokes the complete grant if the old token is used again', function () {
-      const { rt } = this;
+    it('revokes the complete grant if the old token is used again', { timeout: 3000 }, () => {
+      const { rt } = fixture4;
 
       const grantRevokeSpy = sinon.spy();
       const tokenDestroySpy = sinon.spy();
-      this.provider.on('grant.revoked', grantRevokeSpy);
-      this.provider.on('refresh_token.destroyed', tokenDestroySpy);
+      fixture4.provider.on('grant.revoked', grantRevokeSpy);
+      fixture4.provider.on('refresh_token.destroyed', tokenDestroySpy);
 
       return assert.rejects(Promise.all([
-        this.agent.post(route)
+        fixture4.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -605,7 +613,7 @@ describe('grant_type=refresh_token', () => {
           })
           .type('form')
           .expect(200), // one of them will fail.
-        this.agent.post(route)
+        fixture4.agent.post(route)
           .auth('client', 'secret')
           .send({
             refresh_token: rt,
@@ -614,44 +622,46 @@ describe('grant_type=refresh_token', () => {
           .type('form')
           .expect(200), // one of them will fail.
       ]), () => {
-        expect(grantRevokeSpy.calledOnce).to.be.true;
-        expect(tokenDestroySpy.calledOnce).to.be.true;
+        assert.equal(grantRevokeSpy.calledOnce, true);
+        assert.equal(tokenDestroySpy.calledOnce, true);
         return true;
       });
     });
   });
 
   describe('rotateRefreshToken is a function (returns false)', () => {
-    beforeEach(function () {
-      i(this.provider).configuration.rotateRefreshToken = sinon.mock().returns(false);
-    });
+    const fixture5 = Object.create(fixture);
 
-    afterEach(function () {
-      const spy = i(this.provider).configuration.rotateRefreshToken;
-      i(this.provider).configuration.rotateRefreshToken = false;
-      expect(spy.calledOnce).to.be.true;
-    });
+    beforeEach(() => {
+      i(fixture5.provider).configuration.rotateRefreshToken = sinon.mock().returns(false);
+    }, { timeout: 3000 });
 
-    it('does not rotate', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken');
-        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code refresh_token');
+    afterEach(() => {
+      const spy = i(fixture5.provider).configuration.rotateRefreshToken;
+      i(fixture5.provider).configuration.rotateRefreshToken = false;
+      assert.equal(spy.calledOnce, true);
+    }, { timeout: 3000 });
+
+    it('does not rotate', { timeout: 3000 }, (_t, done) => {
+      fixture5.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AccessToken', 'RefreshToken']));
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.RefreshToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code refresh_token'); })(ctx.oidc.entities.AccessToken);
       }, done);
 
-      this.agent.post(route)
+      fixture5.agent.post(route)
         .auth('client', 'secret')
         .send({
-          refresh_token: this.rt,
+          refresh_token: fixture5.rt,
           grant_type: 'refresh_token',
         })
         .type('form')
         .expect(200)
         .expect(({ body }) => {
-          expect(body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope');
+          assert.deepEqual(new Set(Object.keys(body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'refresh_token', 'scope']));
           const refreshIdToken = JSON.parse(base64url.decode(body.id_token.split('.')[1]));
-          expect(refreshIdToken).to.have.property('nonce', 'foobarnonce');
-          expect(body).to.have.property('refresh_token').that.is.a('string');
+          ((actual) => { assert.ok('nonce' in Object(actual)); assert.equal(actual.nonce, 'foobarnonce'); })(refreshIdToken);
+          ((actual) => { assert.ok('refresh_token' in Object(actual)); assert.equal(typeof actual.refresh_token, 'string'); })(body);
         })
         .end(() => {});
     });

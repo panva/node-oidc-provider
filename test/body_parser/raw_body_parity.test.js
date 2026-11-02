@@ -1,6 +1,7 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
 
-import { expect } from 'chai';
 import raw from 'raw-body';
 
 /*
@@ -90,7 +91,7 @@ const settle = async (promise) => {
 
 describe('request body reading matches raw-body', () => {
   for (const testCase of CASES) {
-    it(testCase.name, async () => {
+    it(testCase.name, { timeout: 3000 }, async () => {
       const { chunks, length, charset, error } = testCase;
 
       const theirs = await settle(raw(stream(chunks, { error }), {
@@ -98,26 +99,26 @@ describe('request body reading matches raw-body', () => {
       }));
       const mine = await settle(readBody(stream(chunks, { error }), length, charset));
 
-      expect(mine.ok, `raw-body ok=${theirs.ok}, replacement ok=${mine.ok}`).to.equal(theirs.ok);
-      if (theirs.ok) expect(mine.value).to.equal(theirs.value);
+      assert.equal(mine.ok, theirs.ok, `raw-body ok=${theirs.ok}, replacement ok=${mine.ok}`);
+      if (theirs.ok) assert.equal(mine.value, theirs.value);
     });
   }
 
-  it('does not destroy the stream when it bails early', async () => {
+  it('does not destroy the stream when it bails early', { timeout: 3000 }, async () => {
     // a stream that never ends, so that being destroyed can only be the
     // iterator's doing and not autoDestroy firing on a natural end
     const source = new Readable({ read() { this.push(Buffer.alloc(8192, 0x61)); } });
 
     const result = await settle(readBody(source, undefined, 'utf-8'));
 
-    expect(result.ok, 'should have bailed on the limit').to.equal(false);
-    expect(source.destroyed, 'the error response still has to be written').to.equal(false);
+    assert.equal(result.ok, false, 'should have bailed on the limit');
+    assert.equal(source.destroyed, false, 'the error response still has to be written');
     source.destroy();
   });
 
-  it('rejects a stream that already has an encoding set', async () => {
+  it('rejects a stream that already has an encoding set', { timeout: 3000 }, async () => {
     const source = stream([Buffer.from('a=b')]);
     source.setEncoding('utf8');
-    expect((await settle(readBody(source, undefined, 'utf-8'))).ok).to.equal(false);
+    assert.equal((await settle(readBody(source, undefined, 'utf-8'))).ok, false);
   });
 });

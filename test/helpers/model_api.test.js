@@ -1,6 +1,6 @@
-import { strict as assert } from 'node:assert';
+import { describe, beforeEach, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 import { createSandbox } from 'sinon';
 
 import Provider from '../../lib/index.js';
@@ -99,32 +99,28 @@ describe('model API compatibility', () => {
   const sinon = createSandbox();
   let provider;
 
-  beforeEach(() => { provider = setup(); });
-  afterEach(() => sinon.restore());
+  beforeEach(() => { provider = setup(); }, { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
   for (const [name, expected] of Object.entries(payloads)) {
-    it(`${name} retains its payload field order and capabilities`, () => {
+    it(`${name} retains its payload field order and capabilities`, { timeout: 3000 }, () => {
       const Model = model(provider, name);
-      expect(Model.IN_PAYLOAD).to.eql(expected);
+      assert.deepEqual(Model.IN_PAYLOAD, expected);
       for (const [method, models] of Object.entries(capabilities)) {
-        expect(typeof Model.prototype[method], method).to.equal(
-          models.includes(name) ? 'function' : 'undefined',
-        );
+        assert.equal(typeof Model.prototype[method], models.includes(name) ? 'function' : 'undefined', method);
       }
-      expect(typeof Model.revokeByGrantId).to.equal(
-        grantBound.includes(name) ? 'function' : 'undefined',
-      );
+      assert.equal(typeof Model.revokeByGrantId, grantBound.includes(name) ? 'function' : 'undefined');
     });
   }
 
-  it('keeps model constructors, adapters, configuration, and events isolated per provider', async () => {
+  it('keeps model constructors, adapters, configuration, and events isolated per provider', { timeout: 3000 }, async () => {
     const second = setup();
     for (const name of Object.keys(payloads)) {
       const First = model(provider, name);
       const Second = model(second, name);
-      expect(First).not.to.equal(Second);
-      expect(First.adapter).not.to.equal(Second.adapter);
-      expect(new First().adapter).to.equal(First.adapter);
+      assert.notEqual(First, Second);
+      assert.notEqual(First.adapter, Second.adapter);
+      assert.equal(new First().adapter, First.adapter);
     }
 
     instance(provider).configuration.ttl.RefreshToken = 60;
@@ -136,9 +132,9 @@ describe('model API compatibility', () => {
     const first = new provider.RefreshToken({ jti: 'same-id' });
     const other = new second.RefreshToken({ jti: 'same-id' });
     await first.save();
-    expect(await second.RefreshToken.find('same-id')).to.be.undefined;
-    expect(first.expiration).to.equal(60);
-    expect(other.expiration).to.equal(120);
+    assert.equal(await second.RefreshToken.find('same-id'), undefined);
+    assert.equal(first.expiration, 60);
+    assert.equal(other.expiration, 120);
     sinon.assert.calledOnceWithExactly(firstSaved, first);
     sinon.assert.notCalled(secondSaved);
     await other.save();
@@ -146,25 +142,24 @@ describe('model API compatibility', () => {
     sinon.assert.calledOnce(firstSaved);
   });
 
-  it('persists subclass payload fields and instantiates the subclass on lookup', async () => {
+  it('persists subclass payload fields and instantiates the subclass on lookup', { timeout: 3000 }, async () => {
     const Parent = provider.AuthorizationCode;
     class CustomCode extends Parent {
       static get IN_PAYLOAD() { return [...Parent.IN_PAYLOAD, 'custom']; }
     }
 
     const code = new CustomCode({ expiresIn: 60, custom: { value: 'retained' }, omitted: true });
-    expect(code).not.to.have.property('omitted');
+    assert.ok(!('omitted' in Object(code)));
     const value = await code.save();
     const stored = await CustomCode.adapter.find(value);
-    expect(stored).to.include({ kind: 'CustomCode', jti: value });
-    expect(stored.custom).to.eql({ value: 'retained' });
-    expect(await CustomCode.find(value)).to.be.instanceOf(CustomCode)
-      .and.have.deep.property('custom', { value: 'retained' });
-    expect(await provider.AuthorizationCode.find(value)).to.be.undefined;
+    ((actual) => { assert.ok("kind" in Object(actual)); assert.equal(actual.kind, 'CustomCode'); assert.ok("jti" in Object(actual)); assert.equal(actual.jti, value); })(stored);
+    assert.deepEqual(stored.custom, { value: 'retained' });
+    ((actual) => { assert.ok(actual instanceof CustomCode); assert.ok('custom' in Object(actual)); assert.deepEqual(actual.custom, { value: 'retained' }); })(await CustomCode.find(value));
+    assert.equal(await provider.AuthorizationCode.find(value), undefined);
   });
 
   for (const [operation, event] of [['save', 'saved'], ['consume', 'consumed'], ['destroy', 'destroyed']]) {
-    it(`emits ${event} only after the adapter operation completes`, async () => {
+    it(`emits ${event} only after the adapter operation completes`, { timeout: 3000 }, async () => {
       const code = new provider.AuthorizationCode({ jti: 'code', expiresIn: 60 });
       const adapterMethod = operation === 'save' ? 'upsert' : operation;
       let start;
@@ -181,7 +176,7 @@ describe('model API compatibility', () => {
       const pending = code[operation]();
       await started;
       sinon.assert.notCalled(emitted);
-      expect(adapter.firstCall.args[0]).to.equal('code');
+      assert.equal(adapter.firstCall.args[0], 'code');
       finish();
       await pending;
       sinon.assert.calledOnceWithExactly(emitted, code);
@@ -194,73 +189,73 @@ describe('model API compatibility', () => {
     });
   }
 
-  it('consumes stored tokens without mutating the issued instance', async () => {
+  it('consumes stored tokens without mutating the issued instance', { timeout: 3000 }, async () => {
     const code = new provider.AuthorizationCode({ expiresIn: 60, grantId: 'grant' });
     const value = await code.save();
     await code.consume();
-    expect(code).not.to.have.property('consumed');
-    expect(code.isValid).to.be.true;
+    assert.ok(!('consumed' in Object(code)));
+    assert.equal(code.isValid, true);
     const consumed = await provider.AuthorizationCode.find(value);
-    expect(consumed.consumed).to.be.a('number');
-    expect(consumed.isValid).to.be.false;
+    assert.equal(typeof consumed.consumed, 'number');
+    assert.equal(consumed.isValid, false);
     await provider.AuthorizationCode.revokeByGrantId('grant');
-    expect(await provider.AuthorizationCode.find(value)).to.be.undefined;
+    assert.equal(await provider.AuthorizationCode.find(value), undefined);
   });
 
   for (const name of grantBound.filter((value) => value !== 'PreAuthorizedCode')) {
-    it(`${name} checks the session principal and grant and honours the explicit bypass`, async () => {
+    it(`${name} checks the session principal and grant and honours the explicit bypass`, { timeout: 3000 }, async () => {
       const Model = provider[name];
       const value = await new Model({
         accountId: 'account', clientId: 'client', grantId: 'grant',
         sessionUid: 'session', expiresWithSession: true,
       }).save();
       const findSession = sinon.stub(provider.Session, 'findByUid').resolves(undefined);
-      expect(await Model.find(value)).to.be.undefined;
+      assert.equal(await Model.find(value), undefined);
       sinon.assert.calledOnceWithExactly(findSession, 'session');
 
       const sessionModel = new provider.Session({ accountId: 'account' });
       sessionModel.grantIdFor('client', 'grant');
       findSession.resolves(sessionModel);
-      expect(await Model.find(value)).to.be.instanceOf(Model);
+      assert.ok(await Model.find(value) instanceof Model);
       sessionModel.accountId = 'other-account';
-      expect(await Model.find(value)).to.be.undefined;
+      assert.equal(await Model.find(value), undefined);
       sessionModel.accountId = 'account';
       sessionModel.grantIdFor('client', 'other-grant');
-      expect(await Model.find(value)).to.be.undefined;
+      assert.equal(await Model.find(value), undefined);
 
       findSession.resetHistory();
-      expect(await Model.find(value, { ignoreSessionBinding: true })).to.be.instanceOf(Model);
+      assert.ok(await Model.find(value, { ignoreSessionBinding: true }) instanceof Model);
       sinon.assert.notCalled(findSession);
-      expect(await Model.find(value, { ignoreSessionBinding: 1 })).to.be.undefined;
+      assert.equal(await Model.find(value, { ignoreSessionBinding: 1 }), undefined);
       sinon.assert.calledOnce(findSession);
     });
   }
 
   for (const name of ['AccessToken', 'ClientCredentials']) {
-    it(`${name} retains explicit and previously resolved token formats`, async () => {
+    it(`${name} retains explicit and previously resolved token formats`, { timeout: 3000 }, async () => {
       const Model = provider[name];
       const fresh = new Model({ expiresIn: 60 });
       await assert.rejects(fresh.getValueAndPayload(), { message: 'invalid format resolved' });
       fresh.format = 'opaque';
-      expect((await fresh.getValueAndPayload()).payload).to.have.property('kind', name);
+      ((actual) => { assert.ok('kind' in Object(actual)); assert.equal(actual.kind, name); })((await fresh.getValueAndPayload()).payload);
       for (const format of ['unsupported', 'dynamic']) {
         fresh.format = format;
         await assert.rejects(fresh.getValueAndPayload(), { message: 'invalid format resolved' });
         fresh.resourceServer = { audience: 'urn:resource', accessTokenFormat: format };
-        expect(() => fresh.generateTokenId()).to.throw('invalid format resolved');
+        assert.throws(() => fresh.generateTokenId(), (error) => { assert.ok(error.message.includes('invalid format resolved')); return true; });
       }
 
       const issued = new Model({ expiresIn: 60 });
       issued.jti = issued.generateTokenId();
       issued.resourceServer = { audience: 'urn:resource', accessTokenFormat: 'jwt' };
       const value = await issued.save();
-      expect(await issued.save()).to.equal(value);
-      expect(issued.format).to.equal('opaque');
+      assert.equal(await issued.save(), value);
+      assert.equal(issued.format, 'opaque');
 
       class CustomToken extends Model {}
       const custom = new CustomToken({ jti: 'custom-id', expiresIn: 60 });
       custom.format = 'opaque';
-      expect((await custom.getValueAndPayload()).value).to.equal('custom-id');
+      assert.equal((await custom.getValueAndPayload()).value, 'custom-id');
     });
   }
 });

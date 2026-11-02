@@ -1,35 +1,36 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import Provider from '../../lib/index.js';
 
 describe('custom claims', () => {
-  it('allows for claims to be added under openid scope using array syntax', () => {
+  it('allows for claims to be added under openid scope using array syntax', { timeout: 3000 }, () => {
     const provider = new Provider('https://op.example.com', {
       claims: {
         openid: ['foo'],
       },
     });
 
-    expect(i(provider).configuration.claims.openid).to.eql({
+    assert.deepEqual(i(provider).configuration.claims.openid, {
       sub: null,
       foo: null,
     });
   });
 
-  it('allows for claims to be added under openid scope using object syntax', () => {
+  it('allows for claims to be added under openid scope using object syntax', { timeout: 3000 }, () => {
     const provider = new Provider('https://op.example.com', {
       claims: {
         openid: { foo: null },
       },
     });
 
-    expect(i(provider).configuration.claims.openid).to.eql({
+    assert.deepEqual(i(provider).configuration.claims.openid, {
       sub: null,
       foo: null,
     });
   });
 
-  it('detects new scopes from claims definition', () => {
+  it('detects new scopes from claims definition', { timeout: 3000 }, () => {
     const provider = new Provider('https://op.example.com', {
       claims: {
         insurance: ['company_name', 'coverage'],
@@ -39,14 +40,14 @@ describe('custom claims', () => {
       },
     });
 
-    expect(i(provider).configuration.scopes).to.contain('insurance', 'payment');
+    assert.ok(i(provider).configuration.scopes.has('insurance'));
   });
 
-  it('removes the acr claim if no acrs are configured', () => {
+  it('removes the acr claim if no acrs are configured', { timeout: 3000 }, () => {
     const provider = new Provider('https://op.example.com', {
       acrValues: [],
     });
 
-    expect(i(provider).configuration.claimsSupported).not.to.contain('acr');
+    assert.ok(!(i(provider).configuration.claimsSupported.has('acr')));
   });
 });

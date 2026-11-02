@@ -1,17 +1,22 @@
-import { strict as assert } from 'node:assert';
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 import addClient from '../../lib/helpers/add_client.js';
 
 describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
   describe('changed native client validations', () => {
+    const fixture1 = Object.create(fixture);
+
     describe('Loopback Interface Redirection', () => {
-      it('catches invalid urls being passed in', function () {
-        return addClient(this.provider, {
+      const fixture2 = Object.create(fixture1);
+
+      it('catches invalid urls being passed in', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -20,17 +25,15 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://127.0.0.1:2355/op/callback'],
           post_logout_redirect_uris: ['http://127.0.0.1:2355/op/logout'],
         }).then((client) => {
-          expect(client.redirectUriAllowed('http:')).to.be.false;
-          expect(client.redirectUriAllowed('http://127.0.0.')).to.be.false;
-          expect(client.redirectUriAllowed('http://127.0.0.1::')).to.be.false;
-          expect(client.postLogoutRedirectUriAllowed('http:')).to.be.false;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.')).to.be.false;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1::')).to.be.false;
-        });
-      });
+          assert.equal(client.redirectUriAllowed('http:'), false);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.'), false);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1::'), false);
+          assert.equal(client.postLogoutRedirectUriAllowed('http:'), false);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.'), false);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1::'), false);
+        }));
 
-      it('matches every raw loopback URI component except the port', function () {
-        return addClient(this.provider, {
+      it('matches every raw loopback URI component except the port', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-exact-loopback',
           grant_types: ['implicit'],
@@ -47,10 +50,10 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
             'http://user:pass@localhost/op/logout',
           ],
         }).then((client) => {
-          expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout')).to.be.true;
-          expect(client.redirectUriAllowed('http://user:pass@localhost:8888/op/callback')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://user:pass@localhost:8888/op/logout')).to.be.true;
+          assert.equal(client.redirectUriAllowed('http://localhost:8888/op/callback'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout'), true);
+          assert.equal(client.redirectUriAllowed('http://user:pass@localhost:8888/op/callback'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://user:pass@localhost:8888/op/logout'), true);
 
           for (const redirectUri of [
             'HTTP://localhost:8888/op/callback',
@@ -58,7 +61,7 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
             'http://127.000.000.001:8888/op/callback',
             'http://127.0.0.1:8888/op/x/../callback',
           ]) {
-            expect(client.redirectUriAllowed(redirectUri)).to.be.false;
+            assert.equal(client.redirectUriAllowed(redirectUri), false);
           }
 
           for (const postLogoutRedirectUri of [
@@ -67,13 +70,11 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
             'http://127.000.000.001:8888/op/logout',
             'http://127.0.0.1:8888/op/x/../logout',
           ]) {
-            expect(client.postLogoutRedirectUriAllowed(postLogoutRedirectUri)).to.be.false;
+            assert.equal(client.postLogoutRedirectUriAllowed(postLogoutRedirectUri), false);
           }
-        });
-      });
+        }));
 
-      it('allows http protocol localhost loopback uris (when registered with a random port)', function () {
-        return addClient(this.provider, {
+      it('allows http protocol localhost loopback uris (when registered with a random port)', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -82,24 +83,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://localhost:2355/op/callback'],
           post_logout_redirect_uris: ['http://localhost:2355/op/logout'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://localhost:2355/op/callback');
-          expect(client.redirectUriAllowed('http://localhost/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:80/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:443/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:2355/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
+          assert.ok(client.redirectUris.includes('http://localhost:2355/op/callback'));
+          assert.equal(client.redirectUriAllowed('http://localhost/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:80/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:443/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:2355/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:8888/op/callback'), true);
 
-          expect(client.postLogoutRedirectUris).to.contain('http://localhost:2355/op/logout');
-          expect(client.postLogoutRedirectUriAllowed('http://localhost/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:80/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:443/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:2355/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout')).to.be.true;
-        });
-      });
+          assert.ok(client.postLogoutRedirectUris.includes('http://localhost:2355/op/logout'));
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:80/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:443/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:2355/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout'), true);
+        }));
 
-      it('allows http protocol localhost loopback uris (when registered without a port)', function () {
-        return addClient(this.provider, {
+      it('allows http protocol localhost loopback uris (when registered without a port)', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -108,24 +107,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://localhost/op/callback'],
           post_logout_redirect_uris: ['http://localhost/op/logout'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://localhost/op/callback');
-          expect(client.redirectUriAllowed('http://localhost/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:80/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:443/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:2355/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://localhost:8888/op/callback')).to.be.true;
+          assert.ok(client.redirectUris.includes('http://localhost/op/callback'));
+          assert.equal(client.redirectUriAllowed('http://localhost/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:80/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:443/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:2355/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://localhost:8888/op/callback'), true);
 
-          expect(client.postLogoutRedirectUris).to.contain('http://localhost/op/logout');
-          expect(client.postLogoutRedirectUriAllowed('http://localhost/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:80/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:443/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:2355/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout')).to.be.true;
-        });
-      });
+          assert.ok(client.postLogoutRedirectUris.includes('http://localhost/op/logout'));
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:80/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:443/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:2355/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://localhost:8888/op/logout'), true);
+        }));
 
-      it('allows http protocol IPv4 loopback uris (when registered with a random port)', function () {
-        return addClient(this.provider, {
+      it('allows http protocol IPv4 loopback uris (when registered with a random port)', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -134,24 +131,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://127.0.0.1:2355/op/callback'],
           post_logout_redirect_uris: ['http://127.0.0.1:2355/op/logout'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://127.0.0.1:2355/op/callback');
-          expect(client.redirectUriAllowed('http://127.0.0.1/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:80/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:443/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback')).to.be.true;
+          assert.ok(client.redirectUris.includes('http://127.0.0.1:2355/op/callback'));
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:80/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:443/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback'), true);
 
-          expect(client.postLogoutRedirectUris).to.contain('http://127.0.0.1:2355/op/logout');
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:80/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:443/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:2355/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:8888/op/logout')).to.be.true;
-        });
-      });
+          assert.ok(client.postLogoutRedirectUris.includes('http://127.0.0.1:2355/op/logout'));
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:80/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:443/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:2355/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:8888/op/logout'), true);
+        }));
 
-      it('allows http protocol IPv4 loopback uris (when registered without a port)', function () {
-        return addClient(this.provider, {
+      it('allows http protocol IPv4 loopback uris (when registered without a port)', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -160,24 +155,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://127.0.0.1/op/callback'],
           post_logout_redirect_uris: ['http://127.0.0.1/op/logout'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://127.0.0.1/op/callback');
-          expect(client.redirectUriAllowed('http://127.0.0.1/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:80/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:443/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback')).to.be.true;
+          assert.ok(client.redirectUris.includes('http://127.0.0.1/op/callback'));
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:80/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:443/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:2355/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://127.0.0.1:8888/op/callback'), true);
 
-          expect(client.postLogoutRedirectUris).to.contain('http://127.0.0.1/op/logout');
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:80/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:443/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:2355/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://127.0.0.1:8888/op/logout')).to.be.true;
-        });
-      });
+          assert.ok(client.postLogoutRedirectUris.includes('http://127.0.0.1/op/logout'));
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:80/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:443/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:2355/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://127.0.0.1:8888/op/logout'), true);
+        }));
 
-      it('allows http protocol IPv6 loopback uris (when registered with a random port)', function () {
-        return addClient(this.provider, {
+      it('allows http protocol IPv6 loopback uris (when registered with a random port)', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -186,24 +179,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://[::1]:2355/op/callback'],
           post_logout_redirect_uris: ['http://[::1]:2355/op/logout'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://[::1]:2355/op/callback');
-          expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:80/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:443/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:2355/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:8888/op/callback')).to.be.true;
+          assert.ok(client.redirectUris.includes('http://[::1]:2355/op/callback'));
+          assert.equal(client.redirectUriAllowed('http://[::1]/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:80/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:443/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:2355/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:8888/op/callback'), true);
 
-          expect(client.postLogoutRedirectUris).to.contain('http://[::1]:2355/op/logout');
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:80/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:443/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:2355/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:8888/op/logout')).to.be.true;
-        });
-      });
+          assert.ok(client.postLogoutRedirectUris.includes('http://[::1]:2355/op/logout'));
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:80/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:443/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:2355/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:8888/op/logout'), true);
+        }));
 
-      it('allows http protocol IPv6 loopback uris (when registered without a port)', function () {
-        return addClient(this.provider, {
+      it('allows http protocol IPv6 loopback uris (when registered without a port)', { timeout: 3000 }, () => addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -212,24 +203,22 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://[::1]/op/callback'],
           post_logout_redirect_uris: ['http://[::1]/op/logout'],
         }).then((client) => {
-          expect(client.redirectUris).to.contain('http://[::1]/op/callback');
-          expect(client.redirectUriAllowed('http://[::1]/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:80/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:443/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:2355/op/callback')).to.be.true;
-          expect(client.redirectUriAllowed('http://[::1]:8888/op/callback')).to.be.true;
+          assert.ok(client.redirectUris.includes('http://[::1]/op/callback'));
+          assert.equal(client.redirectUriAllowed('http://[::1]/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:80/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:443/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:2355/op/callback'), true);
+          assert.equal(client.redirectUriAllowed('http://[::1]:8888/op/callback'), true);
 
-          expect(client.postLogoutRedirectUris).to.contain('http://[::1]/op/logout');
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:80/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:443/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:2355/op/logout')).to.be.true;
-          expect(client.postLogoutRedirectUriAllowed('http://[::1]:8888/op/logout')).to.be.true;
-        });
-      });
+          assert.ok(client.postLogoutRedirectUris.includes('http://[::1]/op/logout'));
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:80/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:443/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:2355/op/logout'), true);
+          assert.equal(client.postLogoutRedirectUriAllowed('http://[::1]:8888/op/logout'), true);
+        }));
 
-      it('rejects http protocol redirect_uris not using loopback uris', function () {
-        return assert.rejects(addClient(this.provider, {
+      it('rejects http protocol redirect_uris not using loopback uris', { timeout: 3000 }, () => assert.rejects(addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -237,14 +226,12 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           token_endpoint_auth_method: 'none',
           redirect_uris: ['http://rp.example.com/op/callback'],
         }), (err) => {
-          expect(err).to.have.property('message', 'invalid_redirect_uri');
-          expect(err).to.have.property('error_description', 'redirect_uris for native clients using http as a protocol can only use loopback addresses as hostnames');
+          ((actual) => { assert.ok('message' in Object(actual)); assert.equal(actual.message, 'invalid_redirect_uri'); })(err);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'redirect_uris for native clients using http as a protocol can only use loopback addresses as hostnames'); })(err);
           return true;
-        });
-      });
+        }));
 
-      it('rejects http protocol post_logout_redirect_uris not using loopback uris', function () {
-        return assert.rejects(addClient(this.provider, {
+      it('rejects http protocol post_logout_redirect_uris not using loopback uris', { timeout: 3000 }, () => assert.rejects(addClient(fixture2.provider, {
           application_type: 'native',
           client_id: 'native-custom',
           grant_types: ['implicit'],
@@ -253,11 +240,10 @@ describe('OAuth 2.0 for Native Apps Best Current Practice features', () => {
           redirect_uris: ['http://[::1]/op/callback'],
           post_logout_redirect_uris: ['http://rp.example.com/op/logout'],
         }), (err) => {
-          expect(err).to.have.property('message', 'invalid_client_metadata');
-          expect(err).to.have.property('error_description', 'post_logout_redirect_uris for native clients using http as a protocol can only use loopback addresses as hostnames');
+          ((actual) => { assert.ok('message' in Object(actual)); assert.equal(actual.message, 'invalid_client_metadata'); })(err);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'post_logout_redirect_uris for native clients using http as a protocol can only use loopback addresses as hostnames'); })(err);
           return true;
-        });
-      });
+        }));
     });
   });
 });

@@ -1,6 +1,7 @@
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import * as url from 'node:url';
 
-import { expect } from 'chai';
 import sinon from 'sinon';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -8,21 +9,23 @@ import bootstrap, { skipConsent } from '../test_helper.js';
 import * as JWT from '../../lib/helpers/jwt.js';
 
 describe('dynamic ttl', () => {
-  before(bootstrap(import.meta.url));
-  skipConsent();
-  before(function () {
-    this.prev = cloneDeep(i(this.provider).configuration.ttl);
-  });
-  afterEach(function () {
-    i(this.provider).configuration.ttl = this.prev;
-  });
-  before(function () { return this.login({ scope: 'openid offline_access' }); });
+  const fixture = {};
 
-  it('client credentials', async function () {
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  skipConsent(fixture);
+  before(() => {
+    fixture.prev = cloneDeep(i(fixture.provider).configuration.ttl);
+  }, { timeout: 3000 });
+  afterEach(() => {
+    i(fixture.provider).configuration.ttl = fixture.prev;
+  }, { timeout: 3000 });
+  before(() => fixture.login({ scope: 'openid offline_access' }), { timeout: 3000 });
+
+  it('client credentials', { timeout: 3000 }, async () => {
     const ClientCredentials = sinon.fake.returns(123);
-    i(this.provider).configuration.ttl.ClientCredentials = ClientCredentials;
+    i(fixture.provider).configuration.ttl.ClientCredentials = ClientCredentials;
 
-    await this.agent.post('/token')
+    await fixture.agent.post('/token')
       .send({
         client_id: 'client',
         grant_type: 'client_credentials',
@@ -30,20 +33,20 @@ describe('dynamic ttl', () => {
       .type('form')
       .expect(200)
       .expect(({ body: { expires_in } }) => {
-        expect(expires_in).to.eql(123);
+        assert.deepEqual(expires_in, 123);
       });
 
-    expect(ClientCredentials).to.have.property('calledOnce', true);
-    expect(ClientCredentials.args[0][1]).to.be.an.instanceof(this.provider.ClientCredentials);
-    expect(ClientCredentials.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(ClientCredentials);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.ClientCredentials); })(ClientCredentials.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(ClientCredentials.args[0][2]);
   });
 
-  it('device flow init', async function () {
+  it('device flow init', { timeout: 3000 }, async () => {
     const DeviceCode = sinon.fake.returns(123);
-    i(this.provider).configuration.ttl.DeviceCode = DeviceCode;
+    i(fixture.provider).configuration.ttl.DeviceCode = DeviceCode;
 
     let device_code;
-    await this.agent.post('/device/auth')
+    await fixture.agent.post('/device/auth')
       .send({
         client_id: 'client',
         scope: 'openid offline_access',
@@ -52,28 +55,28 @@ describe('dynamic ttl', () => {
       .type('form')
       .expect(200)
       .expect(({ body: { expires_in, device_code: dc } }) => {
-        expect(expires_in).to.eql(123);
+        assert.deepEqual(expires_in, 123);
         device_code = dc;
       });
 
-    expect(DeviceCode).to.have.property('calledOnce', true);
-    expect(DeviceCode.args[0][1]).to.be.an.instanceof(this.provider.DeviceCode);
-    expect(DeviceCode.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(DeviceCode);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.DeviceCode); })(DeviceCode.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(DeviceCode.args[0][2]);
 
-    this.TestAdapter.for('DeviceCode').syncUpdate(this.getTokenJti(device_code), {
+    fixture.TestAdapter.for('DeviceCode').syncUpdate(fixture.getTokenJti(device_code), {
       scope: 'openid offline_access',
-      accountId: this.loggedInAccountId,
-      grantId: this.getGrantId('client'),
+      accountId: fixture.loggedInAccountId,
+      grantId: fixture.getGrantId('client'),
     });
 
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const RefreshToken = sinon.fake.returns(12345);
-    i(this.provider).configuration.ttl.IdToken = IdToken;
-    i(this.provider).configuration.ttl.AccessToken = AccessToken;
-    i(this.provider).configuration.ttl.RefreshToken = RefreshToken;
+    i(fixture.provider).configuration.ttl.IdToken = IdToken;
+    i(fixture.provider).configuration.ttl.AccessToken = AccessToken;
+    i(fixture.provider).configuration.ttl.RefreshToken = RefreshToken;
 
-    await this.agent.post('/token')
+    await fixture.agent.post('/token')
       .send({
         client_id: 'client',
         grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
@@ -82,64 +85,64 @@ describe('dynamic ttl', () => {
       .type('form')
       .expect(200);
 
-    expect(IdToken).to.have.property('calledOnce', true);
-    expect(IdToken.args[0][1]).to.be.an.instanceof(this.provider.IdToken);
-    expect(IdToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(IdToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.IdToken); })(IdToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(IdToken.args[0][2]);
 
-    expect(AccessToken).to.have.property('calledOnce', true);
-    expect(AccessToken.args[0][1]).to.be.an.instanceof(this.provider.AccessToken);
-    expect(AccessToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(AccessToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.AccessToken); })(AccessToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(AccessToken.args[0][2]);
 
-    expect(RefreshToken).to.have.property('calledOnce', true);
-    expect(RefreshToken.args[0][1]).to.be.an.instanceof(this.provider.RefreshToken);
-    expect(RefreshToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(RefreshToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.RefreshToken); })(RefreshToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(RefreshToken.args[0][2]);
   });
 
-  it('authorization flow returned tokens', async function () {
+  it('authorization flow returned tokens', { timeout: 3000 }, async () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const AuthorizationCode = sinon.fake.returns(12);
-    i(this.provider).configuration.ttl.IdToken = IdToken;
-    i(this.provider).configuration.ttl.AccessToken = AccessToken;
-    i(this.provider).configuration.ttl.AuthorizationCode = AuthorizationCode;
+    i(fixture.provider).configuration.ttl.IdToken = IdToken;
+    i(fixture.provider).configuration.ttl.AccessToken = AccessToken;
+    i(fixture.provider).configuration.ttl.AuthorizationCode = AuthorizationCode;
 
-    const auth = new this.AuthorizationRequest({
+    const auth = new fixture.AuthorizationRequest({
       response_type: 'code id_token token',
       scope: 'openid',
     });
 
-    await this.wrap({ route: '/auth', verb: 'get', auth })
+    await fixture.wrap({ route: '/auth', verb: 'get', auth })
       .expect(303)
       .expect(auth.validateFragment)
       .expect(({ headers: { location } }) => {
         const { query: { expires_in, id_token } } = url.parse(location, true);
-        expect(expires_in).to.eql('1234');
+        assert.deepEqual(expires_in, '1234');
         const { payload: { iat, exp } } = JWT.decode(id_token);
-        expect(exp - iat).to.eql(123);
+        assert.deepEqual(exp - iat, 123);
       });
 
-    expect(IdToken).to.have.property('calledOnce', true);
-    expect(IdToken.args[0][1]).to.be.an.instanceof(this.provider.IdToken);
-    expect(IdToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(IdToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.IdToken); })(IdToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(IdToken.args[0][2]);
 
-    expect(AccessToken).to.have.property('calledOnce', true);
-    expect(AccessToken.args[0][1]).to.be.an.instanceof(this.provider.AccessToken);
-    expect(AccessToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(AccessToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.AccessToken); })(AccessToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(AccessToken.args[0][2]);
 
-    expect(AuthorizationCode).to.have.property('calledOnce', true);
-    expect(AuthorizationCode.args[0][1]).to.be.an.instanceof(this.provider.AuthorizationCode);
-    expect(AuthorizationCode.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(AuthorizationCode);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.AuthorizationCode); })(AuthorizationCode.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(AuthorizationCode.args[0][2]);
   });
 
-  it('authorization code', async function () {
+  it('authorization code', { timeout: 3000 }, async () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const RefreshToken = sinon.fake.returns(12345);
-    i(this.provider).configuration.ttl.IdToken = IdToken;
-    i(this.provider).configuration.ttl.AccessToken = AccessToken;
-    i(this.provider).configuration.ttl.RefreshToken = RefreshToken;
+    i(fixture.provider).configuration.ttl.IdToken = IdToken;
+    i(fixture.provider).configuration.ttl.AccessToken = AccessToken;
+    i(fixture.provider).configuration.ttl.RefreshToken = RefreshToken;
 
-    const auth = new this.AuthorizationRequest({
+    const auth = new fixture.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid offline_access',
       prompt: 'consent',
@@ -147,13 +150,13 @@ describe('dynamic ttl', () => {
 
     let code;
 
-    await this.wrap({ route: '/auth', verb: 'get', auth })
+    await fixture.wrap({ route: '/auth', verb: 'get', auth })
       .expect(303)
       .expect(({ headers: { location } }) => {
         ({ query: { code } } = url.parse(location, true));
       });
 
-    await this.agent.post('/token')
+    await fixture.agent.post('/token')
       .send({
         client_id: 'client',
         grant_type: 'authorization_code',
@@ -164,21 +167,21 @@ describe('dynamic ttl', () => {
       .type('form')
       .expect(200);
 
-    expect(IdToken).to.have.property('calledOnce', true);
-    expect(IdToken.args[0][1]).to.be.an.instanceof(this.provider.IdToken);
-    expect(IdToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(IdToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.IdToken); })(IdToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(IdToken.args[0][2]);
 
-    expect(AccessToken).to.have.property('calledOnce', true);
-    expect(AccessToken.args[0][1]).to.be.an.instanceof(this.provider.AccessToken);
-    expect(AccessToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(AccessToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.AccessToken); })(AccessToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(AccessToken.args[0][2]);
 
-    expect(RefreshToken).to.have.property('calledOnce', true);
-    expect(RefreshToken.args[0][1]).to.be.an.instanceof(this.provider.RefreshToken);
-    expect(RefreshToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(RefreshToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.RefreshToken); })(RefreshToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(RefreshToken.args[0][2]);
   });
 
-  it('refreshed tokens', async function () {
-    const auth = new this.AuthorizationRequest({
+  it('refreshed tokens', { timeout: 3000 }, async () => {
+    const auth = new fixture.AuthorizationRequest({
       response_type: 'code',
       scope: 'openid offline_access',
       prompt: 'consent',
@@ -186,7 +189,7 @@ describe('dynamic ttl', () => {
 
     let code;
 
-    await this.wrap({ route: '/auth', verb: 'get', auth })
+    await fixture.wrap({ route: '/auth', verb: 'get', auth })
       .expect(303)
       .expect(({ headers: { location } }) => {
         ({ query: { code } } = url.parse(location, true));
@@ -194,7 +197,7 @@ describe('dynamic ttl', () => {
 
     let refresh_token;
 
-    await this.agent.post('/token')
+    await fixture.agent.post('/token')
       .send({
         client_id: 'client',
         grant_type: 'authorization_code',
@@ -211,11 +214,11 @@ describe('dynamic ttl', () => {
     const IdToken = sinon.fake.returns(123);
     const AccessToken = sinon.fake.returns(1234);
     const RefreshToken = sinon.fake.returns(12345);
-    i(this.provider).configuration.ttl.IdToken = IdToken;
-    i(this.provider).configuration.ttl.AccessToken = AccessToken;
-    i(this.provider).configuration.ttl.RefreshToken = RefreshToken;
+    i(fixture.provider).configuration.ttl.IdToken = IdToken;
+    i(fixture.provider).configuration.ttl.AccessToken = AccessToken;
+    i(fixture.provider).configuration.ttl.RefreshToken = RefreshToken;
 
-    await this.agent.post('/token')
+    await fixture.agent.post('/token')
       .send({
         client_id: 'client',
         grant_type: 'refresh_token',
@@ -225,16 +228,16 @@ describe('dynamic ttl', () => {
       .type('form')
       .expect(200);
 
-    expect(IdToken).to.have.property('calledOnce', true);
-    expect(IdToken.args[0][1]).to.be.an.instanceof(this.provider.IdToken);
-    expect(IdToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(IdToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.IdToken); })(IdToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(IdToken.args[0][2]);
 
-    expect(AccessToken).to.have.property('calledOnce', true);
-    expect(AccessToken.args[0][1]).to.be.an.instanceof(this.provider.AccessToken);
-    expect(AccessToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(AccessToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.AccessToken); })(AccessToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(AccessToken.args[0][2]);
 
-    expect(RefreshToken).to.have.property('calledOnce', true);
-    expect(RefreshToken.args[0][1]).to.be.an.instanceof(this.provider.RefreshToken);
-    expect(RefreshToken.args[0][2]).to.be.an.instanceof(this.provider.Client);
+    ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(RefreshToken);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.RefreshToken); })(RefreshToken.args[0][1]);
+    ((actual) => { assert.ok(actual instanceof fixture.provider.Client); })(RefreshToken.args[0][2]);
   });
 });

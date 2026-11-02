@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import { stripComments } from '../../tools/strip-comments.js';
 
@@ -11,7 +12,7 @@ describe('publish-time comment stripping', () => {
     ['PARAGRAPH SEPARATOR', '\u2029'],
   ];
 
-  it('keeps the tokens either side of a comment apart', () => {
+  it('keeps the tokens either side of a comment apart', { timeout: 3000 }, () => {
     for (const [source, expected] of [
       ['const x = typeof/* c */foo;', 'const x = typeof foo;'],
       ['return/* c */x;', 'return x;'],
@@ -19,25 +20,24 @@ describe('publish-time comment stripping', () => {
       ['a/* c */+/* c */b', 'a + b'],
       ['new/* c */Foo()', 'new Foo()'],
     ]) {
-      expect(stripComments(source)).to.equal(expected);
+      assert.equal(stripComments(source), expected);
     }
   });
 
-  it('preserves every ECMAScript line terminator', () => {
+  it('preserves every ECMAScript line terminator', { timeout: 3000 }, () => {
     for (const [name, terminator] of lineTerminators) {
       const block = `return/*${terminator}*/1`;
       const line = `let value = 1; // comment${terminator}value = 2;\nreturn value`;
 
-      expect(stripComments(block), `${name} block`).to.equal(`return${terminator}1`);
-      expect(stripComments(line), `${name} line`)
-        .to.equal(`let value = 1; ${terminator}value = 2;\nreturn value`);
-      expect(Function(block)(), `${name} block source`).to.be.undefined;
-      expect(Function(stripComments(block))(), `${name} block output`).to.be.undefined;
-      expect(Function(stripComments(line))(), `${name} line output`).to.equal(2);
+      assert.equal(stripComments(block), `return${terminator}1`, `${name} block`);
+      assert.equal(stripComments(line), `let value = 1; ${terminator}value = 2;\nreturn value`, `${name} line`);
+      assert.equal(Function(block)(), undefined, `${name} block source`);
+      assert.equal(Function(stripComments(block))(), undefined, `${name} block output`);
+      assert.equal(Function(stripComments(line))(), 2, `${name} line output`);
     }
   });
 
-  it('leaves comment-like text inside strings, templates and regexes alone', () => {
+  it('leaves comment-like text inside strings, templates and regexes alone', { timeout: 3000 }, () => {
     // biome-ignore-start lint/suspicious/noTemplateCurlyInString: template source under test
     for (const source of [
       'const a = "/* not a comment */";',
@@ -47,12 +47,12 @@ describe('publish-time comment stripping', () => {
       'const e = `${x.replace(/\\/\\//g, "")}`;',
       'const f = `${c ? `v="${h(c)}"` : \'\'}`;',
     ]) {
-      expect(stripComments(source)).to.equal(source);
+      assert.equal(stripComments(source), source);
     }
     // biome-ignore-end lint/suspicious/noTemplateCurlyInString: template source under test
   });
 
-  it('uses parser context to distinguish comments, regexes and division', () => {
+  it('uses parser context to distinguish comments, regexes and division', { timeout: 3000 }, () => {
     for (const source of [
       'let hit = false; if (true) /[/*]/.test("/") && (hit = true); return hit;',
       'const x = async function () {} / /[/*]/.test("/"); /* remove */ return Number.isNaN(x);',
@@ -60,24 +60,24 @@ describe('publish-time comment stripping', () => {
     ]) {
       const stripped = stripComments(source);
 
-      expect(stripped).not.to.include('remove');
-      expect(Function(source)()).to.be.true;
-      expect(Function(stripped)()).to.be.true;
+      assert.ok(!(stripped.includes('remove')));
+      assert.equal(Function(source)(), true);
+      assert.equal(Function(stripped)(), true);
     }
   });
 
-  it('preserves hashbang contents', () => {
+  it('preserves hashbang contents', { timeout: 3000 }, () => {
     const source = '#!/usr/bin/env node /* part of hashbang\n'
       + 'const matched = /[/*]/.test("/"); /* remove */';
     const stripped = stripComments(source);
 
-    expect(stripped.startsWith('#!/usr/bin/env node /* part of hashbang\n')).to.be.true;
-    expect(stripped).not.to.include('remove');
+    assert.equal(stripped.startsWith('#!/usr/bin/env node /* part of hashbang\n'), true);
+    assert.ok(!(stripped.includes('remove')));
   });
 
-  it('removes what it is meant to', () => {
-    expect(stripComments('/**\n * jsdoc\n */\nconst x = 1;')).to.equal('\n\n\nconst x = 1;');
-    expect(stripComments('/** jsdoc */\nconst x = 1;')).to.equal(' \nconst x = 1;');
-    expect(stripComments('const x = 1; // trailing')).to.equal('const x = 1; ');
+  it('removes what it is meant to', { timeout: 3000 }, () => {
+    assert.equal(stripComments('/**\n * jsdoc\n */\nconst x = 1;'), '\n\n\nconst x = 1;');
+    assert.equal(stripComments('/** jsdoc */\nconst x = 1;'), ' \nconst x = 1;');
+    assert.equal(stripComments('const x = 1; // trailing'), 'const x = 1; ');
   });
 });

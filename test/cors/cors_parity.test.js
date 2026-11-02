@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import cors from '@koa/cors';
-import { expect } from 'chai';
 import Koa from 'koa';
 
 import mine from '../../lib/shared/cors.js';
@@ -95,23 +96,23 @@ async function run(middleware, { method, headers }, { throws = false } = {}) {
 describe('cors transcription', () => {
   for (const [profile, options] of Object.entries(PROFILES)) {
     for (const request of REQUESTS) {
-      it(`${profile}: ${request.name}`, async () => {
+      it(`${profile}: ${request.name}`, { timeout: 3000 }, async () => {
         const a = await run(mine(options), request);
         const b = await run(theirs(options), request);
 
-        expect(a.headers, 'response headers').to.deep.equal(b.headers);
-        expect(a.status, 'status').to.equal(b.status);
-        expect(a.downstream, 'called downstream').to.equal(b.downstream);
+        assert.deepEqual(a.headers, b.headers, 'response headers');
+        assert.equal(a.status, b.status, 'status');
+        assert.equal(a.downstream, b.downstream, 'called downstream');
       });
     }
 
-    it(`${profile}: does not attach CORS headers to a thrown error`, async () => {
+    it(`${profile}: does not attach CORS headers to a thrown error`, { timeout: 3000 }, async () => {
       const request = { method: 'GET', headers: { origin: 'https://rp.example.com' } };
       const a = await run(mine(options), request, { throws: true });
       const b = await run(theirs(options), request, { throws: true });
 
-      expect(a.errHeaders).to.deep.equal(b.errHeaders);
-      expect(a.headers).to.deep.equal(b.headers);
+      assert.deepEqual(a.errHeaders, b.errHeaders);
+      assert.deepEqual(a.headers, b.headers);
     });
   }
 });

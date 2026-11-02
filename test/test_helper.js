@@ -1,17 +1,18 @@
+import assert from 'node:assert/strict';
 import { parse, pathToFileURL } from 'node:url';
 import * as crypto from 'node:crypto';
 import * as path from 'node:path';
 import * as querystring from 'node:querystring';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
+import { before, after, describe } from 'node:test';
 
-import { setGlobalDispatcher, MockAgent } from 'undici';
+import { getGlobalDispatcher, setGlobalDispatcher, MockAgent } from 'undici';
 import sinon from 'sinon';
 import { dirname } from 'desm';
 import flatten from 'lodash/flatten.js';
 import { Request } from 'superagent';
 import { agent as supertest } from 'supertest';
-import { expect } from 'chai';
 import koaMount from 'koa-mount';
 import base64url from 'base64url';
 import { CookieAccessInfo } from 'cookiejar';
@@ -39,6 +40,7 @@ class CompatibleMockAgent extends MockAgent {
   }
 }
 
+const originalDispatcher = getGlobalDispatcher();
 const fetchAgent = new CompatibleMockAgent();
 fetchAgent.disableNetConnect();
 setGlobalDispatcher(fetchAgent);
@@ -82,6 +84,12 @@ Request.prototype._auth = function (user, pass, options, encoder) {
   return _auth.call(this, user, pass, options, encoder);
 };
 
+after(async () => {
+  Request.prototype._auth = _auth;
+  setGlobalDispatcher(originalDispatcher);
+  await fetchAgent.close();
+}, { timeout: 3000 });
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
 globalThis.i = instance;
@@ -113,7 +121,7 @@ function getSetCookies(response) {
 }
 
 function readCookie(value) {
-  expect(value).to.exist;
+  assert.ok(value !== null && value !== undefined);
   const parsed = querystring.parse(value, '; ');
   const key = Object.keys(parsed)[0];
   return parsed[key];
@@ -123,7 +131,7 @@ const { port } = globalThis.server.address();
 
 const jwt = (token) => JSON.parse(base64url.decode(token.split('.')[1])).jti;
 
-export default function testHelper(importMetaUrl, {
+export default function testHelper(importMetaUrl, fixture, {
   config: base,
   protocol = 'http:',
   mountVia = process.env.MOUNT_VIA,
@@ -137,9 +145,9 @@ export default function testHelper(importMetaUrl, {
     TestAdapter.clear();
     globalThis.server.removeAllListeners('request');
     await Promise.all(afterPromises.map((x) => x()));
-  });
+  }, { timeout: 3000 });
 
-  return async function () {
+  return async () => {
     const conf = pathToFileURL(path.format({ dir, base: `${base}.config.js` })).toString();
     const { default: mod } = await import(conf);
     const { config, client } = mod;
@@ -280,15 +288,15 @@ export default function testHelper(importMetaUrl, {
             const actual = parse(response.headers.location, true);
             let expected;
             if (this.redirect_uri) {
-              expect(response.headers.location).to.match(new RegExp(this.redirect_uri));
+              assert.match(response.headers.location, new RegExp(this.redirect_uri));
               expected = parse(this.redirect_uri, true);
             } else {
-              expect(response.headers.location).to.match(new RegExp(c.redirect_uris[0]));
+              assert.match(response.headers.location, new RegExp(c.redirect_uris[0]));
               expected = parse(c.redirect_uris[0], true);
             }
 
             ['protocol', 'host', 'pathname'].forEach((attr) => {
-              expect(actual[attr]).to.equal(expected[attr]);
+              assert.equal(actual[attr], expected[attr]);
             });
           },
         });
@@ -296,28 +304,27 @@ export default function testHelper(importMetaUrl, {
         Object.defineProperty(this, 'validateState', {
           value: (response) => {
             const { query: { state } } = parse(response.headers.location, true);
-            expect(state).to.equal(this.state);
+            assert.equal(state, this.state);
           },
         });
 
         Object.defineProperty(this, 'validateIss', {
           value: (response) => {
             const { query: { iss } } = parse(response.headers.location, true);
-            expect(iss).to.equal(issuerIdentifier);
+            assert.equal(iss, issuerIdentifier);
           },
         });
 
         Object.defineProperty(this, 'validateInteractionRedirect', {
           value: (response) => {
             const { hostname, search, query } = parse(response.headers.location);
-            expect(hostname).to.be.null;
-            expect(search).to.be.null;
-            expect(query).to.be.null;
-            expect(response).to.have.nested.property('headers.set-cookie').that.is.an('array');
+            assert.equal(hostname, null);
+            assert.equal(search, null);
+            assert.equal(query, null);
+            ((actual) => { assert.ok("set-cookie" in Object(actual.headers)); assert.ok(Array.isArray(actual.headers["set-cookie"])); })(response);
 
             const uid = readCookie(getSetCookies(response)[0]);
-            expect(readCookie(getSetCookies(response)[0]))
-              .to.equal(readCookie(getSetCookies(response)[1]));
+            assert.equal(readCookie(getSetCookies(response)[0]), readCookie(getSetCookies(response)[1]));
 
             const interaction = TestAdapter.for('Interaction').syncFind(uid);
 
@@ -327,10 +334,10 @@ export default function testHelper(importMetaUrl, {
               if (key === 'code_verifier') return;
               if (key === 'request_uri') return;
               if (key === 'max_age' && value === 0) {
-                expect(interaction.params).not.to.have.property('max_age');
-                expect(interaction.params).to.have.property('prompt').that.contains('login');
+                assert.ok(!('max_age' in Object(interaction.params)));
+                ((actual) => { assert.ok('prompt' in Object(actual)); assert.ok((actual.prompt instanceof Set ? actual.prompt.has('login') : actual.prompt.includes('login'))); })(interaction.params);
               } else {
-                expect(interaction.params).to.have.property(key, value);
+                ((actual) => { assert.ok(key in Object(actual)); assert.equal(actual[key], value); })(interaction.params);
               }
             });
           },
@@ -342,14 +349,15 @@ export default function testHelper(importMetaUrl, {
       return (response) => {
         const uid = readCookie(getSetCookies(response)[0]);
         const { prompt: { name, reasons } } = TestAdapter.for('Interaction').syncFind(uid);
-        expect(name).to.equal(eName);
-        expect(reasons).to.contain.members(eReasons);
+        assert.equal(name, eName);
+        assert.ok(Array.isArray(reasons));
+        assert.ok(eReasons.every((value) => reasons.includes(value)));
       };
     };
 
     AuthorizationRequest.prototype.validateFragment = (response) => {
       const { hash } = parse(response.headers.location);
-      expect(hash).to.exist;
+      assert.ok(hash !== null && hash !== undefined);
       response.headers.location = response.headers.location.replace('#', '?');
     };
 
@@ -366,9 +374,9 @@ export default function testHelper(importMetaUrl, {
       return (response) => {
         const { query } = parse(response.headers.location, true);
         if (absolute) {
-          expect(query).to.have.keys(properties);
+          assert.deepEqual(new Set(Object.keys(query)), new Set(properties));
         } else {
-          expect(query).to.contain.keys(properties);
+          assert.ok(properties.every((key) => Object.keys(query).includes(key)));
         }
         properties.forEach((key) => {
           this.res[key] = query[key];
@@ -379,9 +387,9 @@ export default function testHelper(importMetaUrl, {
     AuthorizationRequest.prototype.validateResponseParameter = (parameter, expected) => (response) => {
         const { query: { [parameter]: value } } = parse(response.headers.location, true);
         if (expected.exec) {
-          expect(value).to.match(expected);
+          assert.match(value, expected);
         } else {
-          expect(value).to.equal(expected);
+          assert.equal(value, expected);
         }
       };
 
@@ -480,23 +488,18 @@ export default function testHelper(importMetaUrl, {
 
     function failWith(code, error, error_description, scope, scheme = 'Bearer') {
       return ({ status, body, headers: { 'www-authenticate': wwwAuth } }) => {
-        expect(status).to.eql(code);
-        expect(body).to.have.property('error', error);
-        expect(body).to.have.property('error_description', error_description);
-        expect(wwwAuth).to.match(new RegExp(`${scheme} realm="${provider.issuer}"`));
-        let check = expect(wwwAuth);
-        if (error_description === 'no access token provided') {
-          check = check.not.to;
-        } else {
-          check = check.to;
-        }
-        check.match(new RegExp(`error="${error}"`));
-        check.match(new RegExp(`error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`));
-        if (scope) check.match(new RegExp(`scope="${scope}"`));
+        assert.deepEqual(status, code);
+        ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, error); })(body);
+        ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, error_description); })(body);
+        assert.match(wwwAuth, new RegExp(`${scheme} realm="${provider.issuer}"`));
+        const match = error_description === 'no access token provided' ? assert.doesNotMatch : assert.match;
+        match(wwwAuth, new RegExp(`error="${error}"`));
+        match(wwwAuth, new RegExp(`error_description="${error_description.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}"`));
+        if (scope) match(wwwAuth, new RegExp(`scope="${scope}"`));
       };
     }
 
-    Object.assign(this, {
+    Object.assign(fixture, {
       assertOnce,
       AuthorizationRequest,
       failWith,
@@ -520,7 +523,7 @@ export default function testHelper(importMetaUrl, {
         const app = new Koa();
         app.use(koaMount(mountTo, provider));
         globalThis.server.on('request', app.callback());
-        this.app = app;
+        fixture.app = app;
         break;
       }
       case 'express': {
@@ -594,7 +597,7 @@ export default function testHelper(importMetaUrl, {
       });
     }
 
-    this.suitePath = (unprefixed) => {
+    fixture.suitePath = (unprefixed) => {
       if (mountTo === '/') {
         return unprefixed;
       }
@@ -602,18 +605,18 @@ export default function testHelper(importMetaUrl, {
       return `${mountTo}${unprefixed}`;
     };
 
-    this.agent = agent;
+    fixture.agent = agent;
   };
 }
 
-export function passInteractionChecks(...reasons) {
+export function passInteractionChecks(fixture, ...reasons) {
   const cb = reasons.pop();
 
   const sandbox = sinon.createSandbox();
 
-  context('', () => {
-    before(function () {
-      const { policy } = i(this.provider).configuration.interactions;
+  describe('interaction checks', () => {
+    before(() => {
+      const { policy } = i(fixture.provider).configuration.interactions;
 
       const iChecks = flatten(policy.map((i) => i.checks));
 
@@ -622,22 +625,22 @@ export function passInteractionChecks(...reasons) {
         .forEach((check) => {
           sandbox.stub(check, 'check').returns(false);
         });
-    });
+    }, { timeout: 3000 });
 
-    after(sandbox.restore);
+    after(() => sandbox.restore(), { timeout: 3000 });
 
     cb();
   });
 }
 
-export function skipConsent() {
+export function skipConsent(fixture) {
   const sandbox = sinon.createSandbox();
 
-  before(function () {
-    sandbox.stub(this.provider.OIDCContext.prototype, 'promptPending').returns(false);
-  });
+  before(() => {
+    sandbox.stub(fixture.provider.OIDCContext.prototype, 'promptPending').returns(false);
+  }, { timeout: 3000 });
 
-  after(sandbox.restore);
+  after(() => sandbox.restore(), { timeout: 3000 });
 }
 
 export function enableNetConnect() {

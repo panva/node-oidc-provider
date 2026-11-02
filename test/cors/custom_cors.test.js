@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import cors from '@koa/cors';
 
 import bootstrap from '../test_helper.js';
@@ -26,28 +27,30 @@ const ACAMaxAge = 'access-control-max-age';
 const ACAOrigin = 'access-control-allow-origin';
 
 describe('CORS setup', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  before(async function () {
-    this.provider.use(cors({
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  before(async () => {
+    fixture.provider.use(cors({
       origin: 'https://example.com',
     }));
-  });
+  }, { timeout: 3000 });
 
-  it('ignores all built-in cors then', async function () {
-    let { status, headers } = await preflight.call(this, 'GET', '/.well-known/openid-configuration', 'https://rp.example.com');
-    expect(status).to.eql(204);
-    expect(headers[ACAOrigin]).to.eql('https://example.com');
-    expect(headers).not.to.have.property(ACAMaxAge);
+  it('ignores all built-in cors then', { timeout: 3000 }, async () => {
+    let { status, headers } = await preflight.call(fixture, 'GET', '/.well-known/openid-configuration', 'https://rp.example.com');
+    assert.deepEqual(status, 204);
+    assert.deepEqual(headers[ACAOrigin], 'https://example.com');
+    assert.ok(!(ACAMaxAge in Object(headers)));
 
     ({ status, headers } = await req.call(
-      this,
+      fixture,
       'get',
       '/.well-known/openid-configuration',
       'https://rp.example.com',
     ));
-    expect(status).to.eql(200);
-    expect(headers[ACAOrigin]).to.eql('https://example.com');
-    expect(headers).not.to.have.property(ACAMaxAge);
+    assert.deepEqual(status, 200);
+    assert.deepEqual(headers[ACAOrigin], 'https://example.com');
+    assert.ok(!(ACAMaxAge in Object(headers)));
   });
 });

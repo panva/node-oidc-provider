@@ -10,7 +10,7 @@
  *    dependency, a wrong "type", or a file left out of `files` fails here
  *    rather than on someone's install.
  * 2. Behaviour. The suite runs against the extracted lib/, which needs this
- *    repository's devDependencies for mocha and friends - and therefore cannot
+ *    repository's devDependencies for its test fixtures - and therefore cannot
  *    tell you anything about the dependency closure. That is pass 1's job.
  *    Passing an existing tarball runs only pass 1, which lets the release job
  *    validate its exact artifact without installing devDependencies.
@@ -154,7 +154,7 @@ try {
       process.platform === "win32" ? "junction" : "dir",
     );
 
-    run(process.execPath, ["./test/run"], work);
+    run(process.execPath, ["./test/run.js"], work);
   }
 } finally {
   rmSync(staging, { recursive: true, force: true });

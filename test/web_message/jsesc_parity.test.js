@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import jsesc from 'jsesc';
 
 import omitBy from '../../lib/helpers/_/omit_by.js';
@@ -48,36 +49,36 @@ describe('web_message payload serialisation', () => {
    * respond.js and authorization_error_handler.js drop undefined-valued keys
    * before handing the response to any response mode. These pin that.
    */
-  it('omits undefined-valued keys rather than emitting "undefined"', () => {
+  it('omits undefined-valued keys rather than emitting "undefined"', { timeout: 3000 }, () => {
     const out = {
       access_token: 'at', expires_in: undefined, token_type: 'Bearer', state: 's',
     };
     const cleaned = omitBy({ ...out }, (value) => value === undefined);
 
-    expect(cleaned).not.to.have.property('expires_in');
-    expect(serialise({ response: cleaned })).to.equal('{"response":{"access_token":"at","token_type":"Bearer","state":"s"}}');
+    assert.ok(!('expires_in' in Object(cleaned)));
+    assert.equal(serialise({ response: cleaned }), '{"response":{"access_token":"at","token_type":"Bearer","state":"s"}}');
 
     // what the other response modes would otherwise have produced
-    expect(new URLSearchParams(out).toString()).to.include('expires_in=undefined');
-    expect(new URLSearchParams(cleaned).toString()).not.to.include('expires_in');
+    assert.ok(new URLSearchParams(out).toString().includes('expires_in=undefined'));
+    assert.ok(!(new URLSearchParams(cleaned).toString().includes('expires_in')));
   });
 
-  it('leaves null and empty-string values alone', () => {
+  it('leaves null and empty-string values alone', { timeout: 3000 }, () => {
     const out = { a: null, b: '', c: 0, d: false };
-    expect(omitBy({ ...out }, (value) => value === undefined)).to.deep.equal(out);
+    assert.deepEqual(omitBy({ ...out }, (value) => value === undefined), out);
   });
 
-  it('encodes the same value as jsesc for hostile payloads', () => {
+  it('encodes the same value as jsesc for hostile payloads', { timeout: 3000 }, () => {
     for (const value of HOSTILE) {
       const payload = { response: { code: value, state: value }, redirect_uri: value };
       const mine = serialise(payload);
       const theirs = jsesc(payload, { json: true, isScriptContext: true });
-      expect(JSON.parse(mine)).to.deep.equal(JSON.parse(theirs));
-      expect(JSON.parse(mine)).to.deep.equal(payload);
+      assert.deepEqual(JSON.parse(mine), JSON.parse(theirs));
+      assert.deepEqual(JSON.parse(mine), payload);
     }
   });
 
-  it('encodes the same value as jsesc for every BMP code point', () => {
+  it('encodes the same value as jsesc for every BMP code point', { timeout: 3000 }, () => {
     for (let cp = 0; cp <= 0xffff; cp += 1) {
       if (cp >= 0xd800 && cp <= 0xdfff) continue; // lone surrogates are not valid JSON input
       const value = String.fromCodePoint(cp);
@@ -89,22 +90,22 @@ describe('web_message payload serialisation', () => {
     }
   });
 
-  it('leaves nothing for an HTML parser to act on', () => {
+  it('leaves nothing for an HTML parser to act on', { timeout: 3000 }, () => {
     for (const value of HOSTILE) {
       const out = serialise({ response: { code: value }, redirect_uri: value });
-      expect(out).not.to.match(/[<>&\u2028\u2029]/);
-      expect(out.toLowerCase()).not.to.include('</script');
-      expect(out).not.to.include('<!--');
+      assert.doesNotMatch(out, /[<>&\u2028\u2029]/);
+      assert.ok(!(out.toLowerCase().includes('</script')));
+      assert.ok(!(out.includes('<!--')));
     }
   });
 
-  it('is evaluated identically to jsesc by the JavaScript parser', () => {
+  it('is evaluated identically to jsesc by the JavaScript parser', { timeout: 3000 }, () => {
     for (const value of HOSTILE) {
       const payload = { response: { code: value }, redirect_uri: value };
       const mine = new Function(`return (${serialise(payload)});`)();
       const theirs = new Function(`return (${jsesc(payload, { json: true, isScriptContext: true })});`)();
-      expect(mine).to.deep.equal(theirs);
-      expect(mine).to.deep.equal(payload);
+      assert.deepEqual(mine, theirs);
+      assert.deepEqual(mine, payload);
     }
   });
 });

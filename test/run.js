@@ -1,65 +1,39 @@
-import { createServer } from 'node:http';
-import { once } from 'node:events';
+import { run } from 'node:test';
+import { spec } from 'node:test/reporters';
+import { fileURLToPath } from 'node:url';
 
-import Mocha from 'mocha';
-import { lookupFiles } from 'mocha/lib/cli/lookup-files.js';
+import assertNoFocusedTests from '../tools/check-test-focus.js';
+import testFiles from './files.js';
 
-const passed = [];
+process.env.MOUNT_VIA ||= '';
+process.env.MOUNT_TO ||= '/';
 
-const files = lookupFiles('test/**/*.test.js', ['js'], true);
-class SuiteFailedError extends Error {}
-
-const { info, warn } = console;
-console.info = function (...args) {
-  if (!args[0].includes('NOTICE: ')) info.apply(this, args);
-};
-console.warn = function (...args) {
-  if (!args[0].includes('WARNING: ')) warn.apply(this, args);
-};
-
-async function run() {
-  process.env.MOUNT_VIA = process.env.MOUNT_VIA || '';
-  process.env.MOUNT_TO = process.env.MOUNT_TO || '/';
-
-  const { MOUNT_VIA: via, MOUNT_TO: to } = process.env;
-
-  globalThis.server = createServer().listen(0, '::');
-  await once(globalThis.server, 'listening');
-  const mocha = new Mocha();
-  mocha.timeout(3000);
-  mocha.files = files;
-  await mocha.loadFilesAsync();
-
-  if ('CI' in process.env) {
-    mocha.reporter('min');
-    mocha.forbidOnly(); // force suite fail on encountered only test
-  }
-
-  const mountAddendum = via ? ` mounted using ${via === 'koa' ? 'koa-mount' : via} to ${to}` : '';
-  console.log('\n\x1b[32m%s\x1b[0m', `Running suite${mountAddendum}`);
-
-  await new Promise((resolve, reject) => {
-    mocha.run((failures) => {
-      if (!failures) {
-        passed.push(`Suite passed${mountAddendum}`);
-        globalThis.server.close(resolve);
-      } else {
-        reject(new SuiteFailedError(`Suite failed${mountAddendum}`));
-      }
-    });
-  });
-}
+const { MOUNT_VIA: via, MOUNT_TO: to } = process.env;
+const mountAddendum = via ? ` mounted using ${via === 'koa' ? 'koa-mount' : via} to ${to}` : '';
+console.log('\n\x1b[32m%s\x1b[0m', `Running suite${mountAddendum}`);
 
 try {
-  await run();
-  passed.forEach((pass) => { console.log('\x1b[32m%s\x1b[0m', pass); });
-} catch (error) {
-  passed.forEach((pass) => { console.log('\x1b[32m%s\x1b[0m', pass); });
-  if (error instanceof SuiteFailedError) {
-    console.log('\x1b[31m%s\x1b[0m', error.message);
-  } else {
-    console.error(error);
+  if ('CI' in process.env) {
+    assertNoFocusedTests([
+      ...testFiles(),
+      fileURLToPath(new URL('./suite.js', import.meta.url)),
+      fileURLToPath(new URL('./test_helper.js', import.meta.url)),
+    ]);
   }
-  globalThis.server.close();
+  const tests = run({
+    files: [fileURLToPath(new URL('./suite.js', import.meta.url))],
+    concurrency: 1,
+  });
+  let failed = false;
+  tests.on('test:fail', () => { failed = true; });
+  for await (const output of tests.compose(spec)) process.stdout.write(output);
+  if (failed) {
+    process.exitCode = 1;
+    console.log('\x1b[31m%s\x1b[0m', `Suite failed${mountAddendum}`);
+  } else {
+    console.log('\x1b[32m%s\x1b[0m', `Suite passed${mountAddendum}`);
+  }
+} catch (error) {
+  console.error(error);
   process.exitCode = 1;
 }

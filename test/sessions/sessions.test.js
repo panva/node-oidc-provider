@@ -1,5 +1,6 @@
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 import epochTime from '../../lib/helpers/epoch_time.js';
@@ -10,87 +11,91 @@ const scope = 'openid';
 const verb = 'get';
 
 describe('session exp handling', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  afterEach(function () {
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  afterEach(() => {
     try {
-      this.TestAdapter.for('Session').destroy.restore();
+      fixture.TestAdapter.for('Session').destroy.restore();
     } catch {}
-  });
-  afterEach(function () { return this.logout(); });
+  }, { timeout: 3000 });
+  afterEach(() => fixture.logout(), { timeout: 3000 });
 
-  it('generates a new session id when an expired session is found by the adapter', async function () {
-    await this.login();
-    const session = this.getSession();
-    const oldSessionId = this.getSessionId();
+  it('generates a new session id when an expired session is found by the adapter', { timeout: 3000 }, async () => {
+    await fixture.login();
+    const session = fixture.getSession();
+    const oldSessionId = fixture.getSessionId();
     session.exp = epochTime() - 300;
 
-    sinon.spy(this.TestAdapter.for('Session'), 'destroy');
+    sinon.spy(fixture.TestAdapter.for('Session'), 'destroy');
 
-    const auth = new this.AuthorizationRequest({
+    const auth = new fixture.AuthorizationRequest({
       response_type,
       scope,
     });
 
-    await this.wrap({ route, verb, auth })
+    await fixture.wrap({ route, verb, auth })
       .expect(303)
       .expect(auth.validateInteractionRedirect)
       .expect(auth.validateInteraction('login', 'no_session'));
 
-    const newSessionId = this.getSessionId();
-    expect(newSessionId).to.be.ok;
-    expect(newSessionId).not.to.equal(oldSessionId);
+    const newSessionId = fixture.getSessionId();
+    assert.ok(newSessionId);
+    assert.notEqual(newSessionId, oldSessionId);
   });
 
   describe('clockTolerance', () => {
-    afterEach(function () {
-      i(this.provider).configuration.clockTolerance = 0;
-    });
+    const fixture1 = Object.create(fixture);
 
-    it('respects clockTolerance option', async function () {
-      await this.login();
-      const session = this.getSession();
-      i(this.provider).configuration.clockTolerance = 10;
+    afterEach(() => {
+      i(fixture1.provider).configuration.clockTolerance = 0;
+    }, { timeout: 3000 });
+
+    it('respects clockTolerance option', { timeout: 3000 }, async () => {
+      await fixture1.login();
+      const session = fixture1.getSession();
+      i(fixture1.provider).configuration.clockTolerance = 10;
       session.exp = epochTime() - 5;
 
-      sinon.spy(this.TestAdapter.for('Session'), 'destroy');
+      sinon.spy(fixture1.TestAdapter.for('Session'), 'destroy');
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture1.AuthorizationRequest({
         response_type,
         scope,
       });
 
-      await this.wrap({ route, verb, auth })
+      await fixture1.wrap({ route, verb, auth })
         .expect(303)
         .expect(auth.validatePresence(['code', 'state']))
         .expect(auth.validateState)
         .expect(auth.validateClientLocation);
 
-      expect(this.TestAdapter.for('Session').destroy.called).to.be.false;
+      assert.equal(fixture1.TestAdapter.for('Session').destroy.called, false);
     });
 
-    it('generates a new session id when an expired session is found by the adapter', async function () {
-      await this.login();
-      const session = this.getSession();
-      i(this.provider).configuration.clockTolerance = 10;
+    it('generates a new session id when an expired session is found by the adapter', { timeout: 3000 }, async () => {
+      await fixture1.login();
+      const session = fixture1.getSession();
+      i(fixture1.provider).configuration.clockTolerance = 10;
       session.exp = epochTime() - 10;
-      const oldSessionId = this.getSessionId();
+      const oldSessionId = fixture1.getSessionId();
 
-      sinon.spy(this.TestAdapter.for('Session'), 'destroy');
+      sinon.spy(fixture1.TestAdapter.for('Session'), 'destroy');
 
-      const auth = new this.AuthorizationRequest({
+      const auth = new fixture1.AuthorizationRequest({
         response_type,
         scope,
       });
 
-      await this.wrap({ route, verb, auth })
+      await fixture1.wrap({ route, verb, auth })
         .expect(303)
         .expect(auth.validateInteractionRedirect)
         .expect(auth.validateInteraction('login', 'no_session'));
 
-      const newSessionId = this.getSessionId();
-      expect(newSessionId).to.be.ok;
-      expect(newSessionId).not.to.equal(oldSessionId);
+      const newSessionId = fixture1.getSessionId();
+      assert.ok(newSessionId);
+      assert.notEqual(newSessionId, oldSessionId);
     });
   });
 });

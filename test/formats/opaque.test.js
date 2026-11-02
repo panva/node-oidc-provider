@@ -1,15 +1,18 @@
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { createSandbox } from 'sinon';
-import { expect } from 'chai';
 
 import epochTime from '../../lib/helpers/epoch_time.js';
 import bootstrap from '../test_helper.js';
 
 const sinon = createSandbox();
 
-const { spy, match: { string, number }, assert } = sinon;
+const { spy, match: { string, number }, assert: sinonAssert } = sinon;
 
 describe('opaque storage', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
   const accountId = 'account';
   const claims = {};
   const clientId = 'client';
@@ -51,17 +54,17 @@ describe('opaque storage', () => {
     'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256, dpopJkt,
   };
 
-  afterEach(sinon.restore);
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
-  it('for AccessToken', async function () {
+  it('for AccessToken', { timeout: 3000 }, async () => {
     const kind = 'AccessToken';
-    const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.AccessToken({ client, ...fullPayload });
+    const upsert = spy(fixture.TestAdapter.for('AccessToken'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.AccessToken({ client, ...fullPayload });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       accountId,
       aud,
       claims,
@@ -82,23 +85,23 @@ describe('opaque storage', () => {
     });
   });
 
-  it('for AccessToken extraTokenClaims gets assigned upon save()', async function () {
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.AccessToken({ client, ...fullPayload, extra: undefined });
-    expect(token.extra).to.eql(undefined);
+  it('for AccessToken extraTokenClaims gets assigned upon save()', { timeout: 3000 }, async () => {
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.AccessToken({ client, ...fullPayload, extra: undefined });
+    assert.deepEqual(token.extra, undefined);
     await token.save();
-    expect(token.extra).to.eql(extra);
+    assert.deepEqual(token.extra, extra);
   });
 
-  it('for AuthorizationCode', async function () {
+  it('for AuthorizationCode', { timeout: 3000 }, async () => {
     const kind = 'AuthorizationCode';
-    const upsert = spy(this.TestAdapter.for('AuthorizationCode'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.AuthorizationCode({ client, ...fullPayload });
+    const upsert = spy(fixture.TestAdapter.for('AuthorizationCode'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.AuthorizationCode({ client, ...fullPayload });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       accountId,
       acr,
       amr,
@@ -124,15 +127,15 @@ describe('opaque storage', () => {
     });
   });
 
-  it('for DeviceCode', async function () {
+  it('for DeviceCode', { timeout: 3000 }, async () => {
     const kind = 'DeviceCode';
-    const upsert = spy(this.TestAdapter.for('DeviceCode'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.DeviceCode({ client, ...fullPayload });
+    const upsert = spy(fixture.TestAdapter.for('DeviceCode'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.DeviceCode({ client, ...fullPayload });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       accountId,
       acr,
       amr,
@@ -160,15 +163,15 @@ describe('opaque storage', () => {
     });
   });
 
-  it('for BackchannelAuthenticationRequest', async function () {
+  it('for BackchannelAuthenticationRequest', { timeout: 3000 }, async () => {
     const kind = 'BackchannelAuthenticationRequest';
-    const upsert = spy(this.TestAdapter.for('BackchannelAuthenticationRequest'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.BackchannelAuthenticationRequest({ client, ...fullPayload });
+    const upsert = spy(fixture.TestAdapter.for('BackchannelAuthenticationRequest'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.BackchannelAuthenticationRequest({ client, ...fullPayload });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       accountId,
       acr,
       amr,
@@ -193,15 +196,15 @@ describe('opaque storage', () => {
     });
   });
 
-  it('for RefreshToken', async function () {
+  it('for RefreshToken', { timeout: 3000 }, async () => {
     const kind = 'RefreshToken';
-    const upsert = spy(this.TestAdapter.for('RefreshToken'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.RefreshToken({ client, ...fullPayload });
+    const upsert = spy(fixture.TestAdapter.for('RefreshToken'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.RefreshToken({ client, ...fullPayload });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       accountId,
       acr,
       amr,
@@ -228,15 +231,15 @@ describe('opaque storage', () => {
     });
   });
 
-  it('for ClientCredentials', async function () {
+  it('for ClientCredentials', { timeout: 3000 }, async () => {
     const kind = 'ClientCredentials';
-    const upsert = spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.ClientCredentials({ client, ...fullPayload });
+    const upsert = spy(fixture.TestAdapter.for('ClientCredentials'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.ClientCredentials({ client, ...fullPayload });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       aud,
       clientId,
       exp: number,
@@ -250,51 +253,51 @@ describe('opaque storage', () => {
     });
   });
 
-  it('for ClientCredentials extraTokenClaims gets assigned upon save()', async function () {
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.ClientCredentials({ client, ...fullPayload, extra: undefined });
-    expect(token.extra).to.eql(undefined);
+  it('for ClientCredentials extraTokenClaims gets assigned upon save()', { timeout: 3000 }, async () => {
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.ClientCredentials({ client, ...fullPayload, extra: undefined });
+    assert.deepEqual(token.extra, undefined);
     await token.save();
-    expect(token.extra).to.eql(extra);
+    assert.deepEqual(token.extra, extra);
   });
 
-  it('for InitialAccessToken', async function () {
+  it('for InitialAccessToken', { timeout: 3000 }, async () => {
     const kind = 'InitialAccessToken';
-    const upsert = spy(this.TestAdapter.for('InitialAccessToken'), 'upsert');
-    const token = new this.provider.InitialAccessToken({
+    const upsert = spy(fixture.TestAdapter.for('InitialAccessToken'), 'upsert');
+    const token = new fixture.provider.InitialAccessToken({
       clientId,
       expiresIn: 100,
       ...fullPayload,
     });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       exp: number,
       iat: number,
       jti: upsert.getCall(0).args[0],
       kind,
       policies,
     });
-    expect(upsert.getCall(0).args[1]).not.to.have.property('clientId');
+    assert.ok(!('clientId' in Object(upsert.getCall(0).args[1])));
   });
 
-  it('retains allowed undefined properties in memory but omits them from storage', async function () {
-    const upsert = spy(this.TestAdapter.for('AccessToken'), 'upsert');
-    const token = new this.provider.AccessToken({
+  it('retains allowed undefined properties in memory but omits them from storage', { timeout: 3000 }, async () => {
+    const upsert = spy(fixture.TestAdapter.for('AccessToken'), 'upsert');
+    const token = new fixture.provider.AccessToken({
       scope: undefined,
       unsupported: 'value',
     });
 
-    expect(token).to.have.own.property('scope', undefined);
-    expect(token).not.to.have.property('unsupported');
+    ((actual) => { assert.ok(Object.hasOwn(actual, 'scope')); assert.equal(actual.scope, undefined); })(token);
+    assert.ok(!('unsupported' in Object(token)));
 
     await token.save();
-    expect(upsert.getCall(0).args[1]).not.to.have.property('scope');
+    assert.ok(!('scope' in Object(upsert.getCall(0).args[1])));
   });
 
-  it('filters model payloads without invoking unknown accessors or prototypes', async function () {
-    const Parent = this.provider.Session;
+  it('filters model payloads without invoking unknown accessors or prototypes', { timeout: 3000 }, async () => {
+    const Parent = fixture.provider.Session;
     class Model extends Parent {
       static get IN_PAYLOAD() {
         return [...Parent.IN_PAYLOAD, 'custom', '__proto__'];
@@ -332,25 +335,25 @@ describe('opaque storage', () => {
     });
 
     const model = new Model(input);
-    expect(model).not.to.have.own.property('accountId');
-    expect(model).not.to.have.property('jti', 'inherited-jti');
-    expect(model).not.to.have.property('kind', 'AccessToken');
-    expect(model).to.have.property('seen', 'setter value');
-    expect(model).not.to.have.own.property('custom');
-    expect(model).to.have.own.property('__proto__').that.eql({ polluted: true });
-    expect(Object.getPrototypeOf(model)).to.equal(Model.prototype);
+    assert.ok(!(Object.hasOwn(model, 'accountId')));
+    ((actual) => { assert.ok(!('jti' in Object(actual) && actual.jti === 'inherited-jti')); })(model);
+    ((actual) => { assert.ok(!('kind' in Object(actual) && actual.kind === 'AccessToken')); })(model);
+    ((actual) => { assert.ok('seen' in Object(actual)); assert.equal(actual.seen, 'setter value'); })(model);
+    assert.ok(!(Object.hasOwn(model, 'custom')));
+    ((actual) => { assert.ok(Object.hasOwn(actual, '__proto__')); assert.deepEqual(actual.__proto__, { polluted: true }); })(model);
+    assert.equal(Object.getPrototypeOf(model), Model.prototype);
 
     model.format = 'opaque';
     const { payload } = await model.getValueAndPayload();
-    expect(payload).to.have.own.property('__proto__').that.eql({ polluted: true });
-    expect(Object.getPrototypeOf(payload)).to.equal(Object.prototype);
+    ((actual) => { assert.ok(Object.hasOwn(actual, '__proto__')); assert.deepEqual(actual.__proto__, { polluted: true }); })(payload);
+    assert.equal(Object.getPrototypeOf(payload), Object.prototype);
 
-    expect(() => new Parent(null)).to.throw(TypeError, 'invalid model payload');
+    assert.throws(() => new Parent(null), (error) => { assert.ok(error instanceof TypeError); assert.ok(error.message.includes('invalid model payload')); return true; });
   });
 
-  it('resolves payload properties once per concrete model', async function () {
+  it('resolves payload properties once per concrete model', { timeout: 3000 }, async () => {
     let getterCalls = 0;
-    const Parent = this.provider.AccessToken;
+    const Parent = fixture.provider.AccessToken;
     class Model extends Parent {
       static get IN_PAYLOAD() {
         getterCalls += 1;
@@ -365,24 +368,24 @@ describe('opaque storage', () => {
     const { payload: firstPayload } = await first.getValueAndPayload();
     const { payload: secondPayload } = await second.getValueAndPayload();
 
-    expect(firstPayload).to.have.property('custom', 'first');
-    expect(secondPayload).to.have.property('custom', 'second');
-    expect(getterCalls).to.equal(1);
+    ((actual) => { assert.ok('custom' in Object(actual)); assert.equal(actual.custom, 'first'); })(firstPayload);
+    ((actual) => { assert.ok('custom' in Object(actual)); assert.equal(actual.custom, 'second'); })(secondPayload);
+    assert.equal(getterCalls, 1);
   });
 
-  it('for RegistrationAccessToken', async function () {
+  it('for RegistrationAccessToken', { timeout: 3000 }, async () => {
     const kind = 'RegistrationAccessToken';
-    const upsert = spy(this.TestAdapter.for('RegistrationAccessToken'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.RegistrationAccessToken({
+    const upsert = spy(fixture.TestAdapter.for('RegistrationAccessToken'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.RegistrationAccessToken({
       client,
       expiresIn: 100,
       ...fullPayload,
     });
     await token.save();
 
-    expect(upsert.getCall(0).args[0]).to.have.lengthOf(43);
-    assert.calledWith(upsert, string, {
+    assert.equal(upsert.getCall(0).args[0].length, 43);
+    sinonAssert.calledWith(upsert, string, {
       clientId,
       kind,
       policies,

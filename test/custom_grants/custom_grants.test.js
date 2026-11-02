@@ -1,6 +1,7 @@
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import * as querystring from 'node:querystring';
 
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 
@@ -11,36 +12,41 @@ function register(provider, grantType, params, options) {
 }
 
 describe('custom token endpoint grant types', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  before('allows for grant types to be added', function () {
-    register(this.provider, 'lotto', 'name');
-    expect(i(this.provider).configuration.grantTypes.has('lotto')).to.be.true;
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  before(() => {
+    register(fixture.provider, 'lotto', 'name');
+    assert.equal(i(fixture.provider).configuration.grantTypes.has('lotto'), true);
+  }, { timeout: 3000 });
+
+  it('does not need to be passed extra parameters', { timeout: 3000 }, () => {
+    register(fixture.provider, 'lotto-2');
+    assert.equal(i(fixture.provider).configuration.grantTypes.has('lotto-2'), true);
   });
 
-  it('does not need to be passed extra parameters', function () {
-    register(this.provider, 'lotto-2');
-    expect(i(this.provider).configuration.grantTypes.has('lotto-2')).to.be.true;
-  });
+  it('can be passed null or a string', { timeout: 3000 }, () => {
+    register(fixture.provider, 'lotto-3', null);
+    register(fixture.provider, 'lotto-4', 'name');
 
-  it('can be passed null or a string', function () {
-    register(this.provider, 'lotto-3', null);
-    register(this.provider, 'lotto-4', 'name');
-
-    expect(i(this.provider).configuration.grantTypes.has('lotto-3')).to.be.true;
-    expect(i(this.provider).configuration.grantTypes.has('lotto-4')).to.be.true;
+    assert.equal(i(fixture.provider).configuration.grantTypes.has('lotto-3'), true);
+    assert.equal(i(fixture.provider).configuration.grantTypes.has('lotto-4'), true);
   });
 
   describe('when added', () => {
-    before(async function () {
-      const client = await this.provider.Client.find('client');
+    const fixture1 = Object.create(fixture);
+
+    before(async () => {
+      const client = await fixture1.provider.Client.find('client');
       client.grantTypes.push('lotto');
-    });
+    }, { timeout: 3000 });
 
     describe('rejectDupes behavior', () => {
+      const fixture2 = Object.create(fixture1);
+
       const data = `${querystring.stringify({ grant_type: 'lotto', name: 'John Doe' })}&name=FooBar`;
-      it('by default reject dupes', function () {
-        return this.agent.post('/token')
+      it('by default reject dupes', { timeout: 3000 }, () => fixture2.agent.post('/token')
           .auth('client', 'secret')
           .send(data)
           .type('form')
@@ -48,13 +54,12 @@ describe('custom token endpoint grant types', () => {
           .expect({
             error: 'invalid_request',
             error_description: "'name' parameter must not be provided twice",
-          });
-      });
+          }));
 
       // see OAuth 2.0 Token Exchange - audience and resource
-      it('can be exempt params from being dupe-checked', function () {
-        register(this.provider, 'lotto', 'name', ['name']);
-        return this.agent.post('/token')
+      it('can be exempt params from being dupe-checked', { timeout: 3000 }, () => {
+        register(fixture2.provider, 'lotto', 'name', ['name']);
+        return fixture2.agent.post('/token')
           .auth('client', 'secret')
           .send(data)
           .type('form')
@@ -62,9 +67,9 @@ describe('custom token endpoint grant types', () => {
           .expect({ winner: ['John Doe', 'FooBar'] });
       });
 
-      it('can be exempt params from being dupe-checked but still checks other params', function () {
-        register(this.provider, 'lotto', new Set(['name', 'foo']), new Set(['name']));
-        return this.agent.post('/token')
+      it('can be exempt params from being dupe-checked but still checks other params', { timeout: 3000 }, () => {
+        register(fixture2.provider, 'lotto', new Set(['name', 'foo']), new Set(['name']));
+        return fixture2.agent.post('/token')
           .auth('client', 'secret')
           .send(`${data}&foo=bar&foo=bar`)
           .type('form')
@@ -75,9 +80,9 @@ describe('custom token endpoint grant types', () => {
           });
       });
 
-      it('can be exempt params from being dupe-checked (except for grant_type)', function () {
-        register(this.provider, 'lotto', 'name', 'name');
-        return this.agent.post('/token')
+      it('can be exempt params from being dupe-checked (except for grant_type)', { timeout: 3000 }, () => {
+        register(fixture2.provider, 'lotto', 'name', 'name');
+        return fixture2.agent.post('/token')
           .auth('client', 'secret')
           .send(`${data}&grant_type=lotto`)
           .type('form')
@@ -89,21 +94,19 @@ describe('custom token endpoint grant types', () => {
       });
     });
 
-    it('clients can start using it', function () {
-      return this.agent.post('/token')
+    it('clients can start using it', { timeout: 3000 }, () => fixture1.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'lotto', name: 'John Doe' })
         .type('form')
         .expect(200)
-        .expect({ winner: 'John Doe' });
-    });
+        .expect({ winner: 'John Doe' }));
 
-    it('populates ctx.oidc.entities', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Client');
+    it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+      fixture1.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client']));
       }, done);
 
-      this.agent.post('/token')
+      fixture1.agent.post('/token')
         .auth('client', 'secret')
         .send({ grant_type: 'lotto', name: 'John Doe' })
         .type('form')

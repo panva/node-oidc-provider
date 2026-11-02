@@ -1,7 +1,8 @@
+import { describe, before, after, it } from 'node:test';
+import assert from 'node:assert/strict';
 import * as url from 'node:url';
 
 import * as jose from 'jose';
-import { expect } from 'chai';
 
 import bootstrap, { enableNetConnect, resetNetConnect } from '../test_helper.js';
 
@@ -12,19 +13,21 @@ const response_type = 'id_token';
 const scope = 'openid';
 
 describe('External Signing Keys', () => {
-  before(enableNetConnect);
-  before(bootstrap(import.meta.url));
-  before(function () { return this.login(); });
-  after(resetNetConnect);
+  const fixture = {};
 
-  it('still signs with in-process JWKS', function () {
-    const auth = new this.AuthorizationRequest({
+  before(() => enableNetConnect(), { timeout: 3000 });
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  before(() => fixture.login(), { timeout: 3000 });
+  after(() => resetNetConnect(), { timeout: 3000 });
+
+  it('still signs with in-process JWKS', { timeout: 3000 }, () => {
+    const auth = new fixture.AuthorizationRequest({
       client_id: 'client-sig-internal',
       response_type,
       scope,
     });
 
-    return this.wrap({ route, verb: 'get', auth })
+    return fixture.wrap({ route, verb: 'get', auth })
       .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
@@ -32,26 +35,24 @@ describe('External Signing Keys', () => {
       .expect(auth.validateClientLocation);
   });
 
-  it('publishes external signing metadata through discovery', function () {
-    return this.agent.get('/.well-known/openid-configuration')
+  it('publishes external signing metadata through discovery', { timeout: 3000 }, () => fixture.agent.get('/.well-known/openid-configuration')
       .expect('Content-Type', /application\/json/)
       .expect(200)
       .expect(({ body }) => {
-        expect(body.id_token_signing_alg_values_supported).to.include('ES384');
-        expect(body.jwks_uri).to.equal(this.provider.issuer + this.suitePath('/jwks'));
-        expect(asyncExternalKey.keyObjectCalls).to.equal(0);
-      });
-  });
+        assert.ok(body.id_token_signing_alg_values_supported.includes('ES384'));
+        assert.equal(body.jwks_uri, fixture.provider.issuer + fixture.suitePath('/jwks'));
+        assert.equal(asyncExternalKey.keyObjectCalls, 0);
+      }));
 
-  it('but signs with external keys too and verifies them local', async function () {
-    const auth = new this.AuthorizationRequest({
+  it('but signs with external keys too and verifies them local', { timeout: 3000 }, async () => {
+    const auth = new fixture.AuthorizationRequest({
       client_id: 'client-sig-external',
       response_type,
       scope,
     });
 
     let id_token;
-    await this.wrap({ route, verb: 'get', auth })
+    await fixture.wrap({ route, verb: 'get', auth })
       .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
@@ -61,10 +62,10 @@ describe('External Signing Keys', () => {
         ({ query: { id_token } } = url.parse(response.headers.location.replace('#', '?'), true));
       });
 
-    await jose.compactVerify(id_token, jose.createRemoteJWKSet(new URL(this.provider.issuer + this.suitePath('/jwks'))));
+    await jose.compactVerify(id_token, jose.createRemoteJWKSet(new URL(fixture.provider.issuer + fixture.suitePath('/jwks'))));
 
     auth.id_token_hint = id_token;
-    await this.wrap({ route, verb: 'get', auth })
+    await fixture.wrap({ route, verb: 'get', auth })
       .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
@@ -75,15 +76,15 @@ describe('External Signing Keys', () => {
       });
   });
 
-  it('awaits an asynchronous keyObject when verifying locally', async function () {
-    const auth = new this.AuthorizationRequest({
+  it('awaits an asynchronous keyObject when verifying locally', { timeout: 3000 }, async () => {
+    const auth = new fixture.AuthorizationRequest({
       client_id: 'client-sig-external-async',
       response_type,
       scope,
     });
 
     let id_token;
-    await this.wrap({ route, verb: 'get', auth })
+    await fixture.wrap({ route, verb: 'get', auth })
       .expect(303)
       .expect((response) => {
         ({ query: { id_token } } = url.parse(response.headers.location.replace('#', '?'), true));
@@ -92,7 +93,7 @@ describe('External Signing Keys', () => {
     const calls = asyncExternalKey.keyObjectCalls;
 
     auth.id_token_hint = id_token;
-    await this.wrap({ route, verb: 'get', auth })
+    await fixture.wrap({ route, verb: 'get', auth })
       .expect(303)
       .expect(auth.validateFragment)
       .expect(auth.validatePresence(['id_token', 'state']))
@@ -102,6 +103,6 @@ describe('External Signing Keys', () => {
         ({ query: { id_token } } = url.parse(response.headers.location.replace('#', '?'), true));
       });
 
-    expect(asyncExternalKey.keyObjectCalls).to.equal(calls + 1);
+    assert.equal(asyncExternalKey.keyObjectCalls, calls + 1);
   });
 });

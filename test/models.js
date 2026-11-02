@@ -1,6 +1,5 @@
-import { strict as assert } from 'node:assert';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 
 import epochTime from '../lib/helpers/epoch_time.js';
 import MemoryAdapter, { setStorage } from '../lib/adapters/memory_adapter.js';
@@ -53,8 +52,8 @@ export class TestAdapter extends MemoryAdapter {
 
   async upsert(id, payload, expiresIn) {
     if (this.model !== 'RegistrationAccessToken' && this.model !== 'InitialAccessToken' && this.model !== 'Client' && this.model !== 'Grant') {
-      expect(payload).to.have.property('exp').that.is.a('number').and.is.finite;
-      expect(payload.exp).to.be.closeTo(expiresIn + epochTime(), 1);
+      ((actual) => { assert.ok('exp' in Object(actual)); assert.equal(typeof actual.exp, 'number'); assert.ok(Number.isFinite(actual.exp)); })(payload);
+      ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (expiresIn + epochTime())) <= (1)); })(payload.exp);
     }
 
     return super.upsert(id, payload, expiresIn);

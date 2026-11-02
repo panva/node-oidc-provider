@@ -1,9 +1,10 @@
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
 import { once } from 'node:events';
 import { promisify } from 'node:util';
 
-import { expect } from 'chai';
 import { Agent, Dispatcher1Wrapper } from 'undici';
 
 import {
@@ -45,11 +46,13 @@ function isDestroyed(remoteAddress) {
 }
 
 describe('SSRF-protected dispatcher', () => {
+
   // These guard tests run in fresh subprocesses so no prior undici import
   // contaminates the global state. They verify the exact internals the
   // production code in fetch_request.js relies on.
   describe('undici internals guard (fresh process)', () => {
-    it('referencing Response triggers global dispatcher symbol initialization', async () => {
+
+    it('referencing Response triggers global dispatcher symbol initialization', { timeout: 3000 }, async () => {
       const result = await freshNode(`
         const s1 = Symbol.for('undici.globalDispatcher.1');
         const s2 = Symbol.for('undici.globalDispatcher.2');
@@ -62,34 +65,33 @@ describe('SSRF-protected dispatcher', () => {
           hasConstructor: after?.constructor != null,
         }));
       `);
-      expect(result.beforeNull).to.equal(true);
-      expect(result.afterExists).to.equal(true);
-      expect(result.hasConstructor).to.equal(true);
+      assert.equal(result.beforeNull, true);
+      assert.equal(result.afterExists, true);
+      assert.equal(result.hasConstructor, true);
     });
 
-    it('.1 symbol is always set after initialization', async () => {
+    it('.1 symbol is always set after initialization', { timeout: 3000 }, async () => {
       const result = await freshNode(`
         Response;
         const val = globalThis[Symbol.for('undici.globalDispatcher.1')];
         console.log(JSON.stringify({ exists: val != null }));
       `);
-      expect(result.exists).to.equal(true);
+      assert.equal(result.exists, true);
     });
 
-    it('.2 symbol exists on undici >= 8', async function () {
+    it('.2 symbol exists on undici >= 8', { timeout: 3000 }, async (t) => {
       if (parseInt(process.versions.undici, 10) < 8) {
-        this.skip();
-        return;
+        return t.skip();
       }
       const result = await freshNode(`
         Response;
         const val = globalThis[Symbol.for('undici.globalDispatcher.2')];
         console.log(JSON.stringify({ exists: val != null }));
       `);
-      expect(result.exists).to.equal(true);
+      assert.equal(result.exists, true);
     });
 
-    it('global dispatcher .constructor produces a usable Agent', async () => {
+    it('global dispatcher .constructor produces a usable Agent', { timeout: 3000 }, async () => {
       const result = await freshNode(`
         Response;
         const s2 = Symbol.for('undici.globalDispatcher.2');
@@ -102,11 +104,11 @@ describe('SSRF-protected dispatcher', () => {
         }));
         agent.close();
       `);
-      expect(result.hasOn).to.equal(true);
-      expect(result.hasClose).to.equal(true);
+      assert.equal(result.hasOn, true);
+      assert.equal(result.hasClose, true);
     });
 
-    it('targets has at least 3 elements and the last target has Symbol(socket) with remoteAddress', async () => {
+    it('targets has at least 3 elements and the last target has Symbol(socket) with remoteAddress', { timeout: 3000 }, async () => {
       const result = await freshNode(`
         import { createServer } from 'node:http';
         import { once } from 'node:events';
@@ -136,13 +138,15 @@ describe('SSRF-protected dispatcher', () => {
         agent.close();
         server.close();
       `);
-      expect(result.targetsLength).to.be.at.least(3);
-      expect(result.hasSocketSym).to.equal(true);
-      expect(result.remoteAddress).to.equal('127.0.0.1');
+      assert.equal(typeof result.targetsLength, 'number');
+      assert.ok(result.targetsLength >= 3);
+      assert.equal(result.hasSocketSym, true);
+      assert.equal(result.remoteAddress, '127.0.0.1');
     });
   });
 
   describe('blocks special-use IPs', () => {
+
     let server;
     let port;
 
@@ -154,24 +158,24 @@ describe('SSRF-protected dispatcher', () => {
       server.listen(0, '127.0.0.1');
       await once(server, 'listening');
       port = server.address().port;
-    });
+    }, { timeout: 3000 });
 
-    after(() => server.close());
+    after(() => server.close(), { timeout: 3000 });
 
-    it('rejects fetch to 127.0.0.1 (loopback)', async () => {
+    it('rejects fetch to 127.0.0.1 (loopback)', { timeout: 3000 }, async () => {
       const { agent, dispatcher } = createCompatibleAgent();
       applySSRFProtection(agent);
       try {
         await fetch(`http://127.0.0.1:${port}/`, { dispatcher });
         expect.fail('should have thrown');
       } catch (e) {
-        expect(e).to.be.instanceOf(TypeError);
-        expect(e.cause?.message).to.equal('hostname resolves to a special-use IP address');
+        assert.ok(e instanceof TypeError);
+        assert.equal(e.cause?.message, 'hostname resolves to a special-use IP address');
       }
       agent.close();
     });
 
-    it('rejects fetch to [::1] (IPv6 loopback)', async function () {
+    it('rejects fetch to [::1] (IPv6 loopback)', { timeout: 3000 }, async (t) => {
       const v6server = createServer((_req, res) => {
         res.writeHead(200);
         res.end('should not reach here');
@@ -181,8 +185,7 @@ describe('SSRF-protected dispatcher', () => {
         await once(v6server, 'listening');
       } catch {
         v6server.close();
-        this.skip();
-        return;
+        return t.skip();
       }
 
       const v6port = v6server.address().port;
@@ -192,14 +195,14 @@ describe('SSRF-protected dispatcher', () => {
         await fetch(`http://[::1]:${v6port}/`, { dispatcher });
         expect.fail('should have thrown');
       } catch (e) {
-        expect(e).to.be.instanceOf(TypeError);
-        expect(e.cause?.message).to.equal('hostname resolves to a special-use IP address');
+        assert.ok(e instanceof TypeError);
+        assert.equal(e.cause?.message, 'hostname resolves to a special-use IP address');
       }
       agent.close();
       v6server.close();
     });
 
-    it('blocks repeatedly (persistent on listener, not once)', async () => {
+    it('blocks repeatedly (persistent on listener, not once)', { timeout: 3000 }, async () => {
       const { agent, dispatcher } = createCompatibleAgent();
       applySSRFProtection(agent);
       const errors = [];
@@ -213,51 +216,51 @@ describe('SSRF-protected dispatcher', () => {
         }
       }
 
-      expect(errors).to.have.lengthOf(3);
+      assert.equal(errors.length, 3);
       for (const e of errors) {
-        expect(e.cause?.message).to.equal('hostname resolves to a special-use IP address');
+        assert.equal(e.cause?.message, 'hostname resolves to a special-use IP address');
       }
       agent.close();
     });
   });
 
   describe('handler logic (simulated targets)', () => {
-    it('does not destroy socket for public IPv4', () => {
-      expect(isDestroyed('93.184.216.34')).to.be.false;
+    it('does not destroy socket for public IPv4', { timeout: 3000 }, () => {
+      assert.equal(isDestroyed('93.184.216.34'), false);
     });
 
-    it('destroys socket for private IPv4 (10.x)', () => {
+    it('destroys socket for private IPv4 (10.x)', { timeout: 3000 }, () => {
       let destroyMsg;
       destroySpecialUseSocket(socketTarget('10.0.0.1', (err) => { destroyMsg = err.message; }));
-      expect(destroyMsg).to.equal('hostname resolves to a special-use IP address');
+      assert.equal(destroyMsg, 'hostname resolves to a special-use IP address');
     });
 
-    it('destroys socket for link-local 169.254.169.254 (cloud metadata)', () => {
-      expect(isDestroyed('169.254.169.254')).to.be.true;
+    it('destroys socket for link-local 169.254.169.254 (cloud metadata)', { timeout: 3000 }, () => {
+      assert.equal(isDestroyed('169.254.169.254'), true);
     });
 
-    it('destroys socket for IPv4-mapped IPv6 private address', () => {
-      expect(isDestroyed('::ffff:192.168.1.1')).to.be.true;
+    it('destroys socket for IPv4-mapped IPv6 private address', { timeout: 3000 }, () => {
+      assert.equal(isDestroyed('::ffff:192.168.1.1'), true);
     });
 
-    it('does not destroy socket for IPv4-mapped IPv6 public address', () => {
-      expect(isDestroyed('::ffff:8.8.8.8')).to.be.false;
+    it('does not destroy socket for IPv4-mapped IPv6 public address', { timeout: 3000 }, () => {
+      assert.equal(isDestroyed('::ffff:8.8.8.8'), false);
     });
 
-    it('skips targets without symbol properties', () => {
+    it('skips targets without symbol properties', { timeout: 3000 }, () => {
       const targets = [{}, { foo: 'bar' }, Object.create(null)];
-      expect(() => {
+      assert.doesNotThrow(() => {
         for (const target of targets) destroySpecialUseSocket(target);
-      }).to.not.throw();
+      });
     });
 
-    it('skips symbol properties that are not sockets', () => {
+    it('skips symbol properties that are not sockets', { timeout: 3000 }, () => {
       const target = {};
       target[Symbol('notSocket')] = { foo: 'bar' };
       target[Symbol('number')] = 42;
       target[Symbol('null')] = null;
 
-      expect(destroySpecialUseSocket(target)).to.be.false;
+      assert.equal(destroySpecialUseSocket(target), false);
     });
   });
 });

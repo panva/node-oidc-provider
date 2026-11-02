@@ -1,8 +1,9 @@
+import { describe, before, afterEach, it, beforeEach, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { parse as parseUrl } from 'node:url';
 import { randomBytes } from 'node:crypto';
 
 import { createSandbox } from 'sinon';
-import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import bootstrap from '../test_helper.js';
@@ -14,36 +15,41 @@ const sinon = createSandbox();
 const route = '/session/end';
 
 describe('logout endpoint', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(() => timekeeper.reset());
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  afterEach(() => timekeeper.reset(), { timeout: 3000 });
 
   describe('when logged out', () => {
+    const fixture1 = Object.create(fixture);
+
     ['get', 'post'].forEach((verb) => {
       describe(`${verb.toUpperCase()} end_session`, () => {
-        it('autosubmits the confirmation form', function () {
-          return this.wrap({ route, verb })
+        const fixture2 = Object.create(fixture1);
+
+        it('autosubmits the confirmation form', { timeout: 3000 }, () => fixture2.wrap({ route, verb })
             .expect(200)
             .expect(({ text: body }) => {
-              const { state } = this.getSession();
+              const { state } = fixture2.getSession();
 
-              expect(state.secret).to.be.ok;
-              expect(state.postLogoutRedirectUri).to.be.undefined;
+              assert.ok(state.secret);
+              assert.equal(state.postLogoutRedirectUri, undefined);
 
-              expect(body).to.include(`input type="hidden" name="xsrf" value="${state.secret}"`);
-              expect(body).to.include(`form method="post" action="${this.provider.issuer}${this.suitePath('/session/end/confirm')}"`);
-            });
-        });
+              assert.ok(body.includes(`input type="hidden" name="xsrf" value="${state.secret}"`));
+              assert.ok(body.includes(`form method="post" action="${fixture2.provider.issuer}${fixture2.suitePath('/session/end/confirm')}"`));
+            }));
       });
     });
   });
 
   describe('when logged in', () => {
-    beforeEach(function () { return this.login(); });
-    afterEach(function () { return this.logout(); });
-    afterEach(sinon.restore);
+    const fixture3 = Object.create(fixture);
 
-    beforeEach(function () {
-      return this.agent.get('/auth')
+    beforeEach(() => fixture3.login(), { timeout: 3000 });
+    afterEach(() => fixture3.logout(), { timeout: 3000 });
+    afterEach(() => sinon.restore(), { timeout: 3000 });
+
+    beforeEach(() => fixture3.agent.get('/auth')
         .query({
           client_id: 'client',
           scope: 'openid',
@@ -54,60 +60,63 @@ describe('logout endpoint', () => {
         .expect(303)
         .expect((response) => {
           const { query: { id_token: idToken } } = parseUrl(response.headers.location.replace('#', '?'), true);
-          this.idToken = idToken;
-        });
-    });
+          fixture3.idToken = idToken;
+        }), { timeout: 3000 });
 
     ['get', 'post'].forEach((verb) => {
       describe(`${verb.toUpperCase()} end_session`, () => {
-        context('client with postLogoutRedirectUris', () => {
-          before(async function () {
-            (await this.provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
-          });
-          after(async function () {
-            (await this.provider.Client.find('client')).postLogoutRedirectUris = [];
-          });
+        const fixture4 = Object.create(fixture3);
 
-          it('even when expired', function () {
+        describe('client with postLogoutRedirectUris', () => {
+          const fixture5 = Object.create(fixture4);
+
+          before(async () => {
+            (await fixture5.provider.Client.find('client')).postLogoutRedirectUris = ['https://client.example.com/logout/cb'];
+          }, { timeout: 3000 });
+          after(async () => {
+            (await fixture5.provider.Client.find('client')).postLogoutRedirectUris = [];
+          }, { timeout: 3000 });
+
+          it('even when expired', { timeout: 3000 }, () => {
             timekeeper.travel(Date.now() + ((3600 + 10) * 1000));
             const params = {
-              id_token_hint: this.idToken,
+              id_token_hint: fixture5.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+                const { state: { postLogoutRedirectUri } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, 'https://client.example.com/logout/cb');
               });
           });
 
-          it('allows to redirect there (with id_token_hint)', function () {
+          it('allows to redirect there (with id_token_hint)', { timeout: 3000 }, () => {
             const params = {
-              id_token_hint: this.idToken,
+              id_token_hint: fixture5.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+                const { state: { postLogoutRedirectUri } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, 'https://client.example.com/logout/cb');
               });
           });
 
-          it('allows to redirect there (with client_id)', function () {
+          it('allows to redirect there (with client_id)', { timeout: 3000 }, () => {
             const params = {
               client_id: 'client',
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+                const { state: { postLogoutRedirectUri } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, 'https://client.example.com/logout/cb');
               });
           });
 
@@ -115,107 +124,106 @@ describe('logout endpoint', () => {
             'https://client.example.com:443/logout/cb',
             'https://CLIENT.EXAMPLE.COM/logout/cb',
           ]) {
-            it(`requires exact post_logout_redirect_uri matching (${post_logout_redirect_uri})`, function () {
+            it(`requires exact post_logout_redirect_uri matching (${post_logout_redirect_uri})`, { timeout: 3000 }, () => {
               const params = {
                 client_id: 'client',
                 post_logout_redirect_uri,
               };
 
               const emitSpy = sinon.spy();
-              const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-              this.provider.once('end_session.error', emitSpy);
+              const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+              fixture5.provider.once('end_session.error', emitSpy);
 
-              return this.wrap({ route, verb, params })
+              return fixture5.wrap({ route, verb, params })
                 .set('Accept', 'text/html')
                 .expect(400)
                 .expect(() => {
-                  expect(emitSpy.calledOnce).to.be.true;
-                  expect(renderSpy.calledOnce).to.be.true;
+                  assert.equal(emitSpy.calledOnce, true);
+                  assert.equal(renderSpy.calledOnce, true);
                   const renderArgs = renderSpy.args[0];
-                  expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-                  expect(renderArgs[1]).to.have.property(
-                    'error_description',
-                    'post_logout_redirect_uri not registered',
-                  );
-                  expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+                  ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+                  ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'post_logout_redirect_uri not registered'); })(renderArgs[1]);
+                  ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
                 });
             });
           }
 
-          it('allows to redirect there (with id_token_hint and client_id)', function () {
+          it('allows to redirect there (with id_token_hint and client_id)', { timeout: 3000 }, () => {
             const params = {
               client_id: 'client',
-              id_token_hint: this.idToken,
+              id_token_hint: fixture5.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
+                const { state: { postLogoutRedirectUri } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, 'https://client.example.com/logout/cb');
               });
           });
 
-          it('requires client_id to match the id_token_hint', function () {
+          it('requires client_id to match the id_token_hint', { timeout: 3000 }, () => {
             const params = {
               client_id: 'client2',
-              id_token_hint: this.idToken,
+              id_token_hint: fixture5.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
             const emitSpy = sinon.spy();
-            const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-            this.provider.once('end_session.error', emitSpy);
+            const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+            fixture5.provider.once('end_session.error', emitSpy);
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .set('Accept', 'text/html')
               .expect(400)
               .expect(() => {
-                expect(emitSpy.calledOnce).to.be.true;
-                expect(renderSpy.calledOnce).to.be.true;
+                assert.equal(emitSpy.calledOnce, true);
+                assert.equal(renderSpy.calledOnce, true);
                 const renderArgs = renderSpy.args[0];
-                expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-                expect(renderArgs[1]).to.have.property('error_description', 'client_id does not match the provided id_token_hint');
-                expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+                ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+                ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'client_id does not match the provided id_token_hint'); })(renderArgs[1]);
+                ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
               });
           });
 
-          it('requires client_id to be valid', function () {
+          it('requires client_id to be valid', { timeout: 3000 }, () => {
             const params = {
               client_id: 'client2',
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
             const emitSpy = sinon.spy();
-            const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-            this.provider.once('end_session.error', emitSpy);
+            const renderSpy = sinon.spy(i(fixture5.provider).configuration, 'renderError');
+            fixture5.provider.once('end_session.error', emitSpy);
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .set('Accept', 'text/html')
               .expect(400)
               .expect(() => {
-                expect(emitSpy.calledOnce).to.be.true;
-                expect(renderSpy.calledOnce).to.be.true;
+                assert.equal(emitSpy.calledOnce, true);
+                assert.equal(renderSpy.calledOnce, true);
                 const renderArgs = renderSpy.args[0];
-                expect(renderArgs[1]).to.have.property('error', 'invalid_client');
-                expect(renderArgs[1]).to.have.property('error_description', 'client is invalid');
-                expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+                ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_client'); })(renderArgs[1]);
+                ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'client is invalid'); })(renderArgs[1]);
+                ((actual) => { assert.ok(actual instanceof InvalidClient); })(renderArgs[2]);
               });
           });
 
           describe('expired client secrets', () => {
-            after(async function () {
-              const client = await this.provider.Client.find('client-hmac');
-              client.clientSecretExpiresAt = 0;
-            });
+            const fixture6 = Object.create(fixture5);
 
-            it('rejects HMAC hints if the secret is expired', async function () {
-              const client = await this.provider.Client.find('client-hmac');
+            after(async () => {
+              const client = await fixture6.provider.Client.find('client-hmac');
+              client.clientSecretExpiresAt = 0;
+            }, { timeout: 3000 });
+
+            it('rejects HMAC hints if the secret is expired', { timeout: 3000 }, async () => {
+              const client = await fixture6.provider.Client.find('client-hmac');
 
               let idToken;
 
-              await this.agent.get('/auth')
+              await fixture6.agent.get('/auth')
                 .query({
                   client_id: 'client-hmac',
                   scope: 'openid',
@@ -236,135 +244,135 @@ describe('logout endpoint', () => {
               };
 
               const emitSpy = sinon.spy();
-              const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-              this.provider.once('end_session.error', emitSpy);
+              const renderSpy = sinon.spy(i(fixture6.provider).configuration, 'renderError');
+              fixture6.provider.once('end_session.error', emitSpy);
 
-              return this.wrap({ route, verb, params })
+              return fixture6.wrap({ route, verb, params })
                 .set('Accept', 'text/html')
                 .expect(() => {
                   renderSpy.restore();
                 })
                 .expect(400)
                 .expect(() => {
-                  expect(emitSpy.calledOnce).to.be.true;
-                  expect(renderSpy.calledOnce).to.be.true;
+                  assert.equal(emitSpy.calledOnce, true);
+                  assert.equal(renderSpy.calledOnce, true);
                   const renderArgs = renderSpy.args[0];
-                  expect(renderArgs[1]).to.have.property('error', 'invalid_client');
-                  expect(renderArgs[1]).to.have.property('error_description', 'client secret is expired - cannot validate ID Token Hint');
-                  expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+                  ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_client'); })(renderArgs[1]);
+                  ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'client secret is expired - cannot validate ID Token Hint'); })(renderArgs[1]);
+                  ((actual) => { assert.ok(actual instanceof InvalidClient); })(renderArgs[2]);
                 });
             });
           });
 
-          it('populates ctx.oidc.entities', function (done) {
-            this.assertOnce((ctx) => {
-              expect(ctx.oidc.entities).to.have.keys('Client', 'IdTokenHint', 'Session');
+          it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+            fixture5.assertOnce((ctx) => {
+              assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'IdTokenHint', 'Session']));
             }, done);
 
             const params = {
-              id_token_hint: this.idToken,
+              id_token_hint: fixture5.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
             };
 
-            this.wrap({ route, verb, params })
+            fixture5.wrap({ route, verb, params })
               .end(() => {});
           });
 
-          it('also forwards the state if provided', function () {
+          it('also forwards the state if provided', { timeout: 3000 }, () => {
             const params = {
-              id_token_hint: this.idToken,
+              id_token_hint: fixture5.idToken,
               post_logout_redirect_uri: 'https://client.example.com/logout/cb',
               state: 'foobar',
             };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri, state } } = this.getSession();
-                expect(postLogoutRedirectUri).to.equal('https://client.example.com/logout/cb');
-                expect(state).to.equal('foobar');
+                const { state: { postLogoutRedirectUri, state } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, 'https://client.example.com/logout/cb');
+                assert.equal(state, 'foobar');
               });
           });
 
-          it('can omit the post_logout_redirect_uri and uses the default one', function () {
-            const params = { id_token_hint: this.idToken };
+          it('can omit the post_logout_redirect_uri and uses the default one', { timeout: 3000 }, () => {
+            const params = { id_token_hint: fixture5.idToken };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.be.undefined;
+                const { state: { postLogoutRedirectUri } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, undefined);
               });
           });
 
-          it('ignores unverified post_logout_redirect_uri', function () {
+          it('ignores unverified post_logout_redirect_uri', { timeout: 3000 }, () => {
             const params = { post_logout_redirect_uri: 'https://client.example.com/logout/cb' };
 
-            return this.wrap({ route, verb, params })
+            return fixture5.wrap({ route, verb, params })
               .expect(200)
               .expect(() => {
-                const { state: { postLogoutRedirectUri } } = this.getSession();
-                expect(postLogoutRedirectUri).to.be.undefined;
+                const { state: { postLogoutRedirectUri } } = fixture5.getSession();
+                assert.equal(postLogoutRedirectUri, undefined);
               });
           });
         });
 
-        it('validates post_logout_redirect_uri allowed on client', function () {
+        it('validates post_logout_redirect_uri allowed on client', { timeout: 3000 }, () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('end_session.error', emitSpy);
+          const renderSpy = sinon.spy(i(fixture4.provider).configuration, 'renderError');
+          fixture4.provider.once('end_session.error', emitSpy);
           const params = {
-            id_token_hint: this.idToken,
+            id_token_hint: fixture4.idToken,
             post_logout_redirect_uri: 'https://client.example.com/callback/logout',
           };
 
-          return this.agent.get(route)
+          return fixture4.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'post_logout_redirect_uri not registered');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'post_logout_redirect_uri not registered'); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
             });
         });
 
-        it('rejects invalid JWTs', function () {
+        it('rejects invalid JWTs', { timeout: 3000 }, () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('end_session.error', emitSpy);
+          const renderSpy = sinon.spy(i(fixture4.provider).configuration, 'renderError');
+          fixture4.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: 'not.a.jwt',
           };
 
-          return this.agent.get(route)
+          return fixture4.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description').that.matches(/could not decode id_token_hint/);
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /could not decode id_token_hint/); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
             });
         });
 
-        it('rejects an id_token_hint whose payload is not a JSON object', async function () {
+        it('rejects an id_token_hint whose payload is not a JSON object', { timeout: 3000 }, async () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('end_session.error', emitSpy);
+          const renderSpy = sinon.spy(i(fixture4.provider).configuration, 'renderError');
+          fixture4.provider.once('end_session.error', emitSpy);
           const id_token_hint = [
             Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url'),
             Buffer.from('null').toString('base64url'),
             'invalid-signature',
           ].join('.');
 
-          let request = this.agent[verb](route)
+          let request = fixture4.agent[verb](route)
             .set('Accept', 'text/html');
           if (verb === 'get') {
             request = request.query({ id_token_hint });
@@ -375,129 +383,131 @@ describe('logout endpoint', () => {
           return request
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description', 'could not decode id_token_hint');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'could not decode id_token_hint'); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
             });
         });
 
-        it('rejects JWTs with unrecognized client', async function () {
+        it('rejects JWTs with unrecognized client', { timeout: 3000 }, async () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('end_session.error', emitSpy);
+          const renderSpy = sinon.spy(i(fixture4.provider).configuration, 'renderError');
+          fixture4.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: await JWT.sign({
               aud: 'nonexistant',
-              iss: this.provider.issuer,
+              iss: fixture4.provider.issuer,
             }, Buffer.from('secret'), 'HS256'),
           };
 
-          return this.agent.get(route)
+          return fixture4.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_client');
-              expect(renderArgs[1]).to.have.property('error_description', 'unrecognized id_token_hint audience');
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_client'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'unrecognized id_token_hint audience'); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidClient); })(renderArgs[2]);
             });
         });
 
-        it('rejects JWTs with bad signatures', async function () {
+        it('rejects JWTs with bad signatures', { timeout: 3000 }, async () => {
           const emitSpy = sinon.spy();
-          const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-          this.provider.once('end_session.error', emitSpy);
+          const renderSpy = sinon.spy(i(fixture4.provider).configuration, 'renderError');
+          fixture4.provider.once('end_session.error', emitSpy);
           const params = {
             id_token_hint: await JWT.sign({
               aud: 'client',
-              iss: this.provider.issuer,
+              iss: fixture4.provider.issuer,
             }, Buffer.from('not THE secret'), 'HS256'),
           };
 
-          return this.agent.get(route)
+          return fixture4.agent.get(route)
             .set('Accept', 'text/html')
             .query(params)
             .expect(400)
             .expect(() => {
-              expect(emitSpy.calledOnce).to.be.true;
-              expect(renderSpy.calledOnce).to.be.true;
+              assert.equal(emitSpy.calledOnce, true);
+              assert.equal(renderSpy.calledOnce, true);
               const renderArgs = renderSpy.args[0];
-              expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-              expect(renderArgs[1]).to.have.property('error_description').and.matches(/could not validate id_token_hint/);
-              expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+              ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+              ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /could not validate id_token_hint/); })(renderArgs[1]);
+              ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
             });
         });
       });
     });
 
     describe('POST end_session_confirm', () => {
-      it('checks session.state is set', function () {
+      const fixture7 = Object.create(fixture3);
+
+      it('checks session.state is set', { timeout: 3000 }, () => {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-        this.provider.once('end_session_confirm.error', emitSpy);
-        return this.agent.post('/session/end/confirm')
+        const renderSpy = sinon.spy(i(fixture7.provider).configuration, 'renderError');
+        fixture7.provider.once('end_session_confirm.error', emitSpy);
+        return fixture7.agent.post('/session/end/confirm')
           .set('Accept', 'text/html')
           .send({})
           .type('form')
           .expect(400)
           .expect(() => {
-            expect(emitSpy.calledOnce).to.be.true;
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(emitSpy.calledOnce, true);
+            assert.equal(renderSpy.calledOnce, true);
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-            expect(renderArgs[1]).to.have.property('error_description', 'could not find logout details');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+            ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'could not find logout details'); })(renderArgs[1]);
+            ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
           });
       });
 
-      it('checks session.state.secret (xsrf is right)', function () {
+      it('checks session.state.secret (xsrf is right)', { timeout: 3000 }, () => {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-        this.provider.once('end_session_confirm.error', emitSpy);
-        this.getSession().state = { secret: '123' };
+        const renderSpy = sinon.spy(i(fixture7.provider).configuration, 'renderError');
+        fixture7.provider.once('end_session_confirm.error', emitSpy);
+        fixture7.getSession().state = { secret: '123' };
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .set('Accept', 'text/html')
           .send({ xsrf: 'not right' })
           .type('form')
           .expect(400)
           .expect(() => {
-            expect(emitSpy.calledOnce).to.be.true;
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(emitSpy.calledOnce, true);
+            assert.equal(renderSpy.calledOnce, true);
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_request');
-            expect(renderArgs[1]).to.have.property('error_description', 'xsrf token invalid');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidRequest);
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(renderArgs[1]);
+            ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'xsrf token invalid'); })(renderArgs[1]);
+            ((actual) => { assert.ok(actual instanceof InvalidRequest); })(renderArgs[2]);
           });
       });
 
-      it('populates ctx.oidc.entities', function (done) {
-        this.assertOnce((ctx) => {
-          expect(ctx.oidc.entities).to.have.keys('Client', 'Session');
+      it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+        fixture7.assertOnce((ctx) => {
+          assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'Session']));
         }, done);
 
-        this.getSession().state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client' };
+        fixture7.getSession().state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client' };
 
-        this.agent.post('/session/end/confirm')
+        fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
           .type('form')
           .end(() => {});
       });
 
-      it('destroys complete session if user wants to', function () {
-        const sessionId = this.getSessionId();
-        const sessionAdapter = this.TestAdapter.for('Session');
+      it('destroys complete session if user wants to', { timeout: 3000 }, () => {
+        const sessionId = fixture7.getSessionId();
+        const sessionAdapter = fixture7.TestAdapter.for('Session');
         sinon.spy(sessionAdapter, 'destroy');
         sinon.spy(sessionAdapter, 'upsert');
-        const authorizationCodeAdapter = this.TestAdapter.for('AuthorizationCode');
+        const authorizationCodeAdapter = fixture7.TestAdapter.for('AuthorizationCode');
         sinon.spy(authorizationCodeAdapter, 'revokeByGrantId');
-        const session = this.getSession();
+        const session = fixture7.getSession();
 
         session.state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client' };
         session.authorizations.client.persistsLogout = true;
@@ -505,77 +515,77 @@ describe('logout endpoint', () => {
         const [firstGrant, secondGrant] = Object.keys(session.authorizations)
           .map((x) => session.authorizations[x].grantId);
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
           .type('form')
           .expect(303)
           .expect((response) => {
-            expect(sessionAdapter.destroy.called).to.be.true;
-            expect(sessionAdapter.upsert.called).not.to.be.true;
-            expect(sessionAdapter.destroy.withArgs(sessionId).calledOnce).to.be.true;
-            expect(parseUrl(response.headers.location, true).query).not.to.have.property('client_id');
-            expect(authorizationCodeAdapter
-              .revokeByGrantId.calledOnce).to.be.true;
-            expect(authorizationCodeAdapter
-              .revokeByGrantId.withArgs(firstGrant).calledOnce).to.be.false;
-            expect(authorizationCodeAdapter
-              .revokeByGrantId.withArgs(secondGrant).calledOnce).to.be.true;
+            assert.equal(sessionAdapter.destroy.called, true);
+            assert.notEqual(sessionAdapter.upsert.called, true);
+            assert.equal(sessionAdapter.destroy.withArgs(sessionId).calledOnce, true);
+            assert.ok(!('client_id' in Object(parseUrl(response.headers.location, true).query)));
+            assert.equal(authorizationCodeAdapter
+              .revokeByGrantId.calledOnce, true);
+            assert.equal(authorizationCodeAdapter
+              .revokeByGrantId.withArgs(firstGrant).calledOnce, false);
+            assert.equal(authorizationCodeAdapter
+              .revokeByGrantId.withArgs(secondGrant).calledOnce, true);
           });
       });
 
-      it('only clears one clients session if user doesn\'t want to log out (using post_logout_redirect_uri)', function () {
-        const adapter = this.TestAdapter.for('Session');
+      it('only clears one clients session if user doesn\'t want to log out (using post_logout_redirect_uri)', { timeout: 3000 }, () => {
+        const adapter = fixture7.TestAdapter.for('Session');
         sinon.spy(adapter, 'destroy');
-        const authorizationCodeAdapter = this.TestAdapter.for('AuthorizationCode');
+        const authorizationCodeAdapter = fixture7.TestAdapter.for('AuthorizationCode');
         sinon.spy(authorizationCodeAdapter, 'revokeByGrantId');
-        let session = this.getSession();
-        const oldId = this.getSessionId();
+        let session = fixture7.getSession();
+        const oldId = fixture7.getSessionId();
         session.state = { secret: '123', postLogoutRedirectUri: 'https://rp.example.com/logout/cb', clientId: 'client' };
         session.authorizations.client.persistsLogout = true;
 
-        expect(session.authorizations.client).to.be.ok;
+        assert.ok(session.authorizations.client);
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123' })
           .type('form')
           .expect(303)
           .expect((response) => {
-            session = this.getSession();
-            expect(session.authorizations.client).to.be.undefined;
-            expect(session.state).to.be.undefined;
-            expect(this.getSessionId()).not.to.eql(oldId);
-            expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
-            expect(parseUrl(response.headers.location, true).query).not.to.have.key('client_id');
-            expect(authorizationCodeAdapter
-              .revokeByGrantId.called).to.be.false;
+            session = fixture7.getSession();
+            assert.equal(session.authorizations.client, undefined);
+            assert.equal(session.state, undefined);
+            assert.notDeepEqual(fixture7.getSessionId(), oldId);
+            assert.equal(adapter.destroy.calledOnceWith(oldId), true);
+            assert.notDeepEqual(new Set(Object.keys(parseUrl(response.headers.location, true).query)), new Set(['client_id']));
+            assert.equal(authorizationCodeAdapter
+              .revokeByGrantId.called, false);
           });
       });
 
-      it('only clears one clients session if user doesn\'t want to log out (using end_session_success)', function () {
-        const adapter = this.TestAdapter.for('Session');
+      it('only clears one clients session if user doesn\'t want to log out (using end_session_success)', { timeout: 3000 }, () => {
+        const adapter = fixture7.TestAdapter.for('Session');
         sinon.spy(adapter, 'destroy');
-        let session = this.getSession();
-        const oldId = this.getSessionId();
+        let session = fixture7.getSession();
+        const oldId = fixture7.getSessionId();
         session.state = { secret: '123', clientId: 'client' };
 
-        expect(session.authorizations.client).to.be.ok;
+        assert.ok(session.authorizations.client);
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123' })
           .type('form')
           .expect(303)
           .expect((response) => {
-            session = this.getSession();
-            expect(session.authorizations.client).to.be.undefined;
-            expect(session.state).to.be.undefined;
-            expect(this.getSessionId()).not.to.eql(oldId);
-            expect(adapter.destroy.calledOnceWith(oldId)).to.be.true;
-            expect(parseUrl(response.headers.location, true).query).to.have.property('client_id', 'client');
+            session = fixture7.getSession();
+            assert.equal(session.authorizations.client, undefined);
+            assert.equal(session.state, undefined);
+            assert.notDeepEqual(fixture7.getSessionId(), oldId);
+            assert.equal(adapter.destroy.calledOnceWith(oldId), true);
+            ((actual) => { assert.ok('client_id' in Object(actual)); assert.equal(actual.client_id, 'client'); })(parseUrl(response.headers.location, true).query);
           });
       });
 
-      it('clears one clients session when the client can no longer be resolved', function () {
-        const find = sinon.stub(this.provider.Client, 'find').callsFake(async function clientFind(clientId) {
+      it('clears one clients session when the client can no longer be resolved', { timeout: 3000 }, () => {
+        const find = sinon.stub(fixture7.provider.Client, 'find').callsFake(async function clientFind(clientId) {
           if (clientId === 'client') {
             throw new InvalidClient('client is invalid', 'client not found');
           }
@@ -583,99 +593,101 @@ describe('logout endpoint', () => {
           return find.wrappedMethod.call(this, clientId);
         });
 
-        let session = this.getSession();
-        const oldId = this.getSessionId();
+        let session = fixture7.getSession();
+        const oldId = fixture7.getSessionId();
         session.state = { secret: '123', clientId: 'client' };
 
-        expect(session.authorizations.client).to.be.ok;
+        assert.ok(session.authorizations.client);
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123' })
           .type('form')
           .expect(303)
           .expect((response) => {
             find.restore();
-            session = this.getSession();
-            expect(session.authorizations.client).to.be.undefined;
-            expect(session.state).to.be.undefined;
-            expect(this.getSessionId()).not.to.eql(oldId);
-            expect(parseUrl(response.headers.location, true).query).to.have.property('client_id', 'client');
+            session = fixture7.getSession();
+            assert.equal(session.authorizations.client, undefined);
+            assert.equal(session.state, undefined);
+            assert.notDeepEqual(fixture7.getSessionId(), oldId);
+            ((actual) => { assert.ok('client_id' in Object(actual)); assert.equal(actual.client_id, 'client'); })(parseUrl(response.headers.location, true).query);
           });
       });
 
-      it('forwards the state too', function () {
-        this.getSession().state = {
+      it('forwards the state too', { timeout: 3000 }, () => {
+        fixture7.getSession().state = {
           secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client', state: 'foobar',
         };
 
-        i(this.provider).configuration.cookies.long.domain = '.oidc.dev';
+        i(fixture7.provider).configuration.cookies.long.domain = '.oidc.dev';
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123', logout: 'yes' })
           .type('form')
           .expect(() => {
-            delete i(this.provider).configuration.cookies.long.domain;
+            delete i(fixture7.provider).configuration.cookies.long.domain;
           })
           .expect(303)
           .expect('location', 'https://rp.example.com/?state=foobar');
       });
 
-      it('handles a no existing session state', async function () {
-        Object.assign(this.getSession(), {
+      it('handles a no existing session state', { timeout: 3000 }, async () => {
+        Object.assign(fixture7.getSession(), {
           state: {
             secret: '123', postLogoutRedirectUri: 'https://rp.example.com/', clientId: 'client', state: 'foobar',
           },
           authorizations: undefined,
         });
 
-        return this.agent.post('/session/end/confirm')
+        return fixture7.agent.post('/session/end/confirm')
           .send({ xsrf: '123' })
           .type('form')
           .expect(() => {
-            delete i(this.provider).configuration.cookies.long.domain;
+            delete i(fixture7.provider).configuration.cookies.long.domain;
           })
           .expect(303);
       });
     });
 
     describe('GET end_session_success', () => {
-      it('calls the postLogoutSuccessSource helper', function () {
-        const renderSpy = sinon.spy(i(this.provider).features.rpInitiatedLogout, 'postLogoutSuccessSource');
-        return this.agent.get('/session/end/success')
+      const fixture8 = Object.create(fixture3);
+
+      it('calls the postLogoutSuccessSource helper', { timeout: 3000 }, () => {
+        const renderSpy = sinon.spy(i(fixture8.provider).features.rpInitiatedLogout, 'postLogoutSuccessSource');
+        return fixture8.agent.get('/session/end/success')
           .set('Accept', 'text/html')
           .expect(200)
           .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(renderSpy.calledOnce, true);
             const [ctx] = renderSpy.args[0];
-            expect(ctx.oidc.client).to.be.undefined;
+            assert.equal(ctx.oidc.client, undefined);
           });
       });
 
-      it('has the client loaded when present', function () {
-        const renderSpy = sinon.spy(i(this.provider).features.rpInitiatedLogout, 'postLogoutSuccessSource');
-        return this.agent.get('/session/end/success?client_id=client')
+      it('has the client loaded when present', { timeout: 3000 }, () => {
+        const renderSpy = sinon.spy(i(fixture8.provider).features.rpInitiatedLogout, 'postLogoutSuccessSource');
+        return fixture8.agent.get('/session/end/success?client_id=client')
           .set('Accept', 'text/html')
           .expect(200)
           .expect(() => {
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(renderSpy.calledOnce, true);
             const [ctx] = renderSpy.args[0];
-            expect(ctx.oidc.client).to.be.ok;
+            assert.ok(ctx.oidc.client);
           });
       });
 
-      it('throws when the client is not found', function () {
+      it('throws when the client is not found', { timeout: 3000 }, () => {
         const emitSpy = sinon.spy();
-        const renderSpy = sinon.spy(i(this.provider).configuration, 'renderError');
-        this.provider.once('end_session_success.error', emitSpy);
-        return this.agent.get('/session/end/success?client_id=foobar')
+        const renderSpy = sinon.spy(i(fixture8.provider).configuration, 'renderError');
+        fixture8.provider.once('end_session_success.error', emitSpy);
+        return fixture8.agent.get('/session/end/success?client_id=foobar')
           .set('Accept', 'text/html')
           .expect(400)
           .expect(() => {
-            expect(emitSpy.calledOnce).to.be.true;
-            expect(renderSpy.calledOnce).to.be.true;
+            assert.equal(emitSpy.calledOnce, true);
+            assert.equal(renderSpy.calledOnce, true);
             const renderArgs = renderSpy.args[0];
-            expect(renderArgs[1]).to.have.property('error', 'invalid_client');
-            expect(renderArgs[2]).to.be.an.instanceof(InvalidClient);
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_client'); })(renderArgs[1]);
+            ((actual) => { assert.ok(actual instanceof InvalidClient); })(renderArgs[2]);
           });
       });
     });

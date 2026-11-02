@@ -1,40 +1,41 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { generateKeyPair, exportJWK } from 'jose';
 
 import Provider from '../../lib/index.js';
 
 describe('Provider declaring supported algorithms', () => {
-  it('validates the configuration properties', () => {
-    expect(() => {
+  it('validates the configuration properties', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Provider('https://op.example.com', {
         enabledJWA: {
           invalidProperty: ['HS256', 'RS256'],
         },
       });
-    }).to.throw('invalid property enabledJWA.invalidProperty provided');
+    }, (error) => { assert.ok(error.message.includes('invalid property enabledJWA.invalidProperty provided')); return true; });
   });
 
-  it('validates an array is provided', () => {
-    expect(() => {
+  it('validates an array is provided', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Provider('https://op.example.com', {
         enabledJWA: {
           idTokenSigningAlgValues: new Set(['HS256', 'RS256']),
         },
       });
-    }).to.throw('invalid type for enabledJWA.idTokenSigningAlgValues provided, expected Array');
+    }, (error) => { assert.ok(error.message.includes('invalid type for enabledJWA.idTokenSigningAlgValues provided, expected Array')); return true; });
   });
 
-  it('validates only implemented algs are provided', () => {
-    expect(() => {
+  it('validates only implemented algs are provided', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Provider('https://op.example.com', {
         enabledJWA: {
           clientAuthSigningAlgValues: ['none'],
         },
       });
-    }).to.throw('unsupported enabledJWA.clientAuthSigningAlgValues algorithm provided');
+    }, (error) => { assert.ok(error.message.includes('unsupported enabledJWA.clientAuthSigningAlgValues algorithm provided')); return true; });
   });
 
-  it('idTokenSigningAlgValues', async () => {
+  it('idTokenSigningAlgValues', { timeout: 3000 }, async () => {
     const { privateKey } = await generateKeyPair('RS256', { extractable: true });
     const provider = new Provider('https://op.example.com', {
       enabledJWA: {
@@ -45,6 +46,6 @@ describe('Provider declaring supported algorithms', () => {
       },
     });
 
-    expect(i(provider).configuration.idTokenSigningAlgValues).to.eql(['HS256', 'RS256']);
+    assert.deepEqual(i(provider).configuration.idTokenSigningAlgValues, ['HS256', 'RS256']);
   });
 });

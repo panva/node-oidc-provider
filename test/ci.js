@@ -1,15 +1,15 @@
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-function pass({ mountTo, mountVia } = {}) {
+function pass({ mountTo = '/', mountVia = '' } = {}) {
   const child = spawn(
-    'npm',
-    ['run', 'test'],
+    process.execPath,
+    [fileURLToPath(new URL('./run.js', import.meta.url))],
     {
       stdio: 'inherit',
-      shell: true,
       env: {
         ...process.env,
-        CI: true,
+        CI: 'true',
         MOUNT_TO: mountTo,
         MOUNT_VIA: mountVia,
       },
@@ -17,12 +17,10 @@ function pass({ mountTo, mountVia } = {}) {
   );
 
   return new Promise((resolve, reject) => {
+    child.on('error', reject);
     child.on('close', (code) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject();
-      }
+      if (code === 0) resolve();
+      else reject(new Error(`test suite exited with code ${code}`));
     });
   });
 }
@@ -32,12 +30,11 @@ try {
 
   if (process.platform === 'linux' || !('CI' in process.env)) {
     const mountTo = '/oidc';
-    const frameworks = ['express', 'koa', 'hapi', 'fastify'];
-
-    for (const mountVia of frameworks) {
+    for (const mountVia of ['express', 'koa', 'hapi', 'fastify']) {
       await pass({ mountVia, mountTo });
     }
   }
-} catch {
+} catch (error) {
+  console.error(error);
   process.exitCode = 1;
 }

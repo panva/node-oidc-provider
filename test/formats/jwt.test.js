@@ -1,9 +1,9 @@
-import { strict as assert } from 'node:assert';
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import * as crypto from 'node:crypto';
 import * as util from 'node:util';
 
 import { createSandbox } from 'sinon';
-import { expect } from 'chai';
 import base64url from 'base64url';
 
 import ResourceServer from '../../lib/helpers/resource_server.js';
@@ -18,10 +18,12 @@ function decode(b64urljson) {
 }
 
 describe('jwt format', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(function () {
-    this.provider.removeAllListeners();
-  });
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+  afterEach(() => {
+    fixture.provider.removeAllListeners();
+  }, { timeout: 3000 });
 
   const accountId = 'account';
   const claims = {};
@@ -65,10 +67,12 @@ describe('jwt format', () => {
     'x5t#S256': s256, inFlight, iiat, rotations, extra, jkt: s256, resourceServer,
   };
 
-  afterEach(sinon.restore);
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
   describe('Resource Server Configuration', () => {
-    it('can be used to specify the signing algorithm', async function () {
+    const fixture1 = Object.create(fixture);
+
+    it('can be used to specify the signing algorithm', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -77,47 +81,47 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'PS256');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'PS256'); })(header);
     });
 
-    it('uses the default idtokensigningalg by default (no jwt)', async function () {
+    it('uses the default idtokensigningalg by default (no jwt)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'RS256');
-      expect(header).to.have.property('kid', i(this.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid);
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'RS256'); })(header);
+      ((actual) => { assert.ok('kid' in Object(actual)); assert.equal(actual.kid, i(fixture1.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid); })(header);
     });
 
-    it('uses the default idtokensigningalg by default (jwt)', async function () {
+    it('uses the default idtokensigningalg by default (jwt)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
         jwt: {},
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'RS256');
-      expect(header).to.have.property('kid', i(this.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid);
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'RS256'); })(header);
+      ((actual) => { assert.ok('kid' in Object(actual)); assert.equal(actual.kid, i(fixture1.provider).keystore.selectForSign({ alg: 'RS256' })[0].kid); })(header);
     });
 
-    it('selects provider keys allowed for signing JWT access tokens', async function () {
-      const { keystore } = i(this.provider);
+    it('selects provider keys allowed for signing JWT access tokens', { timeout: 3000 }, async () => {
+      const { keystore } = i(fixture1.provider);
       const original = [...keystore];
       const [source] = keystore.selectForSign({ alg: 'RS256' });
       const jwk = { ...source, key_ops: ['sign'] };
@@ -134,12 +138,12 @@ describe('jwt format', () => {
           },
         });
 
-        const client = await this.provider.Client.find(clientId);
-        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        const client = await fixture1.provider.Client.find(clientId);
+        const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
         const jwt = await token.save();
 
         const header = decode(jwt.split('.')[0]);
-        expect(header).to.have.property('kid', jwk.kid);
+        ((actual) => { assert.ok('kid' in Object(actual)); assert.equal(actual.kid, jwk.kid); })(header);
       } finally {
         keystore.clear();
         for (const key of original) {
@@ -148,7 +152,7 @@ describe('jwt format', () => {
       }
     });
 
-    it('can be used to specify the signing algorithm to be HMAC (buffer)', async function () {
+    it('can be used to specify the signing algorithm to be HMAC (buffer)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -157,16 +161,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'HS256');
-      expect(header).not.to.have.property('kid');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'HS256'); })(header);
+      assert.ok(!('kid' in Object(header)));
     });
 
-    it('can be used to specify the signing algorithm to be HMAC (CryptoKey)', async function () {
+    it('can be used to specify the signing algorithm to be HMAC (CryptoKey)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -175,16 +179,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'HS256');
-      expect(header).not.to.have.property('kid');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'HS256'); })(header);
+      assert.ok(!('kid' in Object(header)));
     });
 
-    it('kid must be a string (sign)', async function () {
+    it('kid must be a string (sign)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -193,16 +197,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('jwt.sign.kid must be a string when provided');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'jwt.sign.kid must be a string when provided');
         return true;
       });
     });
 
-    it('kid must be a string (encrypt)', async function () {
+    it('kid must be a string (encrypt)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -216,16 +220,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('jwt.encrypt.kid must be a string when provided');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'jwt.encrypt.kid must be a string when provided');
         return true;
       });
     });
 
-    it('can be used to specify the signing algorithm to be HMAC (buffer w/ kid)', async function () {
+    it('can be used to specify the signing algorithm to be HMAC (buffer w/ kid)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -234,15 +238,15 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('kid', 'feb-2020');
+      ((actual) => { assert.ok('kid' in Object(actual)); assert.equal(actual.kid, 'feb-2020'); })(header);
     });
 
-    it('can be used to specify the signing algorithm to be HMAC (KeyObject)', async function () {
+    it('can be used to specify the signing algorithm to be HMAC (KeyObject)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -251,16 +255,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'HS256');
-      expect(header).not.to.have.property('kid');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'HS256'); })(header);
+      assert.ok(!('kid' in Object(header)));
     });
 
-    it('can be an encrypted JWT (Buffer)', async function () {
+    it('can be an encrypted JWT (Buffer)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -274,20 +278,20 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'dir');
-      expect(header).to.have.property('enc', 'A128GCM');
-      expect(header).not.to.have.property('kid');
-      expect(header).to.have.property('typ', 'at+jwt');
-      expect(header).to.have.property('iss', this.provider.issuer);
-      expect(header).to.have.property('aud', 'foo');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'dir'); })(header);
+      ((actual) => { assert.ok('enc' in Object(actual)); assert.equal(actual.enc, 'A128GCM'); })(header);
+      assert.ok(!('kid' in Object(header)));
+      ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'at+jwt'); })(header);
+      ((actual) => { assert.ok('iss' in Object(actual)); assert.equal(actual.iss, fixture1.provider.issuer); })(header);
+      ((actual) => { assert.ok('aud' in Object(actual)); assert.equal(actual.aud, 'foo'); })(header);
     });
 
-    it('can be an encrypted JWT (KeyObject)', async function () {
+    it('can be an encrypted JWT (KeyObject)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -301,20 +305,20 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'dir');
-      expect(header).to.have.property('enc', 'A128GCM');
-      expect(header).not.to.have.property('kid');
-      expect(header).to.have.property('typ', 'at+jwt');
-      expect(header).to.have.property('iss', this.provider.issuer);
-      expect(header).to.have.property('aud', 'foo');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'dir'); })(header);
+      ((actual) => { assert.ok('enc' in Object(actual)); assert.equal(actual.enc, 'A128GCM'); })(header);
+      assert.ok(!('kid' in Object(header)));
+      ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'at+jwt'); })(header);
+      ((actual) => { assert.ok('iss' in Object(actual)); assert.equal(actual.iss, fixture1.provider.issuer); })(header);
+      ((actual) => { assert.ok('aud' in Object(actual)); assert.equal(actual.aud, 'foo'); })(header);
     });
 
-    it('can be an encrypted JWT (CryptoKey)', async function () {
+    it('can be an encrypted JWT (CryptoKey)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -328,20 +332,20 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'dir');
-      expect(header).to.have.property('enc', 'A128GCM');
-      expect(header).not.to.have.property('kid');
-      expect(header).to.have.property('typ', 'at+jwt');
-      expect(header).to.have.property('iss', this.provider.issuer);
-      expect(header).to.have.property('aud', 'foo');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'dir'); })(header);
+      ((actual) => { assert.ok('enc' in Object(actual)); assert.equal(actual.enc, 'A128GCM'); })(header);
+      assert.ok(!('kid' in Object(header)));
+      ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'at+jwt'); })(header);
+      ((actual) => { assert.ok('iss' in Object(actual)); assert.equal(actual.iss, fixture1.provider.issuer); })(header);
+      ((actual) => { assert.ok('aud' in Object(actual)); assert.equal(actual.aud, 'foo'); })(header);
     });
 
-    it('can be an encrypted JWT w/ kid', async function () {
+    it('can be an encrypted JWT w/ kid', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -356,15 +360,15 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('kid', 'feb-2020');
+      ((actual) => { assert.ok('kid' in Object(actual)); assert.equal(actual.kid, 'feb-2020'); })(header);
     });
 
-    it('can be a nested JWT (explicit)', async function () {
+    it('can be a nested JWT (explicit)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -380,20 +384,20 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'ECDH-ES');
-      expect(header).to.have.property('enc', 'A128GCM');
-      expect(header).to.have.property('cty', 'at+jwt');
-      expect(header).to.have.property('iss', this.provider.issuer);
-      expect(header).to.have.property('aud', 'foo');
-      expect(header).not.to.have.property('kid');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'ECDH-ES'); })(header);
+      ((actual) => { assert.ok('enc' in Object(actual)); assert.equal(actual.enc, 'A128GCM'); })(header);
+      ((actual) => { assert.ok('cty' in Object(actual)); assert.equal(actual.cty, 'at+jwt'); })(header);
+      ((actual) => { assert.ok('iss' in Object(actual)); assert.equal(actual.iss, fixture1.provider.issuer); })(header);
+      ((actual) => { assert.ok('aud' in Object(actual)); assert.equal(actual.aud, 'foo'); })(header);
+      assert.ok(!('kid' in Object(header)));
     });
 
-    it('can be a nested JWT w/ kid', async function () {
+    it('can be a nested JWT w/ kid', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -410,15 +414,15 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('kid', 'feb-2020');
+      ((actual) => { assert.ok('kid' in Object(actual)); assert.equal(actual.kid, 'feb-2020'); })(header);
     });
 
-    it('can be a nested JWT (implicit signing alg)', async function () {
+    it('can be a nested JWT (implicit signing alg)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -432,19 +436,19 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       const jwt = await token.save();
 
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('alg', 'ECDH-ES');
-      expect(header).to.have.property('enc', 'A128GCM');
-      expect(header).to.have.property('cty', 'at+jwt');
-      expect(header).to.have.property('iss', this.provider.issuer);
-      expect(header).to.have.property('aud', 'foo');
+      ((actual) => { assert.ok('alg' in Object(actual)); assert.equal(actual.alg, 'ECDH-ES'); })(header);
+      ((actual) => { assert.ok('enc' in Object(actual)); assert.equal(actual.enc, 'A128GCM'); })(header);
+      ((actual) => { assert.ok('cty' in Object(actual)); assert.equal(actual.cty, 'at+jwt'); })(header);
+      ((actual) => { assert.ok('iss' in Object(actual)); assert.equal(actual.iss, fixture1.provider.issuer); })(header);
+      ((actual) => { assert.ok('aud' in Object(actual)); assert.equal(actual.aud, 'foo'); })(header);
     });
 
-    it('ensures "none" JWS algorithm cannot be used', async function () {
+    it('ensures "none" JWS algorithm cannot be used', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -455,16 +459,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('JWT Access Tokens may not use JWS algorithm "none"');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'JWT Access Tokens may not use JWS algorithm "none"');
         return true;
       });
     });
 
-    it('ensures HMAC JWS algorithms get a key', async function () {
+    it('ensures HMAC JWS algorithms get a key', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -475,16 +479,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('missing jwt.sign.key Resource Server configuration');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'missing jwt.sign.key Resource Server configuration');
         return true;
       });
     });
 
-    it('ensures HMAC JWS algorithms get a secret key (1/2)', async function () {
+    it('ensures HMAC JWS algorithms get a secret key (1/2)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -496,16 +500,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('jwt.sign.key Resource Server configuration must be a secret (symmetric) key');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'jwt.sign.key Resource Server configuration must be a secret (symmetric) key');
         return true;
       });
     });
 
-    it('ensures HMAC JWS algorithms get a secret key (1/2)', async function () {
+    it('ensures HMAC JWS algorithms get a secret key (1/2)', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -517,16 +521,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('jwt.sign.key Resource Server configuration must be a secret (symmetric) key');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'jwt.sign.key Resource Server configuration must be a secret (symmetric) key');
         return true;
       });
     });
 
-    it('ensures Asymmetric JWS algorithms have a key in the provider keystore', async function () {
+    it('ensures Asymmetric JWS algorithms have a key in the provider keystore', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -537,16 +541,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('resolved Resource Server jwt configuration has no corresponding key in the provider\'s keystore');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'resolved Resource Server jwt configuration has no corresponding key in the provider\'s keystore');
         return true;
       });
     });
 
-    it('ensures JWE key is public or secret', async function () {
+    it('ensures JWE key is public or secret', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -559,16 +563,16 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('jwt.encrypt.key Resource Server configuration must be a secret (symmetric) or a public key');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'jwt.encrypt.key Resource Server configuration must be a secret (symmetric) or a public key');
         return true;
       });
     });
 
-    it('ensures Nested JWT when JWE encryption is a public one', async function () {
+    it('ensures Nested JWT when JWE encryption is a public one', { timeout: 3000 }, async () => {
       const resourceServer = new ResourceServer(resource, {
         accessTokenFormat: 'jwt',
         audience: 'foo',
@@ -581,17 +585,17 @@ describe('jwt format', () => {
         },
       });
 
-      const client = await this.provider.Client.find(clientId);
-      const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+      const client = await fixture1.provider.Client.find(clientId);
+      const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
       return assert.rejects(token.save(), (err) => {
-        expect(err).to.be.an('error');
-        expect(err.message).to.equal('missing jwt.sign Resource Server configuration');
+        assert.ok(err instanceof Error);
+        assert.equal(err.message, 'missing jwt.sign Resource Server configuration');
         return true;
       });
     });
 
     for (const prop of ['alg', 'enc', 'key']) {
-      it(`ensures JWE Configuration has ${prop}`, async function () {
+      it(`ensures JWE Configuration has ${prop}`, { timeout: 3000 }, async () => {
         const resourceServer = new ResourceServer(resource, {
           accessTokenFormat: 'jwt',
           audience: 'foo',
@@ -606,38 +610,38 @@ describe('jwt format', () => {
 
         delete resourceServer.jwt.encrypt[prop];
 
-        const client = await this.provider.Client.find(clientId);
-        const token = new this.provider.AccessToken({ client, ...fullPayload, resourceServer });
+        const client = await fixture1.provider.Client.find(clientId);
+        const token = new fixture1.provider.AccessToken({ client, ...fullPayload, resourceServer });
         return assert.rejects(token.save(), (err) => {
-          expect(err).to.be.an('error');
-          expect(err.message).to.equal(`missing jwt.encrypt.${prop} Resource Server configuration`);
+          assert.ok(err instanceof Error);
+          assert.equal(err.message, `missing jwt.encrypt.${prop} Resource Server configuration`);
           return true;
         });
       });
     }
   });
 
-  it('for AccessToken', async function () {
-    const upsert = sinon.spy(this.TestAdapter.for('AccessToken'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.AccessToken({ client, ...fullPayload });
+  it('for AccessToken', { timeout: 3000 }, async () => {
+    const upsert = sinon.spy(fixture.TestAdapter.for('AccessToken'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.AccessToken({ client, ...fullPayload });
     const issued = sinon.spy();
-    this.provider.on('access_token.issued', issued);
+    fixture.provider.on('access_token.issued', issued);
     const jwt = await token.save();
 
     sinon.assert.notCalled(upsert);
 
     const { jti } = issued.getCall(0).args[0];
     const header = decode(jwt.split('.')[0]);
-    expect(header).to.have.property('typ', 'at+jwt');
+    ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'at+jwt'); })(header);
     const { iat, exp, ...payload } = decode(jwt.split('.')[1]);
-    expect(iat).to.be.a('number');
-    expect(exp).to.be.a('number');
-    expect(payload).to.eql({
+    assert.equal(typeof iat, 'number');
+    assert.equal(typeof exp, 'number');
+    assert.deepEqual(payload, {
       ...extra,
       aud,
       client_id: clientId,
-      iss: this.provider.issuer,
+      iss: fixture.provider.issuer,
       jti,
       scope,
       sub: accountId,
@@ -648,27 +652,27 @@ describe('jwt format', () => {
     });
   });
 
-  it('for pairwise AccessToken', async function () {
-    const upsert = sinon.spy(this.TestAdapter.for('AccessToken'), 'upsert');
-    const client = await this.provider.Client.find('pairwise');
-    const token = new this.provider.AccessToken({ client, ...fullPayload });
+  it('for pairwise AccessToken', { timeout: 3000 }, async () => {
+    const upsert = sinon.spy(fixture.TestAdapter.for('AccessToken'), 'upsert');
+    const client = await fixture.provider.Client.find('pairwise');
+    const token = new fixture.provider.AccessToken({ client, ...fullPayload });
     const issued = sinon.spy();
-    this.provider.on('access_token.issued', issued);
+    fixture.provider.on('access_token.issued', issued);
     const jwt = await token.save();
 
     sinon.assert.notCalled(upsert);
 
     const { jti } = issued.getCall(0).args[0];
     const header = decode(jwt.split('.')[0]);
-    expect(header).to.have.property('typ', 'at+jwt');
+    ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'at+jwt'); })(header);
     const { iat, exp, ...payload } = decode(jwt.split('.')[1]);
-    expect(iat).to.be.a('number');
-    expect(exp).to.be.a('number');
-    expect(payload).to.eql({
+    assert.equal(typeof iat, 'number');
+    assert.equal(typeof exp, 'number');
+    assert.deepEqual(payload, {
       ...extra,
       aud,
       client_id: 'pairwise',
-      iss: this.provider.issuer,
+      iss: fixture.provider.issuer,
       jti,
       scope,
       sub: 'pairwise-sub',
@@ -679,28 +683,28 @@ describe('jwt format', () => {
     });
   });
 
-  it('for ClientCredentials', async function () {
-    const upsert = sinon.spy(this.TestAdapter.for('ClientCredentials'), 'upsert');
-    const client = await this.provider.Client.find(clientId);
-    const token = new this.provider.ClientCredentials({ client, ...fullPayload });
+  it('for ClientCredentials', { timeout: 3000 }, async () => {
+    const upsert = sinon.spy(fixture.TestAdapter.for('ClientCredentials'), 'upsert');
+    const client = await fixture.provider.Client.find(clientId);
+    const token = new fixture.provider.ClientCredentials({ client, ...fullPayload });
     const issued = sinon.spy();
-    this.provider.on('client_credentials.issued', issued);
+    fixture.provider.on('client_credentials.issued', issued);
     const jwt = await token.save();
 
     sinon.assert.notCalled(upsert);
 
     const { jti } = issued.getCall(0).args[0];
     const header = decode(jwt.split('.')[0]);
-    expect(header).to.have.property('typ', 'at+jwt');
+    ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'at+jwt'); })(header);
     const { iat, exp, ...payload } = decode(jwt.split('.')[1]);
-    expect(iat).to.be.a('number');
-    expect(exp).to.be.a('number');
-    expect(payload).to.eql({
+    assert.equal(typeof iat, 'number');
+    assert.equal(typeof exp, 'number');
+    assert.deepEqual(payload, {
       ...extra,
       aud,
       client_id: clientId,
       sub: clientId,
-      iss: this.provider.issuer,
+      iss: fixture.provider.issuer,
       jti,
       scope,
       cnf: {
@@ -711,18 +715,20 @@ describe('jwt format', () => {
   });
 
   describe('customizers', () => {
-    afterEach(function () {
-      i(this.provider).configuration.formats.customizers.jwt = undefined;
-    });
+    const fixture2 = Object.create(fixture);
 
-    it('allows the payload to be extended', async function () {
-      const client = await this.provider.Client.find(clientId);
-      const accessToken = new this.provider.AccessToken({ client, ...fullPayload });
+    afterEach(() => {
+      i(fixture2.provider).configuration.formats.customizers.jwt = undefined;
+    }, { timeout: 3000 });
+
+    it('allows the payload to be extended', { timeout: 3000 }, async () => {
+      const client = await fixture2.provider.Client.find(clientId);
+      const accessToken = new fixture2.provider.AccessToken({ client, ...fullPayload });
       accessToken.resourceServer = resourceServer;
-      i(this.provider).configuration.formats.customizers.jwt = (_ctx, token, jwt) => {
-        expect(token).to.equal(accessToken);
-        expect(jwt).to.have.property('payload');
-        expect(jwt).to.have.property('header', undefined);
+      i(fixture2.provider).configuration.formats.customizers.jwt = (_ctx, token, jwt) => {
+        assert.equal(token, accessToken);
+        assert.ok('payload' in Object(jwt));
+        ((actual) => { assert.ok('header' in Object(actual)); assert.equal(actual.header, undefined); })(jwt);
         jwt.header = { customized: true, typ: 'foo' };
         jwt.payload.customized = true;
         jwt.payload.iss = 'foobar';
@@ -730,11 +736,11 @@ describe('jwt format', () => {
 
       const jwt = await accessToken.save();
       const header = decode(jwt.split('.')[0]);
-      expect(header).to.have.property('customized', true);
-      expect(header).to.have.property('typ', 'foo');
+      ((actual) => { assert.ok('customized' in Object(actual)); assert.equal(actual.customized, true); })(header);
+      ((actual) => { assert.ok('typ' in Object(actual)); assert.equal(actual.typ, 'foo'); })(header);
       const payload = decode(jwt.split('.')[1]);
-      expect(payload).to.have.property('customized', true);
-      expect(payload).to.have.property('iss', 'foobar');
+      ((actual) => { assert.ok('customized' in Object(actual)); assert.equal(actual.customized, true); })(payload);
+      ((actual) => { assert.ok('iss' in Object(actual)); assert.equal(actual.iss, 'foobar'); })(payload);
     });
   });
 });

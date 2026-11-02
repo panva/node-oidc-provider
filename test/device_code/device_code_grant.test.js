@@ -1,5 +1,6 @@
+import { describe, before, afterEach, it } from 'node:test';
+import assert from 'node:assert/strict';
 import base64url from 'base64url';
-import { expect } from 'chai';
 import { createSandbox } from 'sinon';
 import epochTime from '../../lib/helpers/epoch_time.js';
 import bootstrap from '../test_helper.js';
@@ -14,23 +15,25 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTokenClaims=false', () => {
-  before(bootstrap(import.meta.url, { config: 'device_code_non_conform' })); // agent
-  before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
-  afterEach(sinon.restore);
+  const fixture = {};
 
-  it('returns the right stuff', async function () {
+  before(bootstrap(import.meta.url, fixture, { config: 'device_code_non_conform' }), { timeout: 3000 }); // agent
+  before(() => fixture.login({ scope: 'openid profile offline_access', accountId: 'sub' }), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
+
+  it('returns the right stuff', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('grant.success', spy);
+    fixture.provider.once('grant.success', spy);
 
-    const deviceCode = new this.provider.DeviceCode({
+    const deviceCode = new fixture.provider.DeviceCode({
       accountId: 'sub',
-      grantId: this.getGrantId(),
+      grantId: fixture.getGrantId(),
       scope: 'openid profile offline_access',
       clientId: 'client',
     });
     const code = await deviceCode.save();
 
-    return this.agent.post('/token')
+    return fixture.agent.post('/token')
       .type('form')
       .send({
         client_id: 'client',
@@ -39,33 +42,35 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code w/ conformIdTo
       })
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope', 'refresh_token');
-        expect(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))).to.have.property('given_name');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'scope', 'refresh_token']));
+        assert.ok('given_name' in Object(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))));
       });
   });
 });
 
 describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
-  before(bootstrap(import.meta.url));
-  before(function () { return this.login({ scope: 'openid profile offline_access', accountId: 'sub' }); });
-  afterEach(sinon.restore);
+  const fixture1 = {};
 
-  it('returns the right stuff', async function () {
+  before(bootstrap(import.meta.url, fixture1), { timeout: 3000 });
+  before(() => fixture1.login({ scope: 'openid profile offline_access', accountId: 'sub' }), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
+
+  it('returns the right stuff', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('grant.success', spy);
+    fixture1.provider.once('grant.success', spy);
 
-    const deviceCode = new this.provider.DeviceCode({
+    const deviceCode = new fixture1.provider.DeviceCode({
       accountId: 'sub',
-      grantId: this.getGrantId(),
+      grantId: fixture1.getGrantId(),
       scope: 'openid profile offline_access',
       clientId: 'client',
     });
     const code = await deviceCode.save();
 
-    return this.agent.post('/token')
+    return fixture1.agent.post('/token')
       .type('form')
       .send({
         client_id: 'client',
@@ -74,29 +79,29 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
       })
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope', 'refresh_token');
-        expect(JSON.parse(base64url.decode(response.body.id_token.split('.')[1]))).not.to.have.property('given_name');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'scope', 'refresh_token']));
+        assert.ok(!('given_name' in Object(JSON.parse(base64url.decode(response.body.id_token.split('.')[1])))));
       });
   });
 
-  it('populates ctx.oidc.entities (no offline_access)', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.body.refresh_token).to.be.undefined;
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken');
-      expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
+  it('populates ctx.oidc.entities (no offline_access)', { timeout: 3000 }, (_t, done) => {
+    fixture1.assertOnce((ctx) => {
+      assert.equal(ctx.body.refresh_token, undefined);
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken']));
+      ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'device_code'); })(ctx.oidc.entities.AccessToken);
     }, done);
 
-    const deviceCode = new this.provider.DeviceCode({
+    const deviceCode = new fixture1.provider.DeviceCode({
       accountId: 'sub',
-      grantId: this.getGrantId(),
+      grantId: fixture1.getGrantId(),
       scope: 'openid',
       clientId: 'client',
     });
     deviceCode.save().then((code) => {
-      this.agent.post(route)
+      fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'client',
@@ -107,21 +112,21 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
   });
 
-  it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken');
-      expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'device_code');
-      expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'device_code');
+  it('populates ctx.oidc.entities (w/ offline_access)', { timeout: 3000 }, (_t, done) => {
+    fixture1.assertOnce((ctx) => {
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'DeviceCode', 'AccessToken', 'RefreshToken']));
+      ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'device_code'); })(ctx.oidc.entities.AccessToken);
+      ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'device_code'); })(ctx.oidc.entities.RefreshToken);
     }, done);
 
-    const deviceCode = new this.provider.DeviceCode({
+    const deviceCode = new fixture1.provider.DeviceCode({
       accountId: 'sub',
-      grantId: this.getGrantId(),
+      grantId: fixture1.getGrantId(),
       scope: 'openid offline_access',
       clientId: 'client',
     });
     deviceCode.save().then((code) => {
-      this.agent.post(route)
+      fixture1.agent.post(route)
         .type('form')
         .send({
           client_id: 'client',
@@ -133,8 +138,9 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
   });
 
   describe('validates', () => {
-    it('device_code param presence', function () {
-      return this.agent.post(route)
+    const fixture2 = Object.create(fixture1);
+
+    it('device_code param presence', { timeout: 3000 }, () => fixture2.agent.post(route)
         .send({
           client_id: 'client',
           grant_type,
@@ -145,13 +151,12 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .expect({
           error: 'invalid_request',
           error_description: "missing required parameter 'device_code'",
-        });
-    });
+        }));
 
-    it('code being "found"', function () {
+    it('code being "found"', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
-      return this.agent.post(route)
+      fixture2.provider.once('grant.error', spy);
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client',
           grant_type,
@@ -160,29 +165,29 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('device code not found');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'device code not found');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('validates account is still there', async function () {
-      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
+    it('validates account is still there', { timeout: 3000 }, async () => {
+      sinon.stub(i(fixture2.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture2.provider.once('grant.error', spy);
 
-      const deviceCode = new this.provider.DeviceCode({
+      const deviceCode = new fixture2.provider.DeviceCode({
         accountId: 'sub',
-        grantId: this.getGrantId(),
+        grantId: fixture2.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
       const code = await deviceCode.save();
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client',
           device_code: code,
@@ -191,27 +196,27 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('device code invalid (referenced account not found)');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'device code invalid (referenced account not found)');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('code belongs to client', async function () {
+    it('code belongs to client', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture2.provider.once('grant.error', spy);
 
-      const deviceCode = new this.provider.DeviceCode({
+      const deviceCode = new fixture2.provider.DeviceCode({
         accountId: 'sub',
-        grantId: this.getGrantId(),
+        grantId: fixture2.getGrantId(),
         scope: 'openid',
         clientId: 'client-other',
       });
       const code = await deviceCode.save();
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client',
           device_code: code,
@@ -220,24 +225,26 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'client mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    context('', () => {
-      it('validates code is not expired', async function () {
-        const deviceCode = new this.provider.DeviceCode({
+    describe('', () => {
+      const fixture3 = Object.create(fixture2);
+
+      it('validates code is not expired', { timeout: 3000 }, async () => {
+        const deviceCode = new fixture3.provider.DeviceCode({
           scope: 'openid',
           clientId: 'client',
           expiresIn: -1,
         });
         const code = await deviceCode.save();
 
-        return this.agent.post(route)
+        return fixture3.agent.post(route)
           .send({
             client_id: 'client',
             device_code: code,
@@ -252,16 +259,16 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
       });
     });
 
-    it('consumes the code', async function () {
-      const deviceCode = new this.provider.DeviceCode({
+    it('consumes the code', { timeout: 3000 }, async () => {
+      const deviceCode = new fixture2.provider.DeviceCode({
         accountId: 'sub',
-        grantId: this.getGrantId(),
+        grantId: fixture2.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
       const code = await deviceCode.save();
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client',
           device_code: code,
@@ -270,26 +277,26 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .type('form')
         .expect(200)
         .expect(() => {
-          const jti = this.getTokenJti(code);
-          const stored = this.TestAdapter.for('DeviceCode').syncFind(jti);
-          expect(stored).to.have.property('consumed').and.be.most(epochTime());
+          const jti = fixture2.getTokenJti(code);
+          const stored = fixture2.TestAdapter.for('DeviceCode').syncFind(jti);
+          ((actual) => { assert.ok('consumed' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= epochTime()); })(actual.consumed); })(stored);
         });
     });
 
-    it('validates code is not already used', async function () {
+    it('validates code is not already used', { timeout: 3000 }, async () => {
       const spy = sinon.spy();
-      this.provider.once('grant.error', spy);
+      fixture2.provider.once('grant.error', spy);
 
-      const deviceCode = new this.provider.DeviceCode({
+      const deviceCode = new fixture2.provider.DeviceCode({
         accountId: 'sub',
-        grantId: this.getGrantId(),
+        grantId: fixture2.getGrantId(),
         scope: 'openid',
         clientId: 'client',
       });
       const code = await deviceCode.save();
       await deviceCode.consume();
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client',
           device_code: code,
@@ -298,16 +305,16 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('device code already consumed');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'device code already consumed');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('skips grant revocation when an already consumed code has no grantId', async function () {
-      const deviceCode = new this.provider.DeviceCode({
+    it('skips grant revocation when an already consumed code has no grantId', { timeout: 3000 }, async () => {
+      const deviceCode = new fixture2.provider.DeviceCode({
         scope: 'openid',
         clientId: 'client',
         error: 'access_denied',
@@ -315,7 +322,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
       });
       const code = await deviceCode.save();
 
-      await this.agent.post(route)
+      await fixture2.agent.post(route)
         .send({
           client_id: 'client',
           device_code: code,
@@ -328,16 +335,16 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
           error_description: 'user has denied access',
         });
 
-      const accessTokenRevokeByGrantIdSpy = sinon.spy(this.TestAdapter.for('AccessToken'), 'revokeByGrantId');
-      const refreshTokenRevokeByGrantIdSpy = sinon.spy(this.TestAdapter.for('RefreshToken'), 'revokeByGrantId');
-      const deviceCodeRevokeByGrantIdSpy = sinon.spy(this.TestAdapter.for('DeviceCode'), 'revokeByGrantId');
-      const grantDestroySpy = sinon.spy(this.TestAdapter.for('Grant'), 'destroy');
+      const accessTokenRevokeByGrantIdSpy = sinon.spy(fixture2.TestAdapter.for('AccessToken'), 'revokeByGrantId');
+      const refreshTokenRevokeByGrantIdSpy = sinon.spy(fixture2.TestAdapter.for('RefreshToken'), 'revokeByGrantId');
+      const deviceCodeRevokeByGrantIdSpy = sinon.spy(fixture2.TestAdapter.for('DeviceCode'), 'revokeByGrantId');
+      const grantDestroySpy = sinon.spy(fixture2.TestAdapter.for('Grant'), 'destroy');
       const grantErrorSpy = sinon.spy();
       const grantRevokeSpy = sinon.spy();
-      this.provider.once('grant.error', grantErrorSpy);
-      this.provider.once('grant.revoked', grantRevokeSpy);
+      fixture2.provider.once('grant.error', grantErrorSpy);
+      fixture2.provider.once('grant.revoked', grantRevokeSpy);
 
-      return this.agent.post(route)
+      return fixture2.agent.post(route)
         .send({
           client_id: 'client',
           device_code: code,
@@ -346,22 +353,22 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(grantErrorSpy.calledOnce).to.be.true;
-          expect(errorDetail(grantErrorSpy)).to.equal('device code already consumed');
-          expect(grantRevokeSpy.called).to.be.false;
-          expect(accessTokenRevokeByGrantIdSpy.called).to.be.false;
-          expect(refreshTokenRevokeByGrantIdSpy.called).to.be.false;
-          expect(deviceCodeRevokeByGrantIdSpy.called).to.be.false;
-          expect(grantDestroySpy.called).to.be.false;
+          assert.equal(grantErrorSpy.calledOnce, true);
+          assert.equal(errorDetail(grantErrorSpy), 'device code already consumed');
+          assert.equal(grantRevokeSpy.called, false);
+          assert.equal(accessTokenRevokeByGrantIdSpy.called, false);
+          assert.equal(refreshTokenRevokeByGrantIdSpy.called, false);
+          assert.equal(deviceCodeRevokeByGrantIdSpy.called, false);
+          assert.equal(grantDestroySpy.called, false);
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
   });
 
-  it('responds with authorization_pending if interactions are still pending resolving', async function () {
-    const deviceCode = new this.provider.DeviceCode({
+  it('responds with authorization_pending if interactions are still pending resolving', { timeout: 3000 }, async () => {
+    const deviceCode = new fixture1.provider.DeviceCode({
       scope: 'openid',
       clientId: 'client',
       // error: missing
@@ -369,7 +376,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
     const code = await deviceCode.save();
 
-    return this.agent.post(route)
+    return fixture1.agent.post(route)
       .send({
         client_id: 'client',
         device_code: code,
@@ -383,8 +390,8 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
       });
   });
 
-  it('responds with a custom error if one is resolved with', async function () {
-    const deviceCode = new this.provider.DeviceCode({
+  it('responds with a custom error if one is resolved with', { timeout: 3000 }, async () => {
+    const deviceCode = new fixture1.provider.DeviceCode({
       scope: 'openid',
       clientId: 'client',
       error: 'foo',
@@ -392,7 +399,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
     const code = await deviceCode.save();
 
-    return this.agent.post(route)
+    return fixture1.agent.post(route)
       .send({
         client_id: 'client',
         device_code: code,
@@ -406,11 +413,11 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
       });
   });
 
-  it('responds with a built-in error if one is resolved with', async function () {
+  it('responds with a built-in error if one is resolved with', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('grant.error', spy);
+    fixture1.provider.once('grant.error', spy);
 
-    const deviceCode = new this.provider.DeviceCode({
+    const deviceCode = new fixture1.provider.DeviceCode({
       scope: 'openid',
       clientId: 'client',
       error: 'access_denied',
@@ -418,7 +425,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
     });
     const code = await deviceCode.save();
 
-    return this.agent.post(route)
+    return fixture1.agent.post(route)
       .send({
         client_id: 'client',
         device_code: code,
@@ -431,7 +438,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:device_code', () => {
         error_description: 'user has denied access',
       })
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       });
   });
 });

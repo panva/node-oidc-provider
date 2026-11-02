@@ -1,7 +1,8 @@
+import { describe, before, afterEach, beforeEach, it, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { parse as parseUrl } from 'node:url';
 
 import { createSandbox } from 'sinon';
-import { expect } from 'chai';
 import timekeeper from 'timekeeper';
 
 import epochTime from '../../lib/helpers/epoch_time.js';
@@ -16,23 +17,26 @@ function errorDetail(spy) {
 }
 
 describe('grant_type=authorization_code', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  afterEach(() => timekeeper.reset());
-  afterEach(sinon.restore);
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
-  afterEach(function () {
-    this.provider.removeAllListeners('grant.success');
-    this.provider.removeAllListeners('grant.error');
-    this.provider.removeAllListeners('server_error');
-  });
+  afterEach(() => timekeeper.reset(), { timeout: 3000 });
+  afterEach(() => sinon.restore(), { timeout: 3000 });
 
-  context('with real tokens (1/3) - more than one redirect_uris registered', () => {
-    beforeEach(function () { return this.login(); });
-    afterEach(function () { return this.logout(); });
+  afterEach(() => {
+    fixture.provider.removeAllListeners('grant.success');
+    fixture.provider.removeAllListeners('grant.error');
+    fixture.provider.removeAllListeners('server_error');
+  }, { timeout: 3000 });
 
-    beforeEach(function () {
-      return this.agent.get('/auth')
+  describe('with real tokens (1/3) - more than one redirect_uris registered', () => {
+    const fixture1 = Object.create(fixture);
+
+    beforeEach(() => fixture1.login(), { timeout: 3000 });
+    afterEach(() => fixture1.logout(), { timeout: 3000 });
+
+    beforeEach(() => fixture1.agent.get('/auth')
         .query({
           client_id: 'client',
           scope: 'openid',
@@ -42,314 +46,307 @@ describe('grant_type=authorization_code', () => {
         .expect(303)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
-          const jti = this.getTokenJti(code);
-          this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
-          this.ac = code;
-        });
-    });
+          const jti = fixture1.getTokenJti(code);
+          fixture1.code = fixture1.TestAdapter.for('AuthorizationCode').syncFind(jti);
+          fixture1.ac = code;
+        }), { timeout: 3000 });
 
-    it('returns the right stuff', function () {
+    it('returns the right stuff', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.success', spy);
+      fixture1.provider.on('grant.success', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .expect(200)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
+          assert.equal(spy.calledOnce, true);
         })
         .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope');
-          expect(response.body).not.to.have.key('refresh_token');
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'scope']));
+          assert.notDeepEqual(new Set(Object.keys(response.body)), new Set(['refresh_token']));
         });
     });
 
-    it('populates ctx.oidc.entities (no offline_access)', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
+    it('populates ctx.oidc.entities (no offline_access)', { timeout: 3000 }, (_t, done) => {
+      fixture1.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken']));
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.AccessToken);
       }, done);
 
-      this.agent.post(route)
+      fixture1.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .end(() => {});
     });
 
-    it('preserves token issuance callback order and entity availability', async function () {
+    it('preserves token issuance callback order and entity availability', { timeout: 3000 }, async () => {
       const calls = [];
-      const configuration = i(this.provider).configuration;
+      const configuration = i(fixture1.provider).configuration;
 
       sinon.stub(configuration, 'findAccount').callsFake((ctx, accountId, source) => {
         calls.push('findAccount');
-        expect(ctx.oidc.entities).to.have.keys('Client', 'AuthorizationCode', 'Grant');
-        expect(source).to.equal(ctx.oidc.entities.AuthorizationCode);
-        expect(this.TestAdapter.for('AuthorizationCode').syncFind(source.jti).consumed).to.be.a('number');
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'AuthorizationCode', 'Grant']));
+        assert.equal(source, ctx.oidc.entities.AuthorizationCode);
+        assert.equal(typeof fixture1.TestAdapter.for('AuthorizationCode').syncFind(source.jti).consumed, 'number');
 
         return {
           accountId,
           claims() {
             calls.push('claims');
-            expect(ctx.oidc.entities).to.have.keys(
-              'Client', 'AuthorizationCode', 'Grant', 'Account', 'AccessToken', 'RefreshToken',
-            );
+            assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'AuthorizationCode', 'Grant', 'Account', 'AccessToken', 'RefreshToken']));
             return { sub: accountId };
           },
         };
       });
       sinon.stub(configuration, 'issueRefreshToken').callsFake((ctx, client, source) => {
         calls.push('issueRefreshToken');
-        expect(client).to.equal(ctx.oidc.client);
-        expect(source).to.equal(ctx.oidc.entities.AuthorizationCode);
-        expect(ctx.oidc.entities).to.have.property('AccessToken');
-        expect(ctx.oidc.entities).not.to.have.property('RefreshToken');
+        assert.equal(client, ctx.oidc.client);
+        assert.equal(source, ctx.oidc.entities.AuthorizationCode);
+        assert.ok('AccessToken' in Object(ctx.oidc.entities));
+        assert.ok(!('RefreshToken' in Object(ctx.oidc.entities)));
         return true;
       });
-      this.provider.once('access_token.saved', () => calls.push('access_token.saved'));
-      this.provider.once('refresh_token.saved', () => calls.push('refresh_token.saved'));
+      fixture1.provider.once('access_token.saved', () => calls.push('access_token.saved'));
+      fixture1.provider.once('refresh_token.saved', () => calls.push('refresh_token.saved'));
 
-      await this.agent.post(route)
+      await fixture1.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .expect(200);
 
-      expect(calls).to.deep.equal([
+      assert.deepEqual(calls, [
         'findAccount', 'access_token.saved', 'issueRefreshToken', 'refresh_token.saved', 'claims',
       ]);
     });
 
-    it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
-        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
+    it('populates ctx.oidc.entities (w/ offline_access)', { timeout: 3000 }, (_t, done) => {
+      fixture1.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken']));
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.AccessToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.RefreshToken);
       }, done);
 
-      this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client.grantId, {
+      fixture1.TestAdapter.for('Grant').syncUpdate(fixture1.getSession().authorizations.client.grantId, {
         scope: 'openid offline_access',
       });
-      this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
+      fixture1.TestAdapter.for('AuthorizationCode').syncUpdate(fixture1.getTokenJti(fixture1.ac), {
         scope: 'openid offline_access',
       });
-      this.agent.post(route)
+      fixture1.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .end(() => {});
     });
 
-    it('returns token-endpoint-like cache headers', function () {
-      return this.agent.post(route)
+    it('returns token-endpoint-like cache headers', { timeout: 3000 }, () => fixture1.agent.post(route)
         .auth('client', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
-        .expect('cache-control', 'no-store');
-    });
+        .expect('cache-control', 'no-store'));
 
-    context('', () => {
-      before(function () {
-        const { ttl } = i(this.provider).configuration;
-        this.prev = ttl.AuthorizationCode;
+    describe('', () => {
+      const fixture2 = Object.create(fixture1);
+
+      before(() => {
+        const { ttl } = i(fixture2.provider).configuration;
+        fixture2.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
-      });
+      }, { timeout: 3000 });
 
-      after(function () {
-        i(this.provider).configuration.ttl.AuthorizationCode = this.prev;
-      });
+      after(() => {
+        i(fixture2.provider).configuration.ttl.AuthorizationCode = fixture2.prev;
+      }, { timeout: 3000 });
 
-      it('validates code is not expired', function () {
+      it('validates code is not expired', { timeout: 3000 }, () => {
         timekeeper.travel(Date.now() + (10 * 1000));
         const spy = sinon.spy();
-        this.provider.on('grant.error', spy);
+        fixture2.provider.on('grant.error', spy);
 
-        return this.agent.post(route)
+        return fixture2.agent.post(route)
           .auth('client', 'secret')
           .send({
-            code: this.ac,
+            code: fixture2.ac,
             grant_type: 'authorization_code',
             redirect_uri: 'https://client.example.com/cb',
           })
           .type('form')
           .expect(400)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('authorization code is expired');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'authorization code is expired');
           })
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
       });
     });
 
-    it('validates code is not already used', function () {
+    it('validates code is not already used', { timeout: 3000 }, () => {
       const grantErrorSpy = sinon.spy();
       const grantRevokeSpy = sinon.spy();
-      this.provider.on('grant.error', grantErrorSpy);
-      this.provider.on('grant.revoked', grantRevokeSpy);
+      fixture1.provider.on('grant.error', grantErrorSpy);
+      fixture1.provider.on('grant.revoked', grantRevokeSpy);
 
-      this.code.consumed = epochTime();
+      fixture1.code.consumed = epochTime();
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(grantRevokeSpy.calledOnce).to.be.true;
-          expect(grantErrorSpy.calledOnce).to.be.true;
-          expect(errorDetail(grantErrorSpy)).to.equal('authorization code already consumed');
+          assert.equal(grantRevokeSpy.calledOnce, true);
+          assert.equal(grantErrorSpy.calledOnce, true);
+          assert.equal(errorDetail(grantErrorSpy), 'authorization code already consumed');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('consumes the code', function () {
-      return this.agent.post(route)
+    it('consumes the code', { timeout: 3000 }, () => fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(() => {
-          expect(this.code).to.have.property('consumed').and.be.most(epochTime());
+          ((actual) => { assert.ok('consumed' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= epochTime()); })(actual.consumed); })(fixture1.code);
         })
-        .expect(200);
-    });
+        .expect(200));
 
-    it('validates code belongs to client', function () {
+    it('validates code belongs to client', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client2', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'client mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('validates a grant type is supported', function () {
-      return this.agent.post(route)
+    it('validates a grant type is supported', { timeout: 3000 }, () => fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'foobar',
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'unsupported_grant_type');
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'unsupported_grant_type'); })(response.body);
+        }));
 
-    it('validates used redirect_uri', function () {
+    it('validates used redirect_uri', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb?thensome',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code redirect_uri mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'authorization code redirect_uri mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('validates redirect_uri presence', function () {
-      return this.agent.post(route)
+    it('validates redirect_uri presence', { timeout: 3000 }, () => fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
         })
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description', "missing required parameter 'redirect_uri'");
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, "missing required parameter 'redirect_uri'"); })(response.body);
+        }));
 
-    it('validates account is still there', function () {
-      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
+    it('validates account is still there', { timeout: 3000 }, () => {
+      sinon.stub(i(fixture1.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture1.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture1.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code invalid (referenced account not found)');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'authorization code invalid (referenced account not found)');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
   });
 
-  context('with real tokens (2/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=false', () => {
-    beforeEach(async function () {
-      await this.login();
-      return this.agent.get('/auth')
+  describe('with real tokens (2/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=false', () => {
+    const fixture3 = Object.create(fixture);
+
+    beforeEach(async () => {
+      await fixture3.login();
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'client2',
           scope: 'openid',
@@ -359,42 +356,43 @@ describe('grant_type=authorization_code', () => {
         .expect(303)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
-          this.ac = code;
+          fixture3.ac = code;
         });
-    });
+    }, { timeout: 3000 });
 
-    it('validates redirect_uri presence', function () {
+    it('validates redirect_uri presence', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture3.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture3.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture3.ac,
           grant_type: 'authorization_code',
         })
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description', "missing required parameter 'redirect_uri'");
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, "missing required parameter 'redirect_uri'"); })(response.body);
         });
     });
   });
 
-  context('with real tokens (3/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=true', () => {
-    beforeEach(function () {
-      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
-      return this.login();
-    });
+  describe('with real tokens (3/3) - one redirect_uri registered with allowOmittingSingleRegisteredRedirectUri=true', () => {
+    const fixture4 = Object.create(fixture);
 
-    afterEach(function () {
-      i(this.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
-      return this.logout();
-    });
+    beforeEach(() => {
+      i(fixture4.provider).configuration.allowOmittingSingleRegisteredRedirectUri = true;
+      return fixture4.login();
+    }, { timeout: 3000 });
 
-    beforeEach(function () {
-      return this.agent.get('/auth')
+    afterEach(() => {
+      i(fixture4.provider).configuration.allowOmittingSingleRegisteredRedirectUri = false;
+      return fixture4.logout();
+    }, { timeout: 3000 });
+
+    beforeEach(() => fixture4.agent.get('/auth')
         .query({
           client_id: 'client2',
           scope: 'openid',
@@ -403,255 +401,249 @@ describe('grant_type=authorization_code', () => {
         .expect(303)
         .expect((response) => {
           const { query: { code } } = parseUrl(response.headers.location, true);
-          const jti = this.getTokenJti(code);
-          this.code = this.TestAdapter.for('AuthorizationCode').syncFind(jti);
-          this.ac = code;
-        });
-    });
+          const jti = fixture4.getTokenJti(code);
+          fixture4.code = fixture4.TestAdapter.for('AuthorizationCode').syncFind(jti);
+          fixture4.ac = code;
+        }), { timeout: 3000 });
 
-    it('returns the right stuff', function () {
+    it('returns the right stuff', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.success', spy);
+      fixture4.provider.on('grant.success', spy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client2', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
         .expect(200)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
+          assert.equal(spy.calledOnce, true);
         })
         .expect((response) => {
-          expect(response.body).to.have.keys('access_token', 'id_token', 'expires_in', 'token_type', 'scope');
-          expect(response.body).not.to.have.key('refresh_token');
+          assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'id_token', 'expires_in', 'token_type', 'scope']));
+          assert.notDeepEqual(new Set(Object.keys(response.body)), new Set(['refresh_token']));
         });
     });
 
-    it('populates ctx.oidc.entities (no offline_access)', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
+    it('populates ctx.oidc.entities (no offline_access)', { timeout: 3000 }, (_t, done) => {
+      fixture4.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken']));
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.AccessToken);
       }, done);
 
-      this.agent.post(route)
+      fixture4.agent.post(route)
         .auth('client2', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
         .end(() => {});
     });
 
-    it('populates ctx.oidc.entities (w/ offline_access)', function (done) {
-      this.assertOnce((ctx) => {
-        expect(ctx.oidc.entities).to.have.keys('Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken');
-        expect(ctx.oidc.entities.AccessToken).to.have.property('gty', 'authorization_code');
-        expect(ctx.oidc.entities.RefreshToken).to.have.property('gty', 'authorization_code');
+    it('populates ctx.oidc.entities (w/ offline_access)', { timeout: 3000 }, (_t, done) => {
+      fixture4.assertOnce((ctx) => {
+        assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Account', 'Grant', 'Client', 'AuthorizationCode', 'AccessToken', 'RefreshToken']));
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.AccessToken);
+        ((actual) => { assert.ok('gty' in Object(actual)); assert.equal(actual.gty, 'authorization_code'); })(ctx.oidc.entities.RefreshToken);
       }, done);
 
-      this.TestAdapter.for('Grant').syncUpdate(this.getSession().authorizations.client2.grantId, {
+      fixture4.TestAdapter.for('Grant').syncUpdate(fixture4.getSession().authorizations.client2.grantId, {
         scope: 'openid offline_access',
       });
-      this.TestAdapter.for('AuthorizationCode').syncUpdate(this.getTokenJti(this.ac), {
+      fixture4.TestAdapter.for('AuthorizationCode').syncUpdate(fixture4.getTokenJti(fixture4.ac), {
         scope: 'openid offline_access',
       });
-      this.agent.post(route)
+      fixture4.agent.post(route)
         .auth('client2', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
         .end(() => {});
     });
 
-    it('returns token-endpoint-like cache headers', function () {
-      return this.agent.post(route)
+    it('returns token-endpoint-like cache headers', { timeout: 3000 }, () => fixture4.agent.post(route)
         .auth('client2', 'secret')
         .type('form')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
-        .expect('cache-control', 'no-store');
-    });
+        .expect('cache-control', 'no-store'));
 
-    context('', () => {
-      before(function () {
-        const { ttl } = i(this.provider).configuration;
-        this.prev = ttl.AuthorizationCode;
+    describe('', () => {
+      const fixture5 = Object.create(fixture4);
+
+      before(() => {
+        const { ttl } = i(fixture5.provider).configuration;
+        fixture5.prev = ttl.AuthorizationCode;
         ttl.AuthorizationCode = 5;
-      });
+      }, { timeout: 3000 });
 
-      after(function () {
-        i(this.provider).configuration.ttl.AuthorizationCode = this.prev;
-      });
+      after(() => {
+        i(fixture5.provider).configuration.ttl.AuthorizationCode = fixture5.prev;
+      }, { timeout: 3000 });
 
-      it('validates code is not expired', function () {
+      it('validates code is not expired', { timeout: 3000 }, () => {
         timekeeper.travel(Date.now() + (10 * 1000));
         const spy = sinon.spy();
-        this.provider.on('grant.error', spy);
+        fixture5.provider.on('grant.error', spy);
 
-        return this.agent.post(route)
+        return fixture5.agent.post(route)
           .auth('client2', 'secret')
           .send({
-            code: this.ac,
+            code: fixture5.ac,
             grant_type: 'authorization_code',
           })
           .type('form')
           .expect(400)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
-            expect(errorDetail(spy)).to.equal('authorization code is expired');
+            assert.equal(spy.calledOnce, true);
+            assert.equal(errorDetail(spy), 'authorization code is expired');
           })
           .expect((response) => {
-            expect(response.body).to.have.property('error', 'invalid_grant');
+            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
           });
       });
     });
 
-    it('validates code is not already used', function () {
+    it('validates code is not already used', { timeout: 3000 }, () => {
       const grantErrorSpy = sinon.spy();
       const grantRevokeSpy = sinon.spy();
-      this.provider.on('grant.error', grantErrorSpy);
-      this.provider.on('grant.revoked', grantRevokeSpy);
+      fixture4.provider.on('grant.error', grantErrorSpy);
+      fixture4.provider.on('grant.revoked', grantRevokeSpy);
 
-      this.code.consumed = epochTime();
+      fixture4.code.consumed = epochTime();
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client2', 'secret')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(grantRevokeSpy.calledOnce).to.be.true;
-          expect(grantErrorSpy.calledOnce).to.be.true;
-          expect(errorDetail(grantErrorSpy)).to.equal('authorization code already consumed');
+          assert.equal(grantRevokeSpy.calledOnce, true);
+          assert.equal(grantErrorSpy.calledOnce, true);
+          assert.equal(errorDetail(grantErrorSpy), 'authorization code already consumed');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('consumes the code', function () {
-      return this.agent.post(route)
+    it('consumes the code', { timeout: 3000 }, () => fixture4.agent.post(route)
         .auth('client2', 'secret')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
         .type('form')
         .expect(() => {
-          expect(this.code).to.have.property('consumed').and.be.most(epochTime());
+          ((actual) => { assert.ok('consumed' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(value <= epochTime()); })(actual.consumed); })(fixture4.code);
         })
-        .expect(200);
-    });
+        .expect(200));
 
-    it('validates code belongs to client', function () {
+    it('validates code belongs to client', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture4.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client', 'secret')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb3',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('client mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'client mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('validates a grant type is supported', function () {
-      return this.agent.post(route)
+    it('validates a grant type is supported', { timeout: 3000 }, () => fixture4.agent.post(route)
         .auth('client2', 'secret')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'foobar',
         })
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'unsupported_grant_type');
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'unsupported_grant_type'); })(response.body);
+        }));
 
-    it('validates used redirect_uri (should it be provided)', function () {
+    it('validates used redirect_uri (should it be provided)', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture4.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client2', 'secret')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
           redirect_uri: 'https://client.example.com/cb?thensome',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code redirect_uri mismatch');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'authorization code redirect_uri mismatch');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
 
-    it('validates account is still there', function () {
-      sinon.stub(i(this.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
+    it('validates account is still there', { timeout: 3000 }, () => {
+      sinon.stub(i(fixture4.provider).configuration, 'findAccount').callsFake(() => Promise.resolve());
 
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
+      fixture4.provider.on('grant.error', spy);
 
-      return this.agent.post(route)
+      return fixture4.agent.post(route)
         .auth('client2', 'secret')
         .send({
-          code: this.ac,
+          code: fixture4.ac,
           grant_type: 'authorization_code',
         })
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code invalid (referenced account not found)');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'authorization code invalid (referenced account not found)');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
   });
 
   describe('validates', () => {
-    it('grant_type presence', function () {
-      return this.agent.post(route)
+    const fixture6 = Object.create(fixture);
+
+    it('grant_type presence', { timeout: 3000 }, () => fixture6.agent.post(route)
         .auth('client', 'secret')
         .send({})
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
-          expect(response.body).to.have.property('error_description').and.matches(/grant_type/);
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /missing required parameter/); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /grant_type/); })(response.body);
+        }));
 
-    it('code presence', function () {
-      return this.agent.post(route)
+    it('code presence', { timeout: 3000 }, () => fixture6.agent.post(route)
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
@@ -660,14 +652,12 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
-          expect(response.body).to.have.property('error_description').and.matches(/code/);
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /missing required parameter/); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /code/); })(response.body);
+        }));
 
-    it('redirect_uri presence (more then one registered)', function () {
-      return this.agent.post(route)
+    it('redirect_uri presence (more then one registered)', { timeout: 3000 }, () => fixture6.agent.post(route)
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
@@ -676,16 +666,15 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_request');
-          expect(response.body).to.have.property('error_description').and.matches(/missing required parameter/);
-          expect(response.body).to.have.property('error_description').and.matches(/redirect_uri/);
-        });
-    });
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /missing required parameter/); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /redirect_uri/); })(response.body);
+        }));
 
-    it('code being "found"', function () {
+    it('code being "found"', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('grant.error', spy);
-      return this.agent.post(route)
+      fixture6.provider.on('grant.error', spy);
+      return fixture6.agent.post(route)
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
@@ -695,25 +684,27 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(400)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
-          expect(errorDetail(spy)).to.equal('authorization code not found');
+          assert.equal(spy.calledOnce, true);
+          assert.equal(errorDetail(spy), 'authorization code not found');
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'invalid_grant');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         });
     });
   });
 
   describe('error handling', () => {
-    before(function () {
-      sinon.stub(this.provider.Client, 'find').callsFake(async () => { throw new Error(); });
-    });
+    const fixture7 = Object.create(fixture);
 
-    it('handles exceptions', function () {
+    before(() => {
+      sinon.stub(fixture7.provider.Client, 'find').callsFake(async () => { throw new Error(); });
+    }, { timeout: 3000 });
+
+    it('handles exceptions', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.on('server_error', spy);
+      fixture7.provider.on('server_error', spy);
 
-      return this.agent.post(route)
+      return fixture7.agent.post(route)
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
@@ -723,11 +714,11 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(500)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
+          assert.equal(spy.calledOnce, true);
         })
         .expect((response) => {
-          expect(response.body).to.have.property('error', 'server_error');
-          expect(response.body).to.have.property('error_description', 'oops! something went wrong');
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'server_error'); })(response.body);
+          ((actual) => { assert.ok('error_description' in Object(actual)); assert.equal(actual.error_description, 'oops! something went wrong'); })(response.body);
         });
     });
   });

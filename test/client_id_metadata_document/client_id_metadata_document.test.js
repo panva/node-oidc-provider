@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { describe, before, it, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 import timekeeper from 'timekeeper';
 
 import bootstrap, { mock } from '../test_helper.js';
@@ -59,113 +60,117 @@ function mockMetadata(id, metadata = {}, maxAge = 3600) {
 }
 
 describe('Client ID Metadata Document', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
+
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
 
   describe('isValidClientIdUrl', () => {
-    it('accepts a valid HTTPS URL with a path', () => {
-      expect(isValidClientIdUrl('https://example.com/client')).to.be.true;
+    it('accepts a valid HTTPS URL with a path', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/client'), true);
     });
 
-    it('accepts URLs with a port', () => {
-      expect(isValidClientIdUrl('https://example.com:8443/client')).to.be.true;
+    it('accepts URLs with a port', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com:8443/client'), true);
     });
 
-    it('accepts URLs with a query string', () => {
-      expect(isValidClientIdUrl('https://example.com/client?id=123')).to.be.true;
+    it('accepts URLs with a query string', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/client?id=123'), true);
     });
 
-    it('accepts URLs with an uppercase scheme', () => {
-      expect(isValidClientIdUrl('HTTPS://example.com/client')).to.be.true;
+    it('accepts URLs with an uppercase scheme', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('HTTPS://example.com/client'), true);
     });
 
-    it('accepts root-equivalent URLs', () => {
-      expect(isValidClientIdUrl('https://example.com')).to.be.true;
-      expect(isValidClientIdUrl('https://example.com/')).to.be.true;
-      expect(isValidClientIdUrl('https://example.com?foo=bar')).to.be.true;
+    it('accepts root-equivalent URLs', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com'), true);
+      assert.equal(isValidClientIdUrl('https://example.com/'), true);
+      assert.equal(isValidClientIdUrl('https://example.com?foo=bar'), true);
     });
 
-    it('rejects non-HTTPS URLs', () => {
-      expect(isValidClientIdUrl('http://example.com/client')).to.be.false;
+    it('rejects non-HTTPS URLs', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('http://example.com/client'), false);
     });
 
-    it('rejects URLs with single-dot path segments', () => {
-      expect(isValidClientIdUrl('https://example.com/./client')).to.be.false;
+    it('rejects URLs with single-dot path segments', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/./client'), false);
     });
 
-    it('rejects URLs with double-dot path segments', () => {
-      expect(isValidClientIdUrl('https://example.com/../client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/a/../client')).to.be.false;
+    it('rejects URLs with double-dot path segments', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/../client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/a/../client'), false);
     });
 
-    it('rejects URLs with percent-encoded dot path segments', () => {
-      expect(isValidClientIdUrl('https://example.com/%2e/client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/%2E/client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/%2e%2e/client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/.%2e/client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/%2e./client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/client/%2e')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/client/%2e%2e')).to.be.false;
+    it('rejects URLs with percent-encoded dot path segments', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/%2e/client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/%2E/client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/%2e%2e/client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/.%2e/client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/%2e./client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/client/%2e'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/client/%2e%2e'), false);
     });
 
-    it('accepts path segments that only look like double-encoded dot segments', () => {
-      expect(isValidClientIdUrl('https://example.com/%252e/client')).to.be.true;
+    it('accepts path segments that only look like double-encoded dot segments', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/%252e/client'), true);
     });
 
-    it('rejects URLs with a fragment', () => {
-      expect(isValidClientIdUrl('https://example.com/client#frag')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/client#')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/client?#')).to.be.false;
+    it('rejects URLs with a fragment', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com/client#frag'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/client#'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/client?#'), false);
     });
 
-    it('rejects URLs with a username', () => {
-      expect(isValidClientIdUrl('https://user@example.com/client')).to.be.false;
-      expect(isValidClientIdUrl('https://@example.com/client')).to.be.false;
+    it('rejects URLs with a username', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://user@example.com/client'), false);
+      assert.equal(isValidClientIdUrl('https://@example.com/client'), false);
     });
 
-    it('rejects URLs with a password', () => {
-      expect(isValidClientIdUrl('https://user:pass@example.com/client')).to.be.false;
-      expect(isValidClientIdUrl('https://:@example.com/client')).to.be.false;
+    it('rejects URLs with a password', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://user:pass@example.com/client'), false);
+      assert.equal(isValidClientIdUrl('https://:@example.com/client'), false);
     });
 
-    it('rejects non-URL strings', () => {
-      expect(isValidClientIdUrl('not-a-url')).to.be.false;
+    it('rejects non-URL strings', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('not-a-url'), false);
     });
 
-    it('rejects URLs that require WHATWG authority repair', () => {
-      expect(isValidClientIdUrl('https:example.com/client')).to.be.false;
-      expect(isValidClientIdUrl('https:/example.com/client')).to.be.false;
-      expect(isValidClientIdUrl('https:///client')).to.be.false;
+    it('rejects URLs that require WHATWG authority repair', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https:example.com/client'), false);
+      assert.equal(isValidClientIdUrl('https:/example.com/client'), false);
+      assert.equal(isValidClientIdUrl('https:///client'), false);
     });
 
-    it('rejects URLs with raw characters WHATWG would strip or normalize', () => {
-      expect(isValidClientIdUrl(' https://example.com/client')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/client ')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/\tclient')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com/\nclient')).to.be.false;
-      expect(isValidClientIdUrl('https://example.com\\client')).to.be.false;
-      expect(isValidClientIdUrl('https:\\\\example.com\\client')).to.be.false;
+    it('rejects URLs with raw characters WHATWG would strip or normalize', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl(' https://example.com/client'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/client '), false);
+      assert.equal(isValidClientIdUrl('https://example.com/\tclient'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/\nclient'), false);
+      assert.equal(isValidClientIdUrl('https://example.com\\client'), false);
+      assert.equal(isValidClientIdUrl('https:\\\\example.com\\client'), false);
     });
   });
 
   describe('discovery', () => {
-    it('includes client_id_metadata_document_supported', function () {
-      return this.agent.get('/.well-known/openid-configuration')
+    const fixture2 = Object.create(fixture);
+
+    it('includes client_id_metadata_document_supported', { timeout: 3000 }, () => fixture2.agent.get('/.well-known/openid-configuration')
         .expect(200)
         .expect((response) => {
-          expect(response.body).to.have.property('client_id_metadata_document_supported', true);
-        });
-    });
+          ((actual) => { assert.ok('client_id_metadata_document_supported' in Object(actual)); assert.equal(actual.client_id_metadata_document_supported, true); })(response.body);
+        }));
   });
 
   describe('client resolution via metadata document', () => {
-    it('resolves a client from a valid metadata document', function () {
+    const fixture3 = Object.create(fixture);
+
+    it('resolves a client from a valid metadata document', { timeout: 3000 }, () => {
       mock('https://app.example.com')
         .intercept({ path: '/metadata' })
         .reply(200, JSON.stringify(VALID_METADATA), {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: CLIENT_ID_URL,
           redirect_uri: 'https://app.example.com/cb',
@@ -174,13 +179,12 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture3.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
 
-    it('static/adapter clients take precedence over metadata document resolution', function () {
-      return this.agent.get('/auth')
+    it('static/adapter clients take precedence over metadata document resolution', { timeout: 3000 }, () => fixture3.agent.get('/auth')
         .query({
           client_id: 'client',
           redirect_uri: 'https://client.example.com/cb',
@@ -189,12 +193,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
-        });
-    });
+          const location = new URL(response.headers.location, fixture3.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
+        }));
 
-    it('serves from cache on second request', async function () {
+    it('serves from cache on second request', { timeout: 3000 }, async () => {
       mock('https://cached.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -209,7 +212,7 @@ describe('Client ID Metadata Document', () => {
         });
 
       // First request - fetches
-      await this.agent.get('/auth')
+      await fixture3.agent.get('/auth')
         .query({
           client_id: 'https://cached.example.com/client',
           redirect_uri: 'https://cached.example.com/cb',
@@ -219,7 +222,7 @@ describe('Client ID Metadata Document', () => {
         .expect(303);
 
       // Second request - no additional mock needed, served from cache
-      await this.agent.get('/auth')
+      await fixture3.agent.get('/auth')
         .query({
           client_id: 'https://cached.example.com/client',
           redirect_uri: 'https://cached.example.com/cb',
@@ -229,7 +232,7 @@ describe('Client ID Metadata Document', () => {
         .expect(303);
     });
 
-    it('rejects when metadata document has mismatched client_id', function () {
+    it('rejects when metadata document has mismatched client_id', { timeout: 3000 }, () => {
       mock('https://mismatch.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -240,7 +243,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://mismatch.example.com/client',
           redirect_uri: 'https://mismatch.example.com/cb',
@@ -249,11 +252,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('compares client_id values without default port normalization', function () {
+    it('compares client_id values without default port normalization', { timeout: 3000 }, () => {
       mock('https://defaultport.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -264,7 +267,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://defaultport.example.com:443/client',
           redirect_uri: 'https://defaultport.example.com/cb',
@@ -273,11 +276,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('rejects when metadata document uses client_secret_basic', function () {
+    it('rejects when metadata document uses client_secret_basic', { timeout: 3000 }, () => {
       mock('https://secretauth.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -288,7 +291,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://secretauth.example.com/client',
           redirect_uri: 'https://secretauth.example.com/cb',
@@ -297,11 +300,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('rejects when metadata document uses client_secret_post', function () {
+    it('rejects when metadata document uses client_secret_post', { timeout: 3000 }, () => {
       mock('https://secretpost.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -312,7 +315,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://secretpost.example.com/client',
           redirect_uri: 'https://secretpost.example.com/cb',
@@ -321,11 +324,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('rejects when metadata document uses client_secret_jwt', function () {
+    it('rejects when metadata document uses client_secret_jwt', { timeout: 3000 }, () => {
       mock('https://secretjwt.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -336,7 +339,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://secretjwt.example.com/client',
           redirect_uri: 'https://secretjwt.example.com/cb',
@@ -345,11 +348,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('rejects when metadata document contains client_secret', function () {
+    it('rejects when metadata document contains client_secret', { timeout: 3000 }, () => {
       mock('https://hassecret.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -361,7 +364,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://hassecret.example.com/client',
           redirect_uri: 'https://hassecret.example.com/cb',
@@ -370,11 +373,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('accepts public key material in an inline jwks', function () {
+    it('accepts public key material in an inline jwks', { timeout: 3000 }, () => {
       mock('https://publicjwks.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -386,7 +389,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://publicjwks.example.com/client',
           redirect_uri: 'https://publicjwks.example.com/cb',
@@ -395,12 +398,12 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture3.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
 
-    it('rejects private key material in an inline jwks', function () {
+    it('rejects private key material in an inline jwks', { timeout: 3000 }, () => {
       mock('https://privatejwks.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -412,7 +415,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://privatejwks.example.com/client',
           redirect_uri: 'https://privatejwks.example.com/cb',
@@ -421,16 +424,16 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('rejects when fetch fails (network error)', function () {
+    it('rejects when fetch fails (network error)', { timeout: 3000 }, () => {
       mock('https://fail.example.com')
         .intercept({ path: '/client' })
         .replyWithError(new Error('network error'));
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://fail.example.com/client',
           redirect_uri: 'https://fail.example.com/cb',
@@ -439,11 +442,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
+          assert.ok(response.text.includes('invalid_client'));
         });
     });
 
-    it('rejects when a URI property uses http instead of https', function () {
+    it('rejects when a URI property uses http instead of https', { timeout: 3000 }, () => {
       mock('https://httpuri.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -455,7 +458,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://httpuri.example.com/client',
           redirect_uri: 'https://httpuri.example.com/cb',
@@ -464,11 +467,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('rejects when logo_uri is not an https URI', function () {
+    it('rejects when logo_uri is not an https URI', { timeout: 3000 }, () => {
       mock('https://badlogo.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -480,7 +483,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://badlogo.example.com/client',
           redirect_uri: 'https://badlogo.example.com/cb',
@@ -489,11 +492,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('accepts metadata with https URI properties', function () {
+    it('accepts metadata with https URI properties', { timeout: 3000 }, () => {
       mock('https://gooduris.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -508,7 +511,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://gooduris.example.com/client',
           redirect_uri: 'https://gooduris.example.com/cb',
@@ -517,17 +520,17 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture3.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
 
-    it('rejects when response is not 200', function () {
+    it('rejects when response is not 200', { timeout: 3000 }, () => {
       mock('https://notfound.example.com')
         .intercept({ path: '/client' })
         .reply(404, 'Not Found');
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://notfound.example.com/client',
           redirect_uri: 'https://notfound.example.com/cb',
@@ -536,18 +539,18 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
+          assert.ok(response.text.includes('invalid_client'));
         });
     });
 
-    it('rejects when the server responds with a redirect', function () {
+    it('rejects when the server responds with a redirect', { timeout: 3000 }, () => {
       mock('https://redirect.example.com')
         .intercept({ path: '/client' })
         .reply(302, '', {
           headers: { location: 'https://redirect.example.com/other' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://redirect.example.com/client',
           redirect_uri: 'https://redirect.example.com/cb',
@@ -556,13 +559,13 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
+          assert.ok(response.text.includes('invalid_client'));
         });
     });
 
-    it('rejects when response is not valid JSON', function () {
+    it('rejects when response is not valid JSON', { timeout: 3000 }, () => {
       let emitted;
-      this.provider.once('authorization.error', (_ctx, err) => {
+      fixture3.provider.once('authorization.error', (_ctx, err) => {
         emitted = err;
       });
 
@@ -572,7 +575,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://notjson.example.com/client',
           redirect_uri: 'https://notjson.example.com/cb',
@@ -581,14 +584,14 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
-          expect(emitted.cause).to.be.instanceOf(SyntaxError);
-          expect(emitted.error_detail).to.equal(emitted.cause.message);
-          expect(response.text).not.to.contain(emitted.error_detail);
+          assert.ok(response.text.includes('invalid_client'));
+          assert.ok(emitted.cause instanceof SyntaxError);
+          assert.equal(emitted.error_detail, emitted.cause.message);
+          assert.ok(!(response.text.includes(emitted.error_detail)));
         });
     });
 
-    it('rejects when response body exceeds maxResponseSize', function () {
+    it('rejects when response body exceeds maxResponseSize', { timeout: 3000 }, () => {
       const largeBody = JSON.stringify({
         client_id: 'https://large.example.com/client',
         redirect_uris: ['https://large.example.com/cb'],
@@ -605,7 +608,7 @@ describe('Client ID Metadata Document', () => {
           },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://large.example.com/client',
           redirect_uri: 'https://large.example.com/cb',
@@ -614,11 +617,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
+          assert.ok(response.text.includes('invalid_client'));
         });
     });
 
-    it('rejects early when Content-Length exceeds maxResponseSize', function () {
+    it('rejects early when Content-Length exceeds maxResponseSize', { timeout: 3000 }, () => {
       mock('https://largecl.example.com')
         .intercept({ path: '/client' })
         .reply(200, '{}', {
@@ -628,7 +631,7 @@ describe('Client ID Metadata Document', () => {
           },
         });
 
-      return this.agent.get('/auth')
+      return fixture3.agent.get('/auth')
         .query({
           client_id: 'https://largecl.example.com/client',
           redirect_uri: 'https://largecl.example.com/cb',
@@ -637,12 +640,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
+          assert.ok(response.text.includes('invalid_client'));
         });
     });
 
-    it('does not resolve non-URL client_id values', function () {
-      return this.agent.get('/auth')
+    it('does not resolve non-URL client_id values', { timeout: 3000 }, () => fixture3.agent.get('/auth')
         .query({
           client_id: 'nonexistent-client',
           redirect_uri: 'https://client.example.com/cb',
@@ -651,12 +653,10 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
-        });
-    });
+          assert.ok(response.text.includes('invalid_client'));
+        }));
 
-    it('does not resolve HTTP (non-HTTPS) client_id URLs', function () {
-      return this.agent.get('/auth')
+    it('does not resolve HTTP (non-HTTPS) client_id URLs', { timeout: 3000 }, () => fixture3.agent.get('/auth')
         .query({
           client_id: 'http://app.example.com/client',
           redirect_uri: 'https://app.example.com/cb',
@@ -665,15 +665,14 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client');
-        });
-    });
+          assert.ok(response.text.includes('invalid_client'));
+        }));
   });
 
   describe('metadata document cache', () => {
-    afterEach(timekeeper.reset);
+    afterEach(() => timekeeper.reset(), { timeout: 3000 });
 
-    it('expires entries using their response-derived TTL', async () => {
+    it('expires entries using their response-derived TTL', { timeout: 3000 }, async () => {
       const provider = createProvider();
       const id = 'https://ttl-cache.example.com/client';
       timekeeper.freeze(new Date('2026-08-03T12:00:00.000Z'));
@@ -683,21 +682,21 @@ describe('Client ID Metadata Document', () => {
       first.localMutation = true;
       const cached = await resolve(provider, id);
 
-      expect(cached).not.to.equal(first);
-      expect(cached.clientName).to.equal('first');
-      expect(cached).not.to.have.property('localMutation');
+      assert.notEqual(cached, first);
+      assert.equal(cached.clientName, 'first');
+      assert.ok(!('localMutation' in Object(cached)));
 
       timekeeper.travel(Date.now() + 30_001);
       mockMetadata(id, { client_name: 'refreshed' }, 30);
 
-      expect((await resolve(provider, id)).clientName).to.equal('refreshed');
+      assert.equal((await resolve(provider, id)).clientName, 'refreshed');
     });
 
-    it('evicts least-recently-used entries', async () => {
+    it('evicts least-recently-used entries', { timeout: 3000 }, async () => {
       const provider = createProvider();
       const target = 'https://lru-cache.example.com/client/target';
       mockMetadata(target, { client_name: 'first' });
-      expect((await resolve(provider, target)).clientName).to.equal('first');
+      assert.equal((await resolve(provider, target)).clientName, 'first');
 
       for (let i = 0; i < 200; i++) {
         const id = `https://lru-cache.example.com/client/${i}`;
@@ -706,23 +705,23 @@ describe('Client ID Metadata Document', () => {
       }
 
       mockMetadata(target, { client_name: 'refetched' });
-      expect((await resolve(provider, target)).clientName).to.equal('refetched');
+      assert.equal((await resolve(provider, target)).clientName, 'refetched');
     });
 
-    it('isolates entries per provider', async () => {
+    it('isolates entries per provider', { timeout: 3000 }, async () => {
       const firstProvider = createProvider();
       const secondProvider = createProvider();
       const id = 'https://isolated-cache.example.com/client';
       mockMetadata(id, { client_name: 'first provider' });
       mockMetadata(id, { client_name: 'second provider' });
 
-      expect((await resolve(firstProvider, id)).clientName).to.equal('first provider');
-      expect((await resolve(secondProvider, id)).clientName).to.equal('second provider');
+      assert.equal((await resolve(firstProvider, id)).clientName, 'first provider');
+      assert.equal((await resolve(secondProvider, id)).clientName, 'second provider');
     });
   });
 
   describe('concurrent metadata document fetches', () => {
-    it('coalesces fetches while preserving request-scoped callbacks and clients', async () => {
+    it('coalesces fetches while preserving request-scoped callbacks and clients', { timeout: 3000 }, async () => {
       const allowFetchCalls = [];
       const allowClientCalls = [];
       const provider = createProvider({
@@ -747,23 +746,23 @@ describe('Client ID Metadata Document', () => {
       ]);
       const cached = await resolve(provider, id, cachedContext);
 
-      expect(first).not.to.equal(second);
-      expect(cached).not.to.equal(first);
-      expect(cached).not.to.equal(second);
-      expect(first.clientName).to.equal('shared');
-      expect(second.clientName).to.equal('shared');
-      expect(cached.clientName).to.equal('shared');
-      expect(allowFetchCalls).to.deep.equal([
+      assert.notEqual(first, second);
+      assert.notEqual(cached, first);
+      assert.notEqual(cached, second);
+      assert.equal(first.clientName, 'shared');
+      assert.equal(second.clientName, 'shared');
+      assert.equal(cached.clientName, 'shared');
+      assert.deepEqual(allowFetchCalls, [
         { ctx: firstContext, clientId: id },
         { ctx: secondContext, clientId: id },
       ]);
-      expect(allowClientCalls).to.have.length(3);
-      expect(allowClientCalls[0]).to.deep.equal({ ctx: firstContext, client: first });
-      expect(allowClientCalls[1]).to.deep.equal({ ctx: secondContext, client: second });
-      expect(allowClientCalls[2]).to.deep.equal({ ctx: cachedContext, client: cached });
+      assert.equal(allowClientCalls.length, 3);
+      assert.deepEqual(allowClientCalls[0], { ctx: firstContext, client: first });
+      assert.deepEqual(allowClientCalls[1], { ctx: secondContext, client: second });
+      assert.deepEqual(allowClientCalls[2], { ctx: cachedContext, client: cached });
     });
 
-    it('clears failed in-flight fetches so later requests can retry', async () => {
+    it('clears failed in-flight fetches so later requests can retry', { timeout: 3000 }, async () => {
       const allowFetchCalls = [];
       const allowClientCalls = [];
       const provider = createProvider({
@@ -793,32 +792,34 @@ describe('Client ID Metadata Document', () => {
         resolve(provider, id, secondContext),
       ]);
 
-      expect(failed).to.have.length(2);
+      assert.equal(failed.length, 2);
       for (const result of failed) {
-        expect(result.status).to.equal('rejected');
-        expect(result.reason.cause).to.be.instanceOf(SyntaxError);
+        assert.equal(result.status, 'rejected');
+        assert.ok(result.reason.cause instanceof SyntaxError);
       }
-      expect(allowFetchCalls).to.deep.equal([
+      assert.deepEqual(allowFetchCalls, [
         { ctx: firstContext, clientId: id },
         { ctx: secondContext, clientId: id },
       ]);
-      expect(allowClientCalls).to.be.empty;
+      assert.equal(allowClientCalls.length, 0);
 
       mockMetadata(id, { client_name: 'retry' });
       const retried = await resolve(provider, id, retryContext);
 
-      expect(retried.clientName).to.equal('retry');
-      expect(allowFetchCalls).to.deep.equal([
+      assert.equal(retried.clientName, 'retry');
+      assert.deepEqual(allowFetchCalls, [
         { ctx: firstContext, clientId: id },
         { ctx: secondContext, clientId: id },
         { ctx: retryContext, clientId: id },
       ]);
-      expect(allowClientCalls).to.deep.equal([{ ctx: retryContext, client: retried }]);
+      assert.deepEqual(allowClientCalls, [{ ctx: retryContext, client: retried }]);
     });
   });
 
   describe('unsupported metadata value filtering', () => {
-    it('filters unsupported grant_types and keeps supported ones', function () {
+    const fixture6 = Object.create(fixture);
+
+    it('filters unsupported grant_types and keeps supported ones', { timeout: 3000 }, () => {
       mock('https://filter-grants.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -830,7 +831,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture6.agent.get('/auth')
         .query({
           client_id: 'https://filter-grants.example.com/client',
           redirect_uri: 'https://filter-grants.example.com/cb',
@@ -839,12 +840,12 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture6.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
 
-    it('rejects when all grant_types are unsupported', function () {
+    it('rejects when all grant_types are unsupported', { timeout: 3000 }, () => {
       mock('https://no-grants.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -856,7 +857,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture6.agent.get('/auth')
         .query({
           client_id: 'https://no-grants.example.com/client',
           redirect_uri: 'https://no-grants.example.com/cb',
@@ -865,11 +866,11 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          expect(response.text).to.contain('invalid_client_metadata');
+          assert.ok(response.text.includes('invalid_client_metadata'));
         });
     });
 
-    it('filters unsupported response_types and keeps supported ones', function () {
+    it('filters unsupported response_types and keeps supported ones', { timeout: 3000 }, () => {
       mock('https://filter-rt.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -882,7 +883,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture6.agent.get('/auth')
         .query({
           client_id: 'https://filter-rt.example.com/client',
           redirect_uri: 'https://filter-rt.example.com/cb',
@@ -891,12 +892,12 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture6.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
 
-    it('filters unsupported response_modes and keeps supported ones', function () {
+    it('filters unsupported response_modes and keeps supported ones', { timeout: 3000 }, () => {
       mock('https://filter-rm.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -908,7 +909,7 @@ describe('Client ID Metadata Document', () => {
           headers: { 'content-type': 'application/json' },
         });
 
-      return this.agent.get('/auth')
+      return fixture6.agent.get('/auth')
         .query({
           client_id: 'https://filter-rm.example.com/client',
           redirect_uri: 'https://filter-rm.example.com/cb',
@@ -917,12 +918,12 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture6.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
 
-    it('post-enum consistency validation still applies to filtered values', function () {
+    it('post-enum consistency validation still applies to filtered values', { timeout: 3000 }, () => {
       mock('https://consistency.example.com')
         .intercept({ path: '/client' })
         .reply(200, JSON.stringify({
@@ -937,7 +938,7 @@ describe('Client ID Metadata Document', () => {
 
       // implicit is supported but device_code is not
       // after filtering grant_types becomes ['implicit'], response_types ['id_token'] is ok
-      return this.agent.get('/auth')
+      return fixture6.agent.get('/auth')
         .query({
           client_id: 'https://consistency.example.com/client',
           redirect_uri: 'https://consistency.example.com/cb',
@@ -947,20 +948,22 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(303)
         .expect((response) => {
-          const location = new URL(response.headers.location, this.provider.issuer);
-          expect(location.pathname).to.match(/\/interaction\//);
+          const location = new URL(response.headers.location, fixture6.provider.issuer);
+          assert.match(location.pathname, /\/interaction\//);
         });
     });
   });
 
   describe('allowFetch hook', () => {
-    it('rejects when allowFetch returns false', async function () {
-      const { features } = i(this.provider);
+    const fixture7 = Object.create(fixture);
+
+    it('rejects when allowFetch returns false', { timeout: 3000 }, async () => {
+      const { features } = i(fixture7.provider);
       const orig = features.clientIdMetadataDocument.allowFetch;
       features.clientIdMetadataDocument.allowFetch = async () => false;
 
       try {
-        await this.agent.get('/auth')
+        await fixture7.agent.get('/auth')
           .query({
             client_id: 'https://denied.example.com/client',
             redirect_uri: 'https://denied.example.com/cb',
@@ -969,7 +972,7 @@ describe('Client ID Metadata Document', () => {
           })
           .expect(400)
           .expect((response) => {
-            expect(response.text).to.contain('invalid_client');
+            assert.ok(response.text.includes('invalid_client'));
           });
       } finally {
         features.clientIdMetadataDocument.allowFetch = orig;
@@ -978,8 +981,10 @@ describe('Client ID Metadata Document', () => {
   });
 
   describe('allowClient hook', () => {
-    it('rejects when allowClient returns false', async function () {
-      const { features } = i(this.provider);
+    const fixture8 = Object.create(fixture);
+
+    it('rejects when allowClient returns false', { timeout: 3000 }, async () => {
+      const { features } = i(fixture8.provider);
       const orig = features.clientIdMetadataDocument.allowClient;
       features.clientIdMetadataDocument.allowClient = async () => false;
 
@@ -994,7 +999,7 @@ describe('Client ID Metadata Document', () => {
         });
 
       try {
-        await this.agent.get('/auth')
+        await fixture8.agent.get('/auth')
           .query({
             client_id: 'https://denied-client.example.com/client',
             redirect_uri: 'https://denied-client.example.com/cb',
@@ -1003,7 +1008,7 @@ describe('Client ID Metadata Document', () => {
           })
           .expect(400)
           .expect((response) => {
-            expect(response.text).to.contain('invalid_client');
+            assert.ok(response.text.includes('invalid_client'));
           });
       } finally {
         features.clientIdMetadataDocument.allowClient = orig;

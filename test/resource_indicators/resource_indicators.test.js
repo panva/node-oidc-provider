@@ -1,7 +1,7 @@
-import { strict as assert } from 'node:assert';
+import { describe, it, before, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
 
 import sinon from 'sinon';
-import { expect } from 'chai';
 import { decodeJwt } from 'jose';
 
 import bootstrap from '../test_helper.js';
@@ -11,33 +11,35 @@ import instance from '../../lib/helpers/weak_cache.js';
 const { features: { resourceIndicators } } = defaults;
 
 describe('features.resourceIndicators defaults', () => {
-  it('defaultResource', async () => {
-    expect(await resourceIndicators.defaultResource()).to.be.undefined;
-    expect(await resourceIndicators.defaultResource(undefined, undefined, ['urn:example:rs'])).to.deep.equal(['urn:example:rs']);
+  it('defaultResource', { timeout: 3000 }, async () => {
+    assert.equal(await resourceIndicators.defaultResource(), undefined);
+    assert.deepEqual(await resourceIndicators.defaultResource(undefined, undefined, ['urn:example:rs']), ['urn:example:rs']);
   });
 
-  it('getResourceServerInfo', () => assert.rejects(resourceIndicators.getResourceServerInfo(), (err) => {
-    expect(err.message).to.equal('invalid_target');
-    expect(err.error_description).to.equal('resource indicator is missing, or unknown');
+  it('getResourceServerInfo', { timeout: 3000 }, () => assert.rejects(resourceIndicators.getResourceServerInfo(), (err) => {
+    assert.equal(err.message, 'invalid_target');
+    assert.equal(err.error_description, 'resource indicator is missing, or unknown');
     return true;
   }));
 });
 
 describe('features.resourceIndicators', () => {
-  before(bootstrap(import.meta.url));
-  afterEach(function () {
-    this.provider.removeAllListeners();
-  });
-  before(function () {
-    return this.login({
+  const fixture1 = {};
+
+  before(bootstrap(import.meta.url, fixture1), { timeout: 3000 });
+  afterEach(() => {
+    fixture1.provider.removeAllListeners();
+  }, { timeout: 3000 });
+  before(() => fixture1.login({
       resources: {
         'urn:wl:default': 'api:read api:write',
         'urn:wl:explicit': 'api:read api:write',
       },
-    });
-  });
+    }), { timeout: 3000 });
 
   describe('Resource Server scope changes before token issuance', () => {
+    const fixture2 = Object.create(fixture1);
+
     const sandbox = sinon.createSandbox();
     const resource = 'urn:wl:explicit';
     const scope = 'api:read api:write';
@@ -90,7 +92,7 @@ describe('features.resourceIndicators', () => {
       },
     };
 
-    afterEach(sandbox.restore);
+    afterEach(() => sandbox.restore(), { timeout: 3000 });
 
     for (const [grant_type, authorize] of Object.entries(grantTypes)) {
       for (const accessTokenFormat of ['opaque', 'jwt']) {
@@ -99,32 +101,32 @@ describe('features.resourceIndicators', () => {
           ['narrowed', 'api:read api:admin', 'api:read'],
           ['removed', 'api:admin', ''],
         ]) {
-          it(`${grant_type} applies ${policy} scopes to ${accessTokenFormat} access tokens`, async function () {
+          it(`${grant_type} applies ${policy} scopes to ${accessTokenFormat} access tokens`, { timeout: 3000 }, async () => {
             let resourceScope = scope;
-            sandbox.stub(instance(this.provider).features.resourceIndicators, 'getResourceServerInfo')
+            sandbox.stub(instance(fixture2.provider).features.resourceIndicators, 'getResourceServerInfo')
               .callsFake(() => ({ scope: resourceScope, audience: resource, accessTokenFormat }));
 
-            const parameters = await authorize.call(this);
+            const parameters = await authorize.call(fixture2);
             resourceScope = currentScope;
 
             const issued = sandbox.spy();
-            this.provider.once('access_token.saved', issued);
-            this.provider.once('access_token.issued', issued);
+            fixture2.provider.once('access_token.saved', issued);
+            fixture2.provider.once('access_token.issued', issued);
 
-            const { body } = await this.agent.post('/token')
+            const { body } = await fixture2.agent.post('/token')
               .send({ client_id: 'client', grant_type, resource, ...parameters })
               .type('form')
               .expect(200);
 
-            expect(body).to.have.property('scope', expectedScope);
-            expect(issued.calledOnce).to.be.true;
-            expect(issued.firstCall.args[0]).to.have.property('scope', expectedScope);
+            ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, expectedScope); })(body);
+            assert.equal(issued.calledOnce, true);
+            ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, expectedScope); })(issued.firstCall.args[0]);
             if (accessTokenFormat === 'jwt') {
               const payload = decodeJwt(body.access_token);
               if (expectedScope) {
-                expect(payload).to.have.property('scope', expectedScope);
+                ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, expectedScope); })(payload);
               } else {
-                expect(payload).not.to.have.property('scope');
+                assert.ok(!('scope' in Object(payload)));
               }
             }
           });
@@ -134,8 +136,9 @@ describe('features.resourceIndicators', () => {
   });
 
   describe('resource validations', () => {
-    it('must be a URI', function () {
-      return this.agent.post('/token')
+    const fixture3 = Object.create(fixture1);
+
+    it('must be a URI', { timeout: 3000 }, () => fixture3.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'client_credentials',
@@ -147,11 +150,9 @@ describe('features.resourceIndicators', () => {
         .expect({
           error: 'invalid_target',
           error_description: 'resource indicator must be an absolute URI',
-        });
-    });
+        }));
 
-    it('must not contain a fragment', function () {
-      return this.agent.post('/token')
+    it('must not contain a fragment', { timeout: 3000 }, () => fixture3.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'client_credentials',
@@ -163,26 +164,27 @@ describe('features.resourceIndicators', () => {
         .expect({
           error: 'invalid_target',
           error_description: 'resource indicator must not contain a fragment component',
-        });
-    });
+        }));
   });
 
   ['get', 'post'].forEach((verb) => {
     describe(`${verb} response_type includes token`, () => {
+      const fixture4 = Object.create(fixture1);
+
       const response_type = 'id_token token';
 
-      it('checks the policy and adds the resource', async function () {
+      it('checks the policy and adds the resource', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('access_token.saved', spy);
-        this.provider.once('access_token.issued', spy);
+        fixture4.provider.once('access_token.saved', spy);
+        fixture4.provider.once('access_token.issued', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           resource: 'urn:not:allowed',
           scope: 'openid api:read',
         });
 
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture4.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
@@ -192,55 +194,57 @@ describe('features.resourceIndicators', () => {
           .expect(auth.validateErrorDescription('resource indicator is missing, or unknown'));
 
         auth.resource = 'urn:wl:explicit';
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture4.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         const token = spy.args[0][0];
-        expect(token.aud).to.equal('urn:wl:explicit');
+        assert.equal(token.aud, 'urn:wl:explicit');
       });
 
-      it('applies the default resource', async function () {
+      it('applies the default resource', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('access_token.saved', spy);
-        this.provider.once('access_token.issued', spy);
+        fixture4.provider.once('access_token.saved', spy);
+        fixture4.provider.once('access_token.issued', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture4.AuthorizationRequest({
           response_type,
           scope: 'openid api:read',
         });
 
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture4.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validateFragment)
           .expect(auth.validatePresence(['id_token', 'state', 'access_token', 'expires_in', 'token_type', 'scope']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         const token = spy.args[0][0];
-        expect(token.aud).to.equal('urn:wl:default');
+        assert.equal(token.aud, 'urn:wl:default');
       });
     });
 
     describe(`${verb} response_type includes code`, () => {
+      const fixture5 = Object.create(fixture1);
+
       const response_type = 'code';
 
-      it('checks the policy and adds the resource', async function () {
+      it('checks the policy and adds the resource', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('authorization_code.saved', spy);
+        fixture5.provider.once('authorization_code.saved', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           resource: 'urn:not:allowed',
           scope: 'api:read',
         });
 
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture5.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['error', 'error_description', 'state']))
           .expect(auth.validateState)
@@ -249,23 +253,23 @@ describe('features.resourceIndicators', () => {
           .expect(auth.validateErrorDescription('resource indicator is missing, or unknown'));
 
         auth.resource = 'urn:wl:explicit';
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture5.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         const code = spy.args[0][0];
-        expect(code.resource).to.equal('urn:wl:explicit');
+        assert.equal(code.resource, 'urn:wl:explicit');
 
         const spy2 = sinon.spy();
-        this.provider.once('access_token.saved', spy2);
-        this.provider.once('access_token.issued', spy2);
+        fixture5.provider.once('access_token.saved', spy2);
+        fixture5.provider.once('access_token.issued', spy2);
         const spy3 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy3);
+        fixture5.provider.once('refresh_token.saved', spy3);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
@@ -275,21 +279,21 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy2.calledOnce).to.be.true;
+        assert.equal(spy2.calledOnce, true);
         let at = spy2.args[0][0];
-        expect(at.aud).to.equal('urn:wl:explicit');
+        assert.equal(at.aud, 'urn:wl:explicit');
 
-        expect(spy3.calledOnce).to.be.true;
+        assert.equal(spy3.calledOnce, true);
         let rt = spy3.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:explicit');
+        assert.equal(rt.resource, 'urn:wl:explicit');
 
         const spy4 = sinon.spy();
-        this.provider.once('access_token.saved', spy4);
-        this.provider.once('access_token.issued', spy4);
+        fixture5.provider.once('access_token.saved', spy4);
+        fixture5.provider.once('access_token.issued', spy4);
         const spy5 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy5);
+        fixture5.provider.once('refresh_token.saved', spy5);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'refresh_token',
@@ -298,41 +302,41 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy4.calledOnce).to.be.true;
+        assert.equal(spy4.calledOnce, true);
         at = spy4.args[0][0];
-        expect(at.aud).to.equal('urn:wl:explicit');
+        assert.equal(at.aud, 'urn:wl:explicit');
 
-        expect(spy5.calledOnce).to.be.true;
+        assert.equal(spy5.calledOnce, true);
         rt = spy5.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:explicit');
+        assert.equal(rt.resource, 'urn:wl:explicit');
       });
 
-      it('applies the default resource', async function () {
+      it('applies the default resource', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('authorization_code.saved', spy);
+        fixture5.provider.once('authorization_code.saved', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope: 'api:read',
         });
 
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture5.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         const code = spy.args[0][0];
-        expect(code.resource).to.equal('urn:wl:default');
+        assert.equal(code.resource, 'urn:wl:default');
 
         const spy2 = sinon.spy();
-        this.provider.once('access_token.saved', spy2);
-        this.provider.once('access_token.issued', spy2);
+        fixture5.provider.once('access_token.saved', spy2);
+        fixture5.provider.once('access_token.issued', spy2);
         const spy3 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy3);
+        fixture5.provider.once('refresh_token.saved', spy3);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
@@ -342,21 +346,21 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy2.calledOnce).to.be.true;
+        assert.equal(spy2.calledOnce, true);
         let at = spy2.args[0][0];
-        expect(at.aud).to.equal('urn:wl:default');
+        assert.equal(at.aud, 'urn:wl:default');
 
-        expect(spy3.calledOnce).to.be.true;
+        assert.equal(spy3.calledOnce, true);
         let rt = spy3.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:default');
+        assert.equal(rt.resource, 'urn:wl:default');
 
         const spy4 = sinon.spy();
-        this.provider.once('access_token.saved', spy4);
-        this.provider.once('access_token.issued', spy4);
+        fixture5.provider.once('access_token.saved', spy4);
+        fixture5.provider.once('access_token.issued', spy4);
         const spy5 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy5);
+        fixture5.provider.once('refresh_token.saved', spy5);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'refresh_token',
@@ -365,41 +369,41 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy4.calledOnce).to.be.true;
+        assert.equal(spy4.calledOnce, true);
         at = spy4.args[0][0];
-        expect(at.aud).to.equal('urn:wl:default');
+        assert.equal(at.aud, 'urn:wl:default');
 
-        expect(spy5.calledOnce).to.be.true;
+        assert.equal(spy5.calledOnce, true);
         rt = spy5.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:default');
+        assert.equal(rt.resource, 'urn:wl:default');
       });
 
-      it('applies the default resource (when useGrantedResource returns true)', async function () {
+      it('applies the default resource (when useGrantedResource returns true)', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('authorization_code.saved', spy);
+        fixture5.provider.once('authorization_code.saved', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope: 'openid api:read',
         });
 
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture5.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         const code = spy.args[0][0];
-        expect(code.resource).to.equal('urn:wl:default');
+        assert.equal(code.resource, 'urn:wl:default');
 
         const spy2 = sinon.spy();
-        this.provider.once('access_token.saved', spy2);
-        this.provider.once('access_token.issued', spy2);
+        fixture5.provider.once('access_token.saved', spy2);
+        fixture5.provider.once('access_token.issued', spy2);
         const spy3 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy3);
+        fixture5.provider.once('refresh_token.saved', spy3);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
@@ -410,21 +414,21 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy2.calledOnce).to.be.true;
+        assert.equal(spy2.calledOnce, true);
         let at = spy2.args[0][0];
-        expect(at.aud).to.equal('urn:wl:default');
+        assert.equal(at.aud, 'urn:wl:default');
 
-        expect(spy3.calledOnce).to.be.true;
+        assert.equal(spy3.calledOnce, true);
         let rt = spy3.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:default');
+        assert.equal(rt.resource, 'urn:wl:default');
 
         const spy4 = sinon.spy();
-        this.provider.once('access_token.saved', spy4);
-        this.provider.once('access_token.issued', spy4);
+        fixture5.provider.once('access_token.saved', spy4);
+        fixture5.provider.once('access_token.issued', spy4);
         const spy5 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy5);
+        fixture5.provider.once('refresh_token.saved', spy5);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'refresh_token',
@@ -434,41 +438,41 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy4.calledOnce).to.be.true;
+        assert.equal(spy4.calledOnce, true);
         at = spy4.args[0][0];
-        expect(at.aud).to.equal('urn:wl:default');
+        assert.equal(at.aud, 'urn:wl:default');
 
-        expect(spy5.calledOnce).to.be.true;
+        assert.equal(spy5.calledOnce, true);
         rt = spy5.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:default');
+        assert.equal(rt.resource, 'urn:wl:default');
       });
 
-      it('applies the explicit resource', async function () {
+      it('applies the explicit resource', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
-        this.provider.once('authorization_code.saved', spy);
+        fixture5.provider.once('authorization_code.saved', spy);
 
-        const auth = new this.AuthorizationRequest({
+        const auth = new fixture5.AuthorizationRequest({
           response_type,
           scope: 'openid api:read',
         });
 
-        await this.wrap({ route: '/auth', verb, auth })
+        await fixture5.wrap({ route: '/auth', verb, auth })
           .expect(303)
           .expect(auth.validatePresence(['code', 'state']))
           .expect(auth.validateState)
           .expect(auth.validateClientLocation);
 
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
         const code = spy.args[0][0];
-        expect(code.resource).to.equal('urn:wl:default');
+        assert.equal(code.resource, 'urn:wl:default');
 
         const spy2 = sinon.spy();
-        this.provider.once('access_token.saved', spy2);
-        this.provider.once('access_token.issued', spy2);
+        fixture5.provider.once('access_token.saved', spy2);
+        fixture5.provider.once('access_token.issued', spy2);
         const spy3 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy3);
+        fixture5.provider.once('refresh_token.saved', spy3);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'authorization_code',
@@ -479,21 +483,21 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy2.calledOnce).to.be.true;
+        assert.equal(spy2.calledOnce, true);
         let at = spy2.args[0][0];
-        expect(at.aud).to.equal('urn:wl:default');
+        assert.equal(at.aud, 'urn:wl:default');
 
-        expect(spy3.calledOnce).to.be.true;
+        assert.equal(spy3.calledOnce, true);
         let rt = spy3.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:default');
+        assert.equal(rt.resource, 'urn:wl:default');
 
         const spy4 = sinon.spy();
-        this.provider.once('access_token.saved', spy4);
-        this.provider.once('access_token.issued', spy4);
+        fixture5.provider.once('access_token.saved', spy4);
+        fixture5.provider.once('access_token.issued', spy4);
         const spy5 = sinon.spy();
-        this.provider.once('refresh_token.saved', spy5);
+        fixture5.provider.once('refresh_token.saved', spy5);
 
-        await this.agent.post('/token')
+        await fixture5.agent.post('/token')
           .send({
             client_id: 'client',
             grant_type: 'refresh_token',
@@ -503,20 +507,22 @@ describe('features.resourceIndicators', () => {
           .type('form')
           .expect(200);
 
-        expect(spy4.calledOnce).to.be.true;
+        assert.equal(spy4.calledOnce, true);
         at = spy4.args[0][0];
-        expect(at.aud).to.equal('urn:wl:default');
+        assert.equal(at.aud, 'urn:wl:default');
 
-        expect(spy5.calledOnce).to.be.true;
+        assert.equal(spy5.calledOnce, true);
         rt = spy5.args[0][0];
-        expect(rt.resource).to.equal('urn:wl:default');
+        assert.equal(rt.resource, 'urn:wl:default');
       });
     });
   });
 
   describe('urn:ietf:params:oauth:grant-type:device_code', () => {
-    it('checks the policy and adds the resource', async function () {
-      await this.agent.post('/device/auth')
+    const fixture6 = Object.create(fixture1);
+
+    it('checks the policy and adds the resource', { timeout: 3000 }, async () => {
+      await fixture6.agent.post('/device/auth')
         .send({
           client_id: 'client',
           resource: 'urn:not:allowed',
@@ -531,7 +537,7 @@ describe('features.resourceIndicators', () => {
 
       let user_code;
       let device_code;
-      await this.agent.post('/device/auth')
+      await fixture6.agent.post('/device/auth')
         .send({
           client_id: 'client',
           resource: 'urn:wl:explicit',
@@ -543,9 +549,9 @@ describe('features.resourceIndicators', () => {
           ({ user_code, device_code } = body);
         });
 
-      this.getSession().state = { secret: 'foo' };
+      fixture6.getSession().state = { secret: 'foo' };
 
-      await this.agent.post('/device')
+      await fixture6.agent.post('/device')
         .send({
           user_code,
           xsrf: 'foo',
@@ -555,12 +561,12 @@ describe('features.resourceIndicators', () => {
         .expect(200);
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture6.provider.once('access_token.saved', spy);
+      fixture6.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture6.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
@@ -569,21 +575,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal('urn:wl:explicit');
+      assert.equal(at.aud, 'urn:wl:explicit');
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:explicit');
+      assert.equal(rt.resource, 'urn:wl:explicit');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture6.provider.once('access_token.saved', spy3);
+      fixture6.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture6.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'refresh_token',
@@ -592,19 +598,19 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal('urn:wl:explicit');
+      assert.equal(at.aud, 'urn:wl:explicit');
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:explicit');
+      assert.equal(rt.resource, 'urn:wl:explicit');
     });
 
-    it('applies the default resource', async function () {
+    it('applies the default resource', { timeout: 3000 }, async () => {
       let user_code;
       let device_code;
-      await this.agent.post('/device/auth')
+      await fixture6.agent.post('/device/auth')
         .send({
           client_id: 'client',
           scope: 'api:read',
@@ -615,9 +621,9 @@ describe('features.resourceIndicators', () => {
           ({ user_code, device_code } = body);
         });
 
-      this.getSession().state = { secret: 'foo' };
+      fixture6.getSession().state = { secret: 'foo' };
 
-      await this.agent.post('/device')
+      await fixture6.agent.post('/device')
         .send({
           user_code,
           xsrf: 'foo',
@@ -627,12 +633,12 @@ describe('features.resourceIndicators', () => {
         .expect(200);
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture6.provider.once('access_token.saved', spy);
+      fixture6.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture6.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
@@ -641,21 +647,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture6.provider.once('access_token.saved', spy3);
+      fixture6.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture6.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'refresh_token',
@@ -664,19 +670,19 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
     });
 
-    it('applies the default resource (when useGrantedResource returns true)', async function () {
+    it('applies the default resource (when useGrantedResource returns true)', { timeout: 3000 }, async () => {
       let user_code;
       let device_code;
-      await this.agent.post('/device/auth')
+      await fixture6.agent.post('/device/auth')
         .send({
           client_id: 'client',
           scope: 'openid api:read',
@@ -687,9 +693,9 @@ describe('features.resourceIndicators', () => {
           ({ user_code, device_code } = body);
         });
 
-      this.getSession().state = { secret: 'foo' };
+      fixture6.getSession().state = { secret: 'foo' };
 
-      await this.agent.post('/device')
+      await fixture6.agent.post('/device')
         .send({
           user_code,
           xsrf: 'foo',
@@ -699,12 +705,12 @@ describe('features.resourceIndicators', () => {
         .expect(200);
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture6.provider.once('access_token.saved', spy);
+      fixture6.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture6.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           usegranted: true,
@@ -714,21 +720,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture6.provider.once('access_token.saved', spy3);
+      fixture6.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture6.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           usegranted: true,
@@ -738,19 +744,19 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
     });
 
-    it('applies the explicit resource', async function () {
+    it('applies the explicit resource', { timeout: 3000 }, async () => {
       let user_code;
       let device_code;
-      await this.agent.post('/device/auth')
+      await fixture6.agent.post('/device/auth')
         .send({
           client_id: 'client',
           scope: 'openid api:read',
@@ -761,9 +767,9 @@ describe('features.resourceIndicators', () => {
           ({ user_code, device_code } = body);
         });
 
-      this.getSession().state = { secret: 'foo' };
+      fixture6.getSession().state = { secret: 'foo' };
 
-      await this.agent.post('/device')
+      await fixture6.agent.post('/device')
         .send({
           user_code,
           xsrf: 'foo',
@@ -773,12 +779,12 @@ describe('features.resourceIndicators', () => {
         .expect(200);
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture6.provider.once('access_token.saved', spy);
+      fixture6.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture6.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           resource: 'urn:wl:default',
@@ -788,21 +794,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture6.provider.once('access_token.saved', spy3);
+      fixture6.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture6.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture6.agent.post('/token')
         .send({
           client_id: 'client',
           resource: 'urn:wl:default',
@@ -812,19 +818,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
     });
   });
 
   describe('urn:openid:params:grant-type:ciba', () => {
-    it('checks the policy and adds the resource', async function () {
-      await this.agent.post('/backchannel')
+    const fixture7 = Object.create(fixture1);
+
+    it('checks the policy and adds the resource', { timeout: 3000 }, async () => {
+      await fixture7.agent.post('/backchannel')
         .send({
           client_id: 'client',
           resource: 'urn:not:allowed',
@@ -839,7 +847,7 @@ describe('features.resourceIndicators', () => {
         });
 
       let auth_req_id;
-      await this.agent.post('/backchannel')
+      await fixture7.agent.post('/backchannel')
         .send({
           client_id: 'client',
           resource: 'urn:wl:explicit',
@@ -853,12 +861,12 @@ describe('features.resourceIndicators', () => {
         });
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture7.provider.once('access_token.saved', spy);
+      fixture7.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture7.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture7.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'urn:openid:params:grant-type:ciba',
@@ -868,21 +876,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal('urn:wl:explicit');
+      assert.equal(at.aud, 'urn:wl:explicit');
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:explicit');
+      assert.equal(rt.resource, 'urn:wl:explicit');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture7.provider.once('access_token.saved', spy3);
+      fixture7.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture7.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture7.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'refresh_token',
@@ -892,18 +900,18 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal('urn:wl:explicit');
+      assert.equal(at.aud, 'urn:wl:explicit');
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:explicit');
+      assert.equal(rt.resource, 'urn:wl:explicit');
     });
 
-    it('applies the default resource (when useGrantedResource returns true)', async function () {
+    it('applies the default resource (when useGrantedResource returns true)', { timeout: 3000 }, async () => {
       let auth_req_id;
-      await this.agent.post('/backchannel')
+      await fixture7.agent.post('/backchannel')
         .send({
           client_id: 'client',
           scope: 'openid api:read',
@@ -916,12 +924,12 @@ describe('features.resourceIndicators', () => {
         });
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture7.provider.once('access_token.saved', spy);
+      fixture7.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture7.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture7.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'urn:openid:params:grant-type:ciba',
@@ -931,21 +939,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture7.provider.once('access_token.saved', spy3);
+      fixture7.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture7.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture7.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'refresh_token',
@@ -955,18 +963,18 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal('urn:wl:default');
+      assert.equal(at.aud, 'urn:wl:default');
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
     });
 
-    it('issues access token for userinfo (when useGrantedResource returns false)', async function () {
+    it('issues access token for userinfo (when useGrantedResource returns false)', { timeout: 3000 }, async () => {
       let auth_req_id;
-      await this.agent.post('/backchannel')
+      await fixture7.agent.post('/backchannel')
         .send({
           client_id: 'client',
           scope: 'openid api:read',
@@ -979,12 +987,12 @@ describe('features.resourceIndicators', () => {
         });
 
       const spy = sinon.spy();
-      this.provider.once('access_token.saved', spy);
-      this.provider.once('access_token.issued', spy);
+      fixture7.provider.once('access_token.saved', spy);
+      fixture7.provider.once('access_token.issued', spy);
       const spy2 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy2);
+      fixture7.provider.once('refresh_token.saved', spy2);
 
-      await this.agent.post('/token')
+      await fixture7.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'urn:openid:params:grant-type:ciba',
@@ -993,21 +1001,21 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy.calledOnce).to.be.true;
+      assert.equal(spy.calledOnce, true);
       let at = spy.args[0][0];
-      expect(at.aud).to.equal(undefined);
+      assert.equal(at.aud, undefined);
 
-      expect(spy2.calledOnce).to.be.true;
+      assert.equal(spy2.calledOnce, true);
       let rt = spy2.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
 
       const spy3 = sinon.spy();
-      this.provider.once('access_token.saved', spy3);
-      this.provider.once('access_token.issued', spy3);
+      fixture7.provider.once('access_token.saved', spy3);
+      fixture7.provider.once('access_token.issued', spy3);
       const spy4 = sinon.spy();
-      this.provider.once('refresh_token.saved', spy4);
+      fixture7.provider.once('refresh_token.saved', spy4);
 
-      await this.agent.post('/token')
+      await fixture7.agent.post('/token')
         .send({
           client_id: 'client',
           grant_type: 'refresh_token',
@@ -1016,38 +1024,40 @@ describe('features.resourceIndicators', () => {
         .type('form')
         .expect(200);
 
-      expect(spy3.calledOnce).to.be.true;
+      assert.equal(spy3.calledOnce, true);
       at = spy3.args[0][0];
-      expect(at.aud).to.equal(undefined);
+      assert.equal(at.aud, undefined);
 
-      expect(spy4.calledOnce).to.be.true;
+      assert.equal(spy4.calledOnce, true);
       rt = spy4.args[0][0];
-      expect(rt.resource).to.equal('urn:wl:default');
+      assert.equal(rt.resource, 'urn:wl:default');
     });
   });
 
   describe('userinfo', () => {
-    it('allows userinfo for audience-less tokens', async function () {
-      const at = new this.provider.AccessToken({
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+    const fixture8 = Object.create(fixture1);
+
+    it('allows userinfo for audience-less tokens', { timeout: 3000 }, async () => {
+      const at = new fixture8.provider.AccessToken({
+        accountId: fixture8.loggedInAccountId,
+        grantId: fixture8.getGrantId(),
+        client: await fixture8.provider.Client.find('client'),
         scope: 'openid api:read',
         aud: undefined,
       });
 
       const bearer = await at.save();
 
-      return this.agent.get('/me')
+      return fixture8.agent.get('/me')
         .auth(bearer, { type: 'bearer' })
         .expect(200);
     });
 
-    it('fails userinfo for string userinfo url tokens', async function () {
-      const at = new this.provider.AccessToken({
-        accountId: this.loggedInAccountId,
-        grantId: this.getGrantId(),
-        client: await this.provider.Client.find('client'),
+    it('fails userinfo for string userinfo url tokens', { timeout: 3000 }, async () => {
+      const at = new fixture8.provider.AccessToken({
+        accountId: fixture8.loggedInAccountId,
+        grantId: fixture8.getGrantId(),
+        client: await fixture8.provider.Client.find('client'),
         scope: 'openid api:read',
         aud: 'urn:foo:bar',
       });
@@ -1055,23 +1065,23 @@ describe('features.resourceIndicators', () => {
       const bearer = await at.save();
 
       const spy = sinon.spy();
-      this.provider.once('userinfo.error', spy);
+      fixture8.provider.once('userinfo.error', spy);
 
-      await this.agent.get('/me')
+      await fixture8.agent.get('/me')
         .auth(bearer, { type: 'bearer' })
         .expect(401)
         .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
 
-      expect(spy).to.have.property('calledOnce', true);
-      expect(spy.args[0][1]).to.have.property('error_detail', 'token audience prevents accessing the userinfo endpoint');
+      ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+      ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'token audience prevents accessing the userinfo endpoint'); })(spy.args[0][1]);
     });
 
     [{}, false, 1].forEach((aud, i, { length }) => {
-      it(`fails on various invalid aud values ${i + 1}/${length}`, async function () {
-        const at = new this.provider.AccessToken({
-          accountId: this.loggedInAccountId,
-          grantId: this.getGrantId(),
-          client: await this.provider.Client.find('client'),
+      it(`fails on various invalid aud values ${i + 1}/${length}`, { timeout: 3000 }, async () => {
+        const at = new fixture8.provider.AccessToken({
+          accountId: fixture8.loggedInAccountId,
+          grantId: fixture8.getGrantId(),
+          client: await fixture8.provider.Client.find('client'),
           scope: 'openid api:read',
           aud,
         });
@@ -1079,15 +1089,15 @@ describe('features.resourceIndicators', () => {
         const bearer = await at.save();
 
         const spy = sinon.spy();
-        this.provider.once('userinfo.error', spy);
+        fixture8.provider.once('userinfo.error', spy);
 
-        await this.agent.get('/me')
+        await fixture8.agent.get('/me')
           .auth(bearer, { type: 'bearer' })
           .expect(401)
           .expect({ error: 'invalid_token', error_description: 'invalid token provided' });
 
-        expect(spy).to.have.property('calledOnce', true);
-        expect(spy.args[0][1]).to.have.property('error_detail', 'access token not found');
+        ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(spy);
+        ((actual) => { assert.ok('error_detail' in Object(actual)); assert.equal(actual.error_detail, 'access token not found'); })(spy.args[0][1]);
       });
     });
   });

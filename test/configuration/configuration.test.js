@@ -1,9 +1,10 @@
-import { expect } from 'chai';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 import Configuration from '../../lib/helpers/configuration.js';
 
 describe('Provider configuration', () => {
-  it('rejects inherited enabled feature members', () => {
+  it('rejects inherited enabled feature members', { timeout: 3000 }, () => {
     class DeviceFlow {}
     Object.defineProperties(DeviceFlow.prototype, {
       charset: { value: 'digits' },
@@ -15,22 +16,21 @@ describe('Provider configuration', () => {
       mask: { value: '***' },
     });
 
-    expect(() => new Configuration({
+    assert.throws(() => new Configuration({
       features: { deviceFlow: new DeviceFlow() },
-    })).to.throw('features.deviceFlow.enabled must be an own property');
+    }), (error) => { assert.ok(error.message.includes('features.deviceFlow.enabled must be an own property')); return true; });
 
     class DisabledDeviceFlow {}
     DisabledDeviceFlow.prototype.enabled = false;
-    expect(() => new Configuration({
+    assert.throws(() => new Configuration({
       features: { deviceFlow: new DisabledDeviceFlow() },
-    })).to.throw('features.deviceFlow.enabled must be an own property');
+    }), (error) => { assert.ok(error.message.includes('features.deviceFlow.enabled must be an own property')); return true; });
   });
 
-  it('uses curated errors for null validation containers', () => {
-    expect(() => new Configuration({ enabledJWA: null }))
-      .to.throw('enabledJWA must be an object');
+  it('uses curated errors for null validation containers', { timeout: 3000 }, () => {
+    assert.throws(() => new Configuration({ enabledJWA: null }), (error) => { assert.ok(error.message.includes('enabledJWA must be an object')); return true; });
 
-    expect(() => new Configuration({
+    assert.throws(() => new Configuration({
       features: {
         openid4vci: {
           ack: 'experimental-01',
@@ -43,11 +43,11 @@ describe('Provider configuration', () => {
           enabled: true,
         },
       },
-    })).to.throw("features.openid4vci.credentialConfigurationsSupported['example'].proof_types_supported.attestation must be an object");
+    }), (error) => { assert.ok(error.message.includes("features.openid4vci.credentialConfigurationsSupported['example'].proof_types_supported.attestation must be an object")); return true; });
 
     class ProofTypeConfiguration {}
     ProofTypeConfiguration.prototype.key_attestations_required = { key_storage: [] };
-    expect(() => new Configuration({
+    assert.throws(() => new Configuration({
       features: {
         openid4vci: {
           ack: 'experimental-01',
@@ -62,10 +62,10 @@ describe('Provider configuration', () => {
           enabled: true,
         },
       },
-    })).to.throw("features.openid4vci.credentialConfigurationsSupported['example'].proof_types_supported.attestation.key_attestations_required.key_storage must be a non-empty array of non-empty strings");
+    }), (error) => { assert.ok(error.message.includes("features.openid4vci.credentialConfigurationsSupported['example'].proof_types_supported.attestation.key_attestations_required.key_storage must be a non-empty array of non-empty strings")); return true; });
   });
 
-  it('does not mutate frozen configuration input', () => {
+  it('does not mutate frozen configuration input', { timeout: 3000 }, () => {
     const input = {
       claims: {
         profile: ['name'],
@@ -99,15 +99,15 @@ describe('Provider configuration', () => {
 
     const configuration = new Configuration(input);
 
-    expect(configuration.claims.profile).to.eql({ name: null });
-    expect(configuration.clientAuthSigningAlgValues).to.eql(['RS256']);
-    expect(configuration.scopes).to.eql(new Set(['openid', 'profile']));
-    expect(input.claims.profile).to.eql(['name']);
-    expect(input.enabledJWA.clientAuthSigningAlgValues).to.eql(['HS256', 'RS256']);
-    expect(input.scopes).to.eql(['openid']);
+    assert.deepEqual(configuration.claims.profile, { name: null });
+    assert.deepEqual(configuration.clientAuthSigningAlgValues, ['RS256']);
+    assert.deepEqual(configuration.scopes, new Set(['openid', 'profile']));
+    assert.deepEqual(input.claims.profile, ['name']);
+    assert.deepEqual(input.enabledJWA.clientAuthSigningAlgValues, ['HS256', 'RS256']);
+    assert.deepEqual(input.scopes, ['openid']);
   });
 
-  it('copies Set configuration input before normalization', () => {
+  it('copies Set configuration input before normalization', { timeout: 3000 }, () => {
     const input = {
       acrValues: new Set(['urn:example:acr']),
       claims: {
@@ -126,36 +126,35 @@ describe('Provider configuration', () => {
 
     const configuration = new Configuration(input);
 
-    expect(configuration.acrValues).not.to.equal(input.acrValues);
-    expect(configuration.clientAuthMethods).not.to.equal(input.clientAuthMethods);
-    expect(configuration.extraParams).not.to.equal(input.extraParams);
-    expect(configuration.features.ciba.deliveryModes).not.to.equal(input.features.ciba.deliveryModes);
-    expect(configuration.scopes).not.to.equal(input.scopes);
-    expect(configuration.subjectTypes).not.to.equal(input.subjectTypes);
-    expect(input.scopes).to.eql(new Set(['openid']));
-    expect(configuration.scopes).to.eql(new Set(['openid', 'profile']));
+    assert.notEqual(configuration.acrValues, input.acrValues);
+    assert.notEqual(configuration.clientAuthMethods, input.clientAuthMethods);
+    assert.notEqual(configuration.extraParams, input.extraParams);
+    assert.notEqual(configuration.features.ciba.deliveryModes, input.features.ciba.deliveryModes);
+    assert.notEqual(configuration.scopes, input.scopes);
+    assert.notEqual(configuration.subjectTypes, input.subjectTypes);
+    assert.deepEqual(input.scopes, new Set(['openid']));
+    assert.deepEqual(configuration.scopes, new Set(['openid', 'profile']));
   });
 
-  it('checks that a feature configuration property is valid', () => {
-    expect(() => {
+  it('checks that a feature configuration property is valid', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Configuration({
         features: {
           foo: {},
         },
       });
-    }).to.throw('Unknown feature configuration: foo');
+    }, (error) => { assert.ok(error.message.includes('Unknown feature configuration: foo')); return true; });
   });
 
-  it('can validate feature configuration after construction', () => {
+  it('can validate feature configuration after construction', { timeout: 3000 }, () => {
     const configuration = new Configuration();
     configuration.features.unknown = {};
 
-    expect(() => configuration.logDraftNotice())
-      .to.throw('Unknown feature configuration: unknown');
+    assert.throws(() => configuration.logDraftNotice(), (error) => { assert.ok(error.message.includes('Unknown feature configuration: unknown')); return true; });
   });
 
-  it('checks that a stable feature does not have an ack', () => {
-    expect(() => {
+  it('checks that a stable feature does not have an ack', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Configuration({
         features: {
           deviceFlow: {
@@ -164,11 +163,11 @@ describe('Provider configuration', () => {
           },
         },
       });
-    }).to.throw("deviceFlow feature is now stable, the ack draft-01 is no longer valid. Check the stable feature's configuration for any breaking changes.");
+    }, (error) => { assert.ok(error.message.includes("deviceFlow feature is now stable, the ack draft-01 is no longer valid. Check the stable feature's configuration for any breaking changes.")); return true; });
   });
 
-  it('accepts stable and acknowledged experimental features together', () => {
-    expect(() => {
+  it('accepts stable and acknowledged experimental features together', { timeout: 3000 }, () => {
+    assert.doesNotThrow(() => {
       new Configuration({
         features: {
           deviceFlow: {
@@ -180,37 +179,37 @@ describe('Provider configuration', () => {
           },
         },
       });
-    }).not.to.throw();
+    });
   });
 
-  it('checks that a feature configuration is not a boolean', () => {
-    expect(() => {
+  it('checks that a feature configuration is not a boolean', { timeout: 3000 }, () => {
+    assert.throws(() => {
       new Configuration({
         features: {
           devInteractions: false,
         },
       });
-    }).to.throw('Features are not enabled/disabled with a boolean value. See the documentation for more details.');
-    expect(() => {
+    }, (error) => { assert.ok(error.message.includes('Features are not enabled/disabled with a boolean value. See the documentation for more details.')); return true; });
+    assert.throws(() => {
       new Configuration({
         features: {
           devInteractions: true,
         },
       });
-    }).to.throw('Features are not enabled/disabled with a boolean value. See the documentation for more details.');
+    }, (error) => { assert.ok(error.message.includes('Features are not enabled/disabled with a boolean value. See the documentation for more details.')); return true; });
   });
 
-  it('checks that cookies.long.sameSite is none when configuring enableHttpPostMethods', () => {
-    expect(new Configuration().enableHttpPostMethods).to.be.false;
-    expect(new Configuration({ enableHttpPostMethods: false }).enableHttpPostMethods).to.be.false;
-    expect(new Configuration({
+  it('checks that cookies.long.sameSite is none when configuring enableHttpPostMethods', { timeout: 3000 }, () => {
+    assert.equal(new Configuration().enableHttpPostMethods, false);
+    assert.equal(new Configuration({ enableHttpPostMethods: false }).enableHttpPostMethods, false);
+    assert.equal(new Configuration({
       enableHttpPostMethods: true,
       cookies: {
         long: {
           sameSite: 'none',
         },
       },
-    }).enableHttpPostMethods).to.be.true;
+    }).enableHttpPostMethods, true);
     new Configuration({
       enableHttpPostMethods: true,
       cookies: {
@@ -227,12 +226,12 @@ describe('Provider configuration', () => {
         },
       },
     });
-    expect(() => {
+    assert.throws(() => {
       new Configuration({
         enableHttpPostMethods: true,
       });
-    }).to.throw('HTTP POST Method support requires that cookies.long.sameSite is set to none');
-    expect(() => {
+    }, (error) => { assert.ok(error.message.includes('HTTP POST Method support requires that cookies.long.sameSite is set to none')); return true; });
+    assert.throws(() => {
       new Configuration({
         enableHttpPostMethods: true,
         cookies: {
@@ -241,11 +240,11 @@ describe('Provider configuration', () => {
           },
         },
       });
-    }).to.throw('HTTP POST Method support requires that cookies.long.sameSite is set to none');
+    }, (error) => { assert.ok(error.message.includes('HTTP POST Method support requires that cookies.long.sameSite is set to none')); return true; });
   });
 
   describe('fetchResponseBodyLimits', () => {
-    it('accepts valid finite limits', () => {
+    it('accepts valid finite limits', { timeout: 3000 }, () => {
       const conf = new Configuration({
         fetchResponseBodyLimits: {
           'client_id metadata document': 1024,
@@ -253,66 +252,66 @@ describe('Provider configuration', () => {
           sector_identifier_uri: 2048,
         },
       });
-      expect(conf.fetchResponseBodyLimits.jwks_uri).to.equal(10240);
+      assert.equal(conf.fetchResponseBodyLimits.jwks_uri, 10240);
     });
 
-    it('accepts Infinity (no limit)', () => {
+    it('accepts Infinity (no limit)', { timeout: 3000 }, () => {
       const conf = new Configuration({
         fetchResponseBodyLimits: {
           jwks_uri: Infinity,
         },
       });
-      expect(conf.fetchResponseBodyLimits.jwks_uri).to.equal(Infinity);
+      assert.equal(conf.fetchResponseBodyLimits.jwks_uri, Infinity);
     });
 
-    it('rejects negative values', () => {
-      expect(() => {
+    it('rejects negative values', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: -1,
           },
         });
-      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+      }, (error) => { assert.ok(error.message.includes('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity')); return true; });
     });
 
-    it('rejects non-number values', () => {
-      expect(() => {
+    it('rejects non-number values', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: '1024',
           },
         });
-      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+      }, (error) => { assert.ok(error.message.includes('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity')); return true; });
     });
 
-    it('rejects null values', () => {
-      expect(() => {
+    it('rejects null values', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: null,
           },
         });
-      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+      }, (error) => { assert.ok(error.message.includes('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity')); return true; });
     });
 
-    it('rejects NaN', () => {
-      expect(() => {
+    it('rejects NaN', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: NaN,
           },
         });
-      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+      }, (error) => { assert.ok(error.message.includes('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity')); return true; });
     });
 
-    it('rejects floats', () => {
-      expect(() => {
+    it('rejects floats', { timeout: 3000 }, () => {
+      assert.throws(() => {
         new Configuration({
           fetchResponseBodyLimits: {
             jwks_uri: 10.5,
           },
         });
-      }).to.throw('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity');
+      }, (error) => { assert.ok(error.message.includes('fetchResponseBodyLimits."jwks_uri" must be a non-negative safe integer or Infinity')); return true; });
     });
   });
 });

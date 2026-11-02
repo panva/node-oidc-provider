@@ -1,5 +1,6 @@
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 import { normalize } from '../../lib/helpers/user_codes.js';
@@ -7,13 +8,15 @@ import { normalize } from '../../lib/helpers/user_codes.js';
 const route = '/device/auth';
 
 describe('device_authorization_endpoint', () => {
-  before(bootstrap(import.meta.url));
+  const fixture = {};
 
-  it('rejects other than application/x-www-form-urlencoded', function () {
+  before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  it('rejects other than application/x-www-form-urlencoded', { timeout: 3000 }, () => {
     const spy = sinon.spy();
-    this.provider.once('device_authorization.error', spy);
+    fixture.provider.once('device_authorization.error', spy);
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .send({
         client_id: 'client',
         scope: 'openid',
@@ -21,7 +24,7 @@ describe('device_authorization_endpoint', () => {
       .expect(400)
       .expect('content-type', /application\/json/)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect({
         error: 'invalid_request',
@@ -30,11 +33,13 @@ describe('device_authorization_endpoint', () => {
   });
 
   describe('client validation', () => {
-    it('only responds to clients with urn:ietf:params:oauth:grant-type:device_code enabled', function () {
-      const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
+    const fixture1 = Object.create(fixture);
 
-      return this.agent.post(route)
+    it('only responds to clients with urn:ietf:params:oauth:grant-type:device_code enabled', { timeout: 3000 }, () => {
+      const spy = sinon.spy();
+      fixture1.provider.once('device_authorization.error', spy);
+
+      return fixture1.agent.post(route)
         .send({
           client_id: 'client-not-allowed',
         })
@@ -46,15 +51,15 @@ describe('device_authorization_endpoint', () => {
           error_description: 'urn:ietf:params:oauth:grant-type:device_code is not allowed for this client',
         })
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
+          assert.equal(spy.calledOnce, true);
         });
     });
 
-    it('rejects invalid clients', function () {
+    it('rejects invalid clients', { timeout: 3000 }, () => {
       const spy = sinon.spy();
-      this.provider.once('device_authorization.error', spy);
+      fixture1.provider.once('device_authorization.error', spy);
 
-      return this.agent.post(route)
+      return fixture1.agent.post(route)
         .send({
           client_id: 'not-found-client',
         })
@@ -62,7 +67,7 @@ describe('device_authorization_endpoint', () => {
         .expect(401)
         .expect('content-type', /application\/json/)
         .expect(() => {
-          expect(spy.calledOnce).to.be.true;
+          assert.equal(spy.calledOnce, true);
         })
         .expect({
           error: 'invalid_client',
@@ -72,12 +77,14 @@ describe('device_authorization_endpoint', () => {
   });
 
   describe('param validation', () => {
-    ['request', 'request_uri', 'registration'].forEach((param) => {
-      it(`check for not supported parameter ${param}`, function () {
-        const spy = sinon.spy();
-        this.provider.once('device_authorization.error', spy);
+    const fixture2 = Object.create(fixture);
 
-        return this.agent.post(route)
+    ['request', 'request_uri', 'registration'].forEach((param) => {
+      it(`check for not supported parameter ${param}`, { timeout: 3000 }, () => {
+        const spy = sinon.spy();
+        fixture2.provider.once('device_authorization.error', spy);
+
+        return fixture2.agent.post(route)
           .send({
             client_id: 'client',
             [param]: 'some',
@@ -86,7 +93,7 @@ describe('device_authorization_endpoint', () => {
           .expect(400)
           .expect('content-type', /application\/json/)
           .expect(() => {
-            expect(spy.calledOnce).to.be.true;
+            assert.equal(spy.calledOnce, true);
           })
           .expect({
             error: `${param}_not_supported`,
@@ -95,12 +102,12 @@ describe('device_authorization_endpoint', () => {
     });
   });
 
-  it('responds with json 200', async function () {
+  it('responds with json 200', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('device_authorization.success', spy);
+    fixture.provider.once('device_authorization.success', spy);
     let response;
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .send({
         client_id: 'client',
         scope: 'openid',
@@ -118,39 +125,38 @@ describe('device_authorization_endpoint', () => {
       .expect(200)
       .expect('content-type', /application\/json/)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
+        assert.equal(spy.calledOnce, true);
       })
       .expect(({ body }) => {
-        expect(body).to.have.keys([
+        assert.deepEqual(new Set(Object.keys(body)), new Set([
           'device_code',
           'user_code',
           'verification_uri',
           'verification_uri_complete',
           'expires_in',
-        ]);
-        expect(body.verification_uri_complete).to.equal(`${body.verification_uri}?user_code=${body.user_code}`);
-        expect(body).to.have.property('verification_uri').that.matches(/\/device$/);
-        expect(body).to.have.property('expires_in').closeTo(600, 1);
+        ]));
+        assert.equal(body.verification_uri_complete, `${body.verification_uri}?user_code=${body.user_code}`);
+        ((actual) => { assert.ok('verification_uri' in Object(actual)); assert.match(actual.verification_uri, /\/device$/); })(body);
+        ((actual) => { assert.ok('expires_in' in Object(actual)); ((value) => { assert.equal(typeof value, 'number'); assert.ok(Math.abs((value) - (600)) <= (1)); })(actual.expires_in); })(body);
         response = body;
       });
 
-    const dc = await this.provider.DeviceCode.find(response.device_code);
-    expect(dc).to.be.ok;
-    expect(dc).to.have.property('clientId', 'client');
-    expect(dc).to.have.property('userCode').that.is.a('string').and.equals(normalize(response.user_code));
-    expect(dc).to.have.property('params').that.is.an('object');
-    expect(dc.params).to.have.property('client_id', 'client');
-    expect(dc.params).to.have.property('scope', 'openid');
-    expect(dc.params).to.have.property('extra', 'included');
-    expect(dc.params).to.have.property('claims').that.equals(JSON.stringify({ userinfo: { email: null } }));
-    expect(dc.params).not.to.have.property('redirect_uri');
-    expect(dc.params).not.to.have.property('response_type');
-    expect(dc.params).not.to.have.property('state');
-    expect(dc.params).not.to.have.property('response_mode');
+    const dc = await fixture.provider.DeviceCode.find(response.device_code);
+    assert.ok(dc);
+    ((actual) => { assert.ok('clientId' in Object(actual)); assert.equal(actual.clientId, 'client'); })(dc);
+    ((actual) => { assert.ok('userCode' in Object(actual)); assert.equal(typeof actual.userCode, 'string'); assert.equal(actual.userCode, normalize(response.user_code)); })(dc);
+    ((actual) => { assert.ok('params' in Object(actual)); assert.equal(Object.prototype.toString.call(actual.params), '[object Object]'); })(dc);
+    ((actual) => { assert.ok('client_id' in Object(actual)); assert.equal(actual.client_id, 'client'); })(dc.params);
+    ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'openid'); })(dc.params);
+    ((actual) => { assert.ok('extra' in Object(actual)); assert.equal(actual.extra, 'included'); })(dc.params);
+    ((actual) => { assert.ok('claims' in Object(actual)); assert.equal(actual.claims, JSON.stringify({ userinfo: { email: null } })); })(dc.params);
+    assert.ok(!('redirect_uri' in Object(dc.params)));
+    assert.ok(!('response_type' in Object(dc.params)));
+    assert.ok(!('state' in Object(dc.params)));
+    assert.ok(!('response_mode' in Object(dc.params)));
   });
 
-  it('does not require PAR for clients with require_pushed_authorization_requests', function () {
-    return this.agent.post(route)
+  it('does not require PAR for clients with require_pushed_authorization_requests', { timeout: 3000 }, () => fixture.agent.post(route)
       .send({
         client_id: 'client-par-required',
         scope: 'openid',
@@ -159,39 +165,36 @@ describe('device_authorization_endpoint', () => {
       .expect(200)
       .expect('content-type', /application\/json/)
       .expect(({ body }) => {
-        expect(body).to.have.keys([
+        assert.deepEqual(new Set(Object.keys(body)), new Set([
           'device_code',
           'user_code',
           'verification_uri',
           'verification_uri_complete',
           'expires_in',
-        ]);
-      });
-  });
+        ]));
+      }));
 
-  it('handles regular client auth', function () {
-    return this.agent.post(route)
+  it('handles regular client auth', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client-basic-auth', 'secret')
       .type('form')
       .expect(200)
       .expect('content-type', /application\/json/)
       .expect(({ body }) => {
-        expect(body).to.have.keys([
+        assert.deepEqual(new Set(Object.keys(body)), new Set([
           'device_code',
           'user_code',
           'verification_uri',
           'verification_uri_complete',
           'expires_in',
-        ]);
-      });
-  });
+        ]));
+      }));
 
-  it('populates ctx.oidc.entities', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Client', 'DeviceCode');
+  it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+    fixture.assertOnce((ctx) => {
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'DeviceCode']));
     }, done);
 
-    this.agent.post(route)
+    fixture.agent.post(route)
       .send({
         client_id: 'client',
         scope: 'openid',

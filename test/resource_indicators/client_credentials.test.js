@@ -1,18 +1,21 @@
+import { describe, before, it } from 'node:test';
+import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { expect } from 'chai';
 
 import bootstrap from '../test_helper.js';
 
 const route = '/token';
 
 describe('grant_type=client_credentials w/ resourceIndicators', () => {
-  before(bootstrap(import.meta.url, { config: 'client_credentials' }));
+  const fixture = {};
 
-  it('provides a Bearer client credentials opaque token', function () {
+  before(bootstrap(import.meta.url, fixture, { config: 'client_credentials' }), { timeout: 3000 });
+
+  it('provides a Bearer client credentials opaque token', { timeout: 3000 }, () => {
     const spy = sinon.spy();
-    this.provider.once('client_credentials.saved', spy);
+    fixture.provider.once('client_credentials.saved', spy);
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -22,21 +25,21 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .type('form')
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.firstCall.args[0]).to.have.property('scope').and.eql('api:read');
-        expect(spy.firstCall.args[0]).to.have.property('aud').and.eql('urn:wl:opaque');
+        assert.equal(spy.calledOnce, true);
+        ((actual) => { assert.ok('scope' in Object(actual)); assert.deepEqual(actual.scope, 'api:read'); })(spy.firstCall.args[0]);
+        ((actual) => { assert.ok('aud' in Object(actual)); assert.deepEqual(actual.aud, 'urn:wl:opaque'); })(spy.firstCall.args[0]);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
-        expect(response.body.scope).to.eql('api:read');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'expires_in', 'token_type', 'scope']));
+        assert.deepEqual(response.body.scope, 'api:read');
       });
   });
 
-  it('provides a Bearer client credentials jwt token', function () {
+  it('provides a Bearer client credentials jwt token', { timeout: 3000 }, () => {
     const spy = sinon.spy();
-    this.provider.once('client_credentials.issued', spy);
+    fixture.provider.once('client_credentials.issued', spy);
 
-    return this.agent.post(route)
+    return fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -46,18 +49,17 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .type('form')
       .expect(200)
       .expect(() => {
-        expect(spy.calledOnce).to.be.true;
-        expect(spy.firstCall.args[0]).to.have.property('scope').and.eql('api:read');
-        expect(spy.firstCall.args[0]).to.have.property('aud').and.eql('urn:wl:jwt');
+        assert.equal(spy.calledOnce, true);
+        ((actual) => { assert.ok('scope' in Object(actual)); assert.deepEqual(actual.scope, 'api:read'); })(spy.firstCall.args[0]);
+        ((actual) => { assert.ok('aud' in Object(actual)); assert.deepEqual(actual.aud, 'urn:wl:jwt'); })(spy.firstCall.args[0]);
       })
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
-        expect(response.body.scope).to.eql('api:read');
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'expires_in', 'token_type', 'scope']));
+        assert.deepEqual(response.body.scope, 'api:read');
       });
   });
 
-  it('ignores unsupported scopes', function () {
-    return this.agent.post(route)
+  it('ignores unsupported scopes', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -67,13 +69,11 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .type('form')
       .expect(200)
       .expect((response) => {
-        expect(response.body).to.have.keys('access_token', 'expires_in', 'token_type', 'scope');
-        expect(response.body.scope).to.eql('api:read');
-      });
-  });
+        assert.deepEqual(new Set(Object.keys(response.body)), new Set(['access_token', 'expires_in', 'token_type', 'scope']));
+        assert.deepEqual(response.body.scope, 'api:read');
+      }));
 
-  it('can reject resource indicator', function () {
-    return this.agent.post(route)
+  it('can reject resource indicator', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -85,35 +85,30 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .expect({
         error: 'invalid_target',
         error_description: 'resource indicator is missing, or unknown',
-      });
-  });
+      }));
 
-  it('only supports a single resource indicator', function () {
-    return this.agent.post(route)
+  it('only supports a single resource indicator', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send('grant_type=client_credentials&scope=api:read&resource=urn:wl:opaque:default&resource=urn:wl:opaque:explicit')
       .type('form')
       .expect(400)
       .expect(/invalid_target/)
-      .expect(/only a single resource indicator value is supported/);
-  });
+      .expect(/only a single resource indicator value is supported/));
 
-  it('validates each resource to be a valid URI individually', function () {
-    return this.agent.post(route)
+  it('validates each resource to be a valid URI individually', { timeout: 3000 }, () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send('grant_type=client_credentials&scope=api:read&resource=urn:wl:opaque:default&resource=invalid')
       .type('form')
       .expect(400)
       .expect(/invalid_target/)
-      .expect(/resource indicator must be an absolute URI/);
-  });
+      .expect(/resource indicator must be an absolute URI/));
 
-  it('checks the policy and adds the resource', async function () {
+  it('checks the policy and adds the resource', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('client_credentials.saved', spy);
-    this.provider.once('client_credentials.issued', spy);
+    fixture.provider.once('client_credentials.saved', spy);
+    fixture.provider.once('client_credentials.issued', spy);
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -127,7 +122,7 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
         error_description: 'resource indicator is missing, or unknown',
       });
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -137,18 +132,18 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .type('form')
       .expect(200);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     const token = spy.args[0][0];
-    expect(token.aud).to.equal('urn:wl:opaque:explicit');
-    expect(token.scope).to.equal('api:read');
+    assert.equal(token.aud, 'urn:wl:opaque:explicit');
+    assert.equal(token.scope, 'api:read');
   });
 
-  it('also ignores resource unrecognized scopes', async function () {
+  it('also ignores resource unrecognized scopes', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('client_credentials.saved', spy);
-    this.provider.once('client_credentials.issued', spy);
+    fixture.provider.once('client_credentials.saved', spy);
+    fixture.provider.once('client_credentials.issued', spy);
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -158,18 +153,18 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .type('form')
       .expect(200);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     const token = spy.args[0][0];
-    expect(token.aud).to.equal('urn:wl:opaque:explicit');
-    expect(token.scope).to.equal('api:read api:write');
+    assert.equal(token.aud, 'urn:wl:opaque:explicit');
+    assert.equal(token.scope, 'api:read api:write');
   });
 
-  it('applies the default resource', async function () {
+  it('applies the default resource', { timeout: 3000 }, async () => {
     const spy = sinon.spy();
-    this.provider.once('client_credentials.saved', spy);
-    this.provider.once('client_credentials.issued', spy);
+    fixture.provider.once('client_credentials.saved', spy);
+    fixture.provider.once('client_credentials.issued', spy);
 
-    await this.agent.post(route)
+    await fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',
@@ -178,17 +173,17 @@ describe('grant_type=client_credentials w/ resourceIndicators', () => {
       .type('form')
       .expect(200);
 
-    expect(spy.calledOnce).to.be.true;
+    assert.equal(spy.calledOnce, true);
     const token = spy.args[0][0];
-    expect(token.aud).to.equal('urn:wl:opaque:default');
+    assert.equal(token.aud, 'urn:wl:opaque:default');
   });
 
-  it('populates ctx.oidc.entities', function (done) {
-    this.assertOnce((ctx) => {
-      expect(ctx.oidc.entities).to.have.keys('Client', 'ClientCredentials');
+  it('populates ctx.oidc.entities', { timeout: 3000 }, (_t, done) => {
+    fixture.assertOnce((ctx) => {
+      assert.deepEqual(new Set(Object.keys(ctx.oidc.entities)), new Set(['Client', 'ClientCredentials']));
     }, done);
 
-    this.agent.post(route)
+    fixture.agent.post(route)
       .auth('client', 'secret')
       .send({
         grant_type: 'client_credentials',

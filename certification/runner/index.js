@@ -1,9 +1,13 @@
-import { strict as assert } from 'node:assert';
+import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
+import { after, describe, it } from 'node:test';
 
+import assertNoFocusedTests from '../../tools/check-test-focus.js';
 import API, { assertPlanId } from './api.js';
 import debug from './debug.js';
 import credentialOfferDriver from './vci.js';
+
+if ('CI' in process.env) assertNoFocusedTests([import.meta.filename]);
 
 const {
   SUITE_ACCESS_TOKEN,
@@ -173,6 +177,7 @@ try {
 
   const { id: PLAN_ID, modules: MODULES } = plan;
   assertPlanId(PLAN_ID);
+  assert(Array.isArray(MODULES) && MODULES.length > 0, 'test plan has no modules');
 
   debug('Created test plan, new id %s', PLAN_ID);
   debug('%s/plan-detail.html?plan=%s', SUITE_BASE_URL, PLAN_ID);
@@ -180,7 +185,7 @@ try {
 
   const failedTests = [];
   const warningTests = [];
-  describe(PLAN_NAME, () => {
+  describe(PLAN_NAME, { concurrency: false }, () => {
     after(async () => {
       if (process.env.GITHUB_STEP_SUMMARY) {
         if (failedTests.length) {
@@ -195,27 +200,34 @@ try {
       }
     });
 
-    afterEach(function () {
-      if (this.currentTest.state === 'failed') {
-        failedTests.push(this.currentTest.title);
-      }
-    });
-
     const skips = SKIP ? SKIP.split(',') : [];
     for (const { testModule, variant } of MODULES) {
-      const test = skips.includes(testModule) ? it.skip : it;
-      test(`${testModule}, ${JSON.stringify(variant)}`, async () => {
-        debug('\n\nRunning test module: %s', testModule);
-        const { id: moduleId } = await runner.createTestFromPlan({
-          plan: PLAN_ID, test: testModule, variant,
-        });
-        debug('Created test module, new id: %s', moduleId);
-        debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
-        const onUpdate = VARIANT.vci_authorization_code_flow_variant === 'issuer_initiated'
-          ? credentialOfferDriver(configuration, runner, moduleId) : undefined;
-        const [, result] = await runner.waitForState({ moduleId, onUpdate });
-        if (result === 'WARNING' && testModule !== 'oidcc-ensure-post-request-succeeds') {
-          warningTests.push(testModule);
+      const title = `${testModule}, ${JSON.stringify(variant)}`;
+      it(title, { skip: skips.includes(testModule) }, async (t) => {
+        // A retry creates a fresh conformance module, just as the previous
+        // runner did. Keep the plan's modules sequential on every runtime.
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          try {
+            debug('\n\nRunning test module: %s', testModule);
+            const { id: moduleId } = await runner.createTestFromPlan({
+              plan: PLAN_ID, test: testModule, variant,
+            });
+            debug('Created test module, new id: %s', moduleId);
+            debug('%s/log-detail.html?log=%s', SUITE_BASE_URL, moduleId);
+            const onUpdate = VARIANT.vci_authorization_code_flow_variant === 'issuer_initiated'
+              ? credentialOfferDriver(configuration, runner, moduleId) : undefined;
+            const [, result] = await runner.waitForState({ moduleId, onUpdate });
+            if (result === 'WARNING' && testModule !== 'oidcc-ensure-post-request-succeeds') {
+              warningTests.push(testModule);
+            }
+            return;
+          } catch (err) {
+            if (attempt === 1) {
+              failedTests.push(title);
+              throw err;
+            }
+            t.diagnostic(`Retrying after failure: ${err.message}`);
+          }
         }
       });
     }

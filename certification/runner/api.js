@@ -1,4 +1,4 @@
-import { strict as assert } from 'node:assert';
+import assert from 'node:assert/strict';
 import { createWriteStream, writeFileSync } from 'node:fs';
 import * as stream from 'node:stream';
 import { promisify } from 'node:util';

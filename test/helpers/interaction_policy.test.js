@@ -1,6 +1,6 @@
-import { strict as assert } from 'node:assert';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
-import { expect } from 'chai';
 
 import interactions from '../../lib/actions/authorization/interactions.js';
 import { base, Check, Prompt } from '../../lib/helpers/interaction_policy/index.js';
@@ -12,17 +12,17 @@ function prompt(name, ...checks) {
 
 describe('interaction policy collections', () => {
   describe('prompts', () => {
-    it('does not remove the final prompt when the requested name is absent', () => {
+    it('does not remove the final prompt when the requested name is absent', { timeout: 3000 }, () => {
       const policy = base();
 
       policy.remove('missing');
 
-      expect(policy.map(({ name }) => name)).to.eql(['login', 'consent']);
+      assert.deepEqual(policy.map(({ name }) => name), ['login', 'consent']);
     });
   });
 
   describe('checks', () => {
-    it('rejects non-Boolean check results with the configuration path', async () => {
+    it('rejects non-Boolean check results with the configuration path', { timeout: 3000 }, async () => {
       const custom = prompt(
         'custom',
         new Check('custom_reason', 'custom description', () => 'yes'),
@@ -40,13 +40,13 @@ describe('interaction policy collections', () => {
       );
     });
 
-    it('does not remove the final check when the requested reason is absent', () => {
+    it('does not remove the final check when the requested reason is absent', { timeout: 3000 }, () => {
       const checks = base().get('login').checks;
       const reasons = checks.map(({ reason }) => reason);
 
       checks.remove('missing');
 
-      expect(checks.map(({ reason }) => reason)).to.eql(reasons);
+      assert.deepEqual(checks.map(({ reason }) => reason), reasons);
     });
   });
 });
