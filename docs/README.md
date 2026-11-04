@@ -674,6 +674,8 @@ The adapter constructor will be instantiated for each model type when first acce
 
 To prevent concurrent replay, the `ReplayDetection` adapter's `upsert` SHOULD use an atomic insert-if-absent operation and reject when an unexpired entry already exists.
 
+To prevent concurrent reuse, `consume` SHOULD atomically mark the entry as consumed only if it is not already consumed, and reject otherwise. Returning `false` is not sufficient because the provider awaits the operation but ignores its return value.
+
 
 
 See:

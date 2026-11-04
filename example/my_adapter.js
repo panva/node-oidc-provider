@@ -209,6 +209,10 @@ class MyAdapter {
    * id should be fulfilled with an object containing additional property named "consumed" with a
    * truthy value (timestamp, date, boolean, etc).
    *
+   * To prevent concurrent reuse, `consume` SHOULD atomically mark the entry as consumed only if it
+   * is not already consumed, and reject otherwise. Returning `false` is not sufficient because the
+   * provider awaits the operation but ignores its return value.
+   *
    * @return {Promise} Promise fulfilled when the operation succeeded. Rejected with error when
    * encountered.
    * @param {string} id Identifier of oidc-provider model
