@@ -1447,7 +1447,6 @@ export class ExternalSigningKey {
     get alg(): string | undefined;
     get crv(): string | undefined;
     get e(): string | undefined;
-    get key_ops(): string[] | undefined;
     get kid(): string | undefined;
     get kty(): string;
     get n(): string | undefined;

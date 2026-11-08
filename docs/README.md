@@ -3118,7 +3118,7 @@ Specifies the configuration for interaction policy and end-user redirection that
 
 JSON Web Key Set (JWKS)
 
-Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/info/rfc7517/#section-5) as defined in RFC 7517. All keys within the set MUST be private keys.
+Specifies the JSON Web Key Set that shall be used by the authorization server for cryptographic signing and decryption operations. The key set MUST be provided in [JWK Set format](https://www.rfc-editor.org/info/rfc7517/#section-5) as defined in RFC 7517. All keys within the set MUST be private keys. The `key_ops` member is not supported and must be omitted.
 
 Supported key types include:
 

@@ -1508,7 +1508,7 @@ const immutableConfiguration = {
         keys: [
             {
                 kty: "RSA",
-                key_ops: ["sign"],
+                use: "sig",
                 x5c: ["certificate"],
             },
         ],
