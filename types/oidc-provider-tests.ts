@@ -91,12 +91,13 @@ const credentialEncryptionConfiguration = {
 } as const satisfies oidc.OpenID4VCIConfigurationBase;
 new Provider("https://op.example.com", {
     enabledJWA: {
-        credentialEncryptionAlgValues: ["ECDH-ES", "RSA-OAEP-256"],
+        credentialEncryptionAlgValues: ["ECDH-ES", "RSA-OAEP-256", "HPKE-9", "HPKE-12", "HPKE-13"],
         credentialEncryptionEncValues: ["A128GCM", "A256GCM"],
         idTokenEncryptionAlgValues: ["dir", "A128KW"],
     },
     features: {
         encryption: { enabled: true },
+        hpke: { enabled: true, ack: "draft-02" },
         openid4vci: {
             ...credentialEncryptionConfiguration,
             enabled: true,
@@ -1119,6 +1120,65 @@ const provider = new oidc.Provider("https://op.example.com", {
     },
 });
 
+const hpkeIntegratedAlgorithms = [
+    "HPKE-9",
+    "HPKE-12",
+    "HPKE-13",
+] as const satisfies readonly oidc.HPKEIntegratedEncryptionAlgValues[];
+const hpkeAlgorithms = [
+    ...hpkeIntegratedAlgorithms,
+] as const satisfies readonly oidc.EncryptionAlgValues[];
+
+// @ts-expect-error HPKE-0 is not enabled.
+const unsupportedHPKE0: oidc.EncryptionAlgValues = "HPKE-0";
+// @ts-expect-error HPKE-8 is not enabled.
+const unsupportedHPKE8: oidc.EncryptionAlgValues = "HPKE-8";
+// @ts-expect-error HPKE-9-KE is not enabled.
+const unsupportedHPKE9KeyEncryption: oidc.EncryptionAlgValues = "HPKE-9-KE";
+// @ts-expect-error HPKE-12-KE is not enabled.
+const unsupportedHPKE12KeyEncryption: oidc.EncryptionAlgValues = "HPKE-12-KE";
+// @ts-expect-error HPKE-13-KE is not enabled.
+const unsupportedHPKE13KeyEncryption: oidc.EncryptionAlgValues = "HPKE-13-KE";
+// @ts-expect-error The drafts do not assign HPKE-11.
+const undefinedHPKE11IntegratedEncryption: oidc.EncryptionAlgValues = "HPKE-11";
+
+for (const alg of hpkeAlgorithms) {
+    const hpkeEncryptionMetadata = {
+        authorization_encrypted_response_alg: alg,
+        id_token_encrypted_response_alg: alg,
+        introspection_encrypted_response_alg: alg,
+        request_object_encryption_alg: alg,
+        userinfo_encrypted_response_alg: alg,
+        authorization_encryption_alg_values_supported: hpkeAlgorithms,
+        id_token_encryption_alg_values_supported: hpkeAlgorithms,
+        introspection_encryption_alg_values_supported: hpkeAlgorithms,
+        request_object_encryption_alg_values_supported: hpkeAlgorithms,
+        userinfo_encryption_alg_values_supported: hpkeAlgorithms,
+    } as const satisfies oidc.AllClientMetadata;
+    const hpkeClientMetadata: oidc.ClientMetadata = {
+        client_id: `client-${alg}`,
+        ...hpkeEncryptionMetadata,
+    };
+
+    new Provider("https://op.example.com", {
+        clients: [hpkeClientMetadata],
+        clientDefaults: hpkeEncryptionMetadata,
+        features: {
+            encryption: { enabled: true },
+            hpke: { enabled: true, ack: "draft-02" },
+        },
+        enabledJWA: {
+            authorizationEncryptionAlgValues: hpkeAlgorithms,
+            credentialEncryptionAlgValues: hpkeAlgorithms,
+            idTokenEncryptionAlgValues: hpkeAlgorithms,
+            introspectionEncryptionAlgValues: hpkeAlgorithms,
+            requestObjectEncryptionAlgValues: hpkeAlgorithms,
+            userinfoEncryptionAlgValues: hpkeAlgorithms,
+        },
+    });
+    provider.Client.validate(hpkeClientMetadata);
+}
+
 const firstInteractionCheck = new oidc.interactionPolicy.Check("first", "first check", () => false);
 const secondInteractionCheck = new oidc.interactionPolicy.Check("second", "second check", () => false);
 const interactionPrompt = new oidc.interactionPolicy.Prompt(
@@ -1219,6 +1279,13 @@ provider.OIDCContext.prototype.clientJwtAuthExpectedAudience = function clientJw
     const client = await provider.Client.find("foo");
     if (client !== undefined) {
         client.clientId.substring(0);
+        for (const alg of hpkeAlgorithms) {
+            client.authorizationEncryptionAlgValuesSupported?.includes(alg);
+            client.idTokenEncryptionAlgValuesSupported?.includes(alg);
+            client.introspectionEncryptionAlgValuesSupported?.includes(alg);
+            client.requestObjectEncryptionAlgValuesSupported?.includes(alg);
+            client.userinfoEncryptionAlgValuesSupported?.includes(alg);
+        }
         client.backchannelPing(new provider.BackchannelAuthenticationRequest({ accountId: "foo", clientId: "bar" }));
     }
     const accessToken = await provider.AccessToken.find("foo");
@@ -1872,6 +1939,29 @@ const resourceServer = new provider.ResourceServer("https://api.example.com", {
 });
 resourceServer.identifier().substring(0);
 resourceServer.scopes.has("api:read");
+
+const hpkePublicKey = null as unknown as crypto.webcrypto.CryptoKey;
+const hpkePublicKeyObject = null as unknown as crypto.KeyObject;
+for (const alg of hpkeIntegratedAlgorithms) {
+    const resource = {
+        scope: "api:read",
+        jwt: {
+            sign: { alg: "RS256" },
+            encrypt: { alg, key: hpkePublicKey, kid: "resource-integrated-encryption-key" },
+        },
+    } satisfies oidc.ResourceServer;
+    new provider.ResourceServer("https://api.example.com", resource);
+}
+
+type ResourceEncryption = NonNullable<oidc.ResourceServer["jwt"]>["encrypt"];
+// @ts-expect-error HPKE Integrated Encryption omits the content encryption algorithm.
+const hpkeIntegratedWithContentEncryption: ResourceEncryption = { alg: "HPKE-9", enc: "A256GCM", key: hpkePublicKey };
+// @ts-expect-error HPKE-9 requires a native CryptoKey.
+const hpkeIntegratedWithSecretBuffer: ResourceEncryption = { alg: "HPKE-9", key: Buffer.alloc(32) };
+// @ts-expect-error The HPKE-9 composite key cannot be represented by a single KeyObject.
+const hpkeIntegratedWithKeyObject: ResourceEncryption = { alg: "HPKE-9", key: hpkePublicKeyObject };
+// @ts-expect-error Traditional JWE algorithms require a content encryption algorithm.
+const ecdhWithoutContentEncryption: ResourceEncryption = { alg: "ECDH-ES", key: hpkePublicKey };
 
 const claims = new provider.Claims(
     { sub: "account" },

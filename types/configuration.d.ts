@@ -141,9 +141,15 @@ export interface ResourceServer {
             encrypt?:
                 | false
                 | {
-                    alg: EncryptionAlgValues;
+                    alg: Exclude<EncryptionAlgValues, HPKEIntegratedEncryptionAlgValues>;
                     enc: EncryptionEncValues;
                     key: crypto.KeyObject | crypto.webcrypto.CryptoKey | Buffer;
+                    kid?: string | undefined;
+                }
+                | {
+                    alg: HPKEIntegratedEncryptionAlgValues;
+                    enc?: never;
+                    key: crypto.webcrypto.CryptoKey;
                     kid?: string | undefined;
                 }
                 | undefined;
@@ -987,6 +993,14 @@ export interface Configuration {
             encryption?:
                 | {
                     enabled?: boolean | undefined;
+                }
+                | undefined;
+
+            // @configuration-path features.hpke
+            hpke?:
+                | {
+                    enabled?: boolean | undefined;
+                    ack?: string | undefined;
                 }
                 | undefined;
 

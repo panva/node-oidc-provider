@@ -882,7 +882,9 @@ export type AsymmetricSigningAlgorithm =
 export type SymmetricSigningAlgorithm = "HS256" | "HS384" | "HS512";
 export type SigningAlgorithm = AsymmetricSigningAlgorithm | SymmetricSigningAlgorithm;
 export type SigningAlgorithmWithNone = AsymmetricSigningAlgorithm | SymmetricSigningAlgorithm;
+export type HPKEIntegratedEncryptionAlgValues = "HPKE-9" | "HPKE-12" | "HPKE-13";
 export type EncryptionAlgValues =
+    | HPKEIntegratedEncryptionAlgValues
     | "RSA-OAEP"
     | "RSA-OAEP-256"
     | "RSA-OAEP-384"

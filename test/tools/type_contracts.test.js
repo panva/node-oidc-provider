@@ -310,15 +310,24 @@ describe('provider-owned type contracts', () => {
   });
 
   it('owns the signing and encryption algorithm unions', { timeout: 3000, skip: !sourceAvailable }, () => {
+    function values(name) {
+      const alias = declaration(index, 'TSTypeAliasDeclaration', name);
+      const types = alias.typeAnnotation.types ?? [alias.typeAnnotation];
+      return types.flatMap((type) => (
+        type.type === 'TSLiteralType' ? [type.literal.value] : values(type.typeName.name)
+      ));
+    }
     for (const [name, expected] of [
       ['AsymmetricSigningAlgorithm', ['RS256', 'Ed25519', 'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87']],
       ['SymmetricSigningAlgorithm', ['HS256', 'HS384', 'HS512']],
-      ['EncryptionAlgValues', ['ECDH-ES', 'ECDH-ES+A256KW', 'RSA-OAEP-256', 'dir']],
+      ['EncryptionAlgValues', ['ECDH-ES', 'ECDH-ES+A256KW', 'HPKE-9', 'HPKE-12', 'HPKE-13', 'RSA-OAEP-256', 'dir']],
       ['EncryptionEncValues', ['A128CBC-HS256', 'A128GCM', 'A256GCM']],
     ]) {
-      const alias = declaration(index, 'TSTypeAliasDeclaration', name);
-      const values = alias.typeAnnotation.types.map(({ literal }) => literal.value);
-      for (const value of expected) assert.ok(values.includes(value), `${name}: ${value}`);
+      for (const value of expected) assert.ok(values(name).includes(value), `${name}: ${value}`);
+    }
+    assert.deepEqual(values('HPKEIntegratedEncryptionAlgValues'), ['HPKE-9', 'HPKE-12', 'HPKE-13']);
+    for (const alg of ['HPKE-0', 'HPKE-8', 'HPKE-9-KE', 'HPKE-12-KE', 'HPKE-13-KE', 'HPKE-11']) {
+      assert.equal(values('EncryptionAlgValues').includes(alg), false);
     }
     const signing = declaration(index, 'TSTypeAliasDeclaration', 'SigningAlgorithm');
     assert.deepEqual(signing.typeAnnotation.types.map(({ typeName }) => typeName.name), ['AsymmetricSigningAlgorithm', 'SymmetricSigningAlgorithm']);

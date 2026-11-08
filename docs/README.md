@@ -626,6 +626,7 @@ Callable default values below use TypeScript syntax. Unqualified types are expor
     - [attestClientAuth](#featuresattestclientauth) - draft-ietf-oauth-attestation-based-client-auth-12 - OAuth 2.0 Attestation-Based Client Authentication
     - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - draft-ietf-oauth-client-id-metadata-document-02 - OAuth Client ID Metadata Document (CIMD)
     - [externalSigningSupport](#featuresexternalsigningsupport) - External Signing Support
+    - [hpke](#featureshpke) - draft-ietf-jose-hpke-pq-pqt-02 - HPKE PQC Integrated Encryption JWE
     - [openid4vci](#featuresopenid4vci) - OpenID for Verifiable Credential Issuance 1.0
     - [webMessageResponseMode](#featureswebmessageresponsemode) - draft-sakimura-oauth-wmrm-01 - OAuth 2.0 Web Message Response Mode
 - [findAccount ❗](#findaccount) - Account Loading and Claims Resolution
@@ -964,8 +965,8 @@ async function getResourceServerInfo(
        },
     // Tokens will be encrypted
     encrypt?: {
-      alg: string, // 'dir' | 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'ECDH-ES' | 'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' | 'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW'
-      enc: string, // 'A128CBC-HS256' | 'A128GCM' | 'A192CBC-HS384' | 'A192GCM' | 'A256CBC-HS512' | 'A256GCM'
+      alg: string, // 'dir' | 'RSA-OAEP' | 'RSA-OAEP-256' | 'RSA-OAEP-384' | 'RSA-OAEP-512' | 'ECDH-ES' | 'ECDH-ES+A128KW' | 'ECDH-ES+A192KW' | 'ECDH-ES+A256KW' | 'A128KW' | 'A192KW' | 'A256KW' | 'A128GCMKW' | 'A192GCMKW' | 'A256GCMKW' | 'HPKE-9' | 'HPKE-12' | 'HPKE-13'
+      enc?: string, // Required unless alg uses Integrated Encryption; 'A128CBC-HS256' | 'A128GCM' | 'A192CBC-HS384' | 'A192GCM' | 'A256CBC-HS512' | 'A256GCM'
       key: CryptoKey | KeyObject | Buffer, // public key or shared symmetric secret to encrypt the JWT token with
       kid?: string, // OPTIONAL `kid` JOSE Header Parameter to put in the token's JWE Header
     }
@@ -2693,6 +2694,32 @@ _**default value**_:
 
 ---
 
+### features.hpke
+
+[draft-ietf-jose-hpke-pq-pqt-02](https://www.ietf.org/archive/id/draft-ietf-jose-hpke-pq-pqt-02.html) - HPKE PQC Integrated Encryption JWE
+
+> [!NOTE]
+> This is an experimental feature.
+
+Specifies whether the draft HPKE PQC Integrated Encryption JWE algorithms `HPKE-9`, `HPKE-12`, and `HPKE-13` shall be enabled when supported by the runtime. Requires `features.encryption.enabled` to be `true`. The HPKE entries in `enabledJWA` allowlists take effect only when this feature is enabled.
+
+Integrated Encryption uses the JWE processing and serialization defined in [draft-ietf-jose-hpke-encrypt-22](https://www.ietf.org/archive/id/draft-ietf-jose-hpke-encrypt-22.html).
+
+With Integrated Encryption, omit the corresponding client encryption `*_enc` metadata, Resource Server `jwt.encrypt.enc`, and credential response encryption `enc`.
+
+Acknowledge the implemented draft version with `ack: 'draft-02'`.
+
+
+_**default value**_:
+```js
+{
+  ack: undefined,
+  enabled: false
+}
+```
+
+---
+
 ### features.openid4vci
 
 [OpenID for Verifiable Credential Issuance 1.0](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-final.html)
@@ -3673,6 +3700,9 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
+  'HPKE-9',
+  'HPKE-12',
+  'HPKE-13',
   'RSA-OAEP',
   'RSA-OAEP-256',
   'dir'
@@ -3686,6 +3716,8 @@ _**default value**_:
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // HPKE Integrated Encryption (requires features.hpke, features.encryption, and runtime support)
+  'HPKE-9', 'HPKE-12', 'HPKE-13',
   // symmetric AES key wrapping
   'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // direct encryption
@@ -3805,7 +3837,10 @@ _**default value**_:
   'ECDH-ES',
   'ECDH-ES+A128KW',
   'ECDH-ES+A192KW',
-  'ECDH-ES+A256KW'
+  'ECDH-ES+A256KW',
+  'HPKE-9',
+  'HPKE-12',
+  'HPKE-13'
 ]
 ```
 
@@ -3873,6 +3908,9 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
+  'HPKE-9',
+  'HPKE-12',
+  'HPKE-13',
   'RSA-OAEP',
   'RSA-OAEP-256',
   'dir'
@@ -3886,6 +3924,8 @@ _**default value**_:
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // HPKE Integrated Encryption (requires features.hpke, features.encryption, and runtime support)
+  'HPKE-9', 'HPKE-12', 'HPKE-13',
   // symmetric AES key wrapping
   'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // direct encryption
@@ -3969,6 +4009,9 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
+  'HPKE-9',
+  'HPKE-12',
+  'HPKE-13',
   'RSA-OAEP',
   'RSA-OAEP-256',
   'dir'
@@ -3982,6 +4025,8 @@ _**default value**_:
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // HPKE Integrated Encryption (requires features.hpke, features.encryption, and runtime support)
+  'HPKE-9', 'HPKE-12', 'HPKE-13',
   // symmetric AES key wrapping
   'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // direct encryption
@@ -4065,6 +4110,9 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
+  'HPKE-9',
+  'HPKE-12',
+  'HPKE-13',
   'RSA-OAEP',
   'RSA-OAEP-256',
   'dir'
@@ -4078,6 +4126,8 @@ _**default value**_:
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // HPKE Integrated Encryption (requires features.hpke, features.encryption, and runtime support)
+  'HPKE-9', 'HPKE-12', 'HPKE-13',
   // symmetric AES key wrapping
   'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // direct encryption
@@ -4162,6 +4212,9 @@ _**default value**_:
   'A128KW',
   'A256KW',
   'ECDH-ES',
+  'HPKE-9',
+  'HPKE-12',
+  'HPKE-13',
   'RSA-OAEP',
   'RSA-OAEP-256',
   'dir'
@@ -4175,6 +4228,8 @@ _**default value**_:
   'RSA-OAEP', 'RSA-OAEP-256', 'RSA-OAEP-384', 'RSA-OAEP-512',
   // asymmetric ECDH-ES based
   'ECDH-ES', 'ECDH-ES+A128KW', 'ECDH-ES+A192KW', 'ECDH-ES+A256KW',
+  // HPKE Integrated Encryption (requires features.hpke, features.encryption, and runtime support)
+  'HPKE-9', 'HPKE-12', 'HPKE-13',
   // symmetric AES key wrapping
   'A128KW', 'A192KW', 'A256KW', 'A128GCMKW', 'A192GCMKW', 'A256GCMKW',
   // direct encryption
