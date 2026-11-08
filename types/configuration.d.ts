@@ -71,7 +71,13 @@ export interface OpenID4VCICredentialConfiguration {
     [key: string]: unknown;
 }
 
+export interface OpenID4VCICredentialEncryption {
+    required: boolean;
+}
+
 export interface OpenID4VCIMetadata extends UnknownObject {
+    credential_request_encryption?: never;
+    credential_response_encryption?: never;
     batch_credential_issuance?:
         | {
             batch_size: number;
@@ -658,6 +664,10 @@ export interface OpenID4VCIConfigurationBase {
     nonceSecret?: Buffer | undefined;
     // @configuration-path features.openid4vci.preAuthorizedCodeGrant
     preAuthorizedCodeGrant?: boolean | undefined;
+    // @configuration-path features.openid4vci.credentialRequestEncryption
+    credentialRequestEncryption?: boolean | OpenID4VCICredentialEncryption | undefined;
+    // @configuration-path features.openid4vci.credentialResponseEncryption
+    credentialResponseEncryption?: boolean | OpenID4VCICredentialEncryption | undefined;
     // @configuration-path features.openid4vci.metadata
     // @configuration-dynamic features.openid4vci.metadata
     metadata?: OpenID4VCIMetadata | undefined;
@@ -1413,6 +1423,10 @@ export interface Configuration {
             dPoPSigningAlgValues?: readonly AsymmetricSigningAlgorithm[] | undefined;
             // @configuration-path enabledJWA.attestSigningAlgValues
             attestSigningAlgValues?: readonly AsymmetricSigningAlgorithm[] | undefined;
+            // @configuration-path enabledJWA.credentialEncryptionAlgValues
+            credentialEncryptionAlgValues?: readonly EncryptionAlgValues[] | undefined;
+            // @configuration-path enabledJWA.credentialEncryptionEncValues
+            credentialEncryptionEncValues?: readonly EncryptionEncValues[] | undefined;
             // @configuration-path enabledJWA.idTokenEncryptionAlgValues
             idTokenEncryptionAlgValues?: readonly EncryptionAlgValues[] | undefined;
             // @configuration-path enabledJWA.idTokenEncryptionEncValues

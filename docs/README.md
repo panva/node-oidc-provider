@@ -2721,6 +2721,8 @@ _**default value**_:
   credentialConfigurationPolicy: [Function: openid4vciCredentialConfigurationPolicy], // see expanded details below
   credentialConfigurationsSupported: {},
   credentialEndpointExpectedAudience: [Function: openid4vciCredentialEndpointExpectedAudience], // see expanded details below
+  credentialRequestEncryption: false,
+  credentialResponseEncryption: false,
   enabled: false,
   getKeyAttestationSignaturePublicKey: [AsyncFunction: openid4vciGetKeyAttestationSignaturePublicKey], // see expanded details below
   issueCredential: [AsyncFunction: openid4vciIssueCredential], // see expanded details below
@@ -2877,6 +2879,46 @@ function credentialEndpointExpectedAudience(ctx: KoaContextWithOIDC): CanBePromi
   return ctx.oidc.urlFor('credential');
 }
 ```
+
+#### credentialRequestEncryption
+
+Configures [Credential Request encryption](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-final.html#section-12.2.4). Requires `features.encryption.enabled`. Set to `true` to support optional encryption, `{ required: true }` to require encryption, or `false` to disable it. Algorithms are configured through `enabledJWA.credentialEncryptionAlgValues` and `enabledJWA.credentialEncryptionEncValues`. Public keys are derived from the provider's `jwks` entries with an explicit enabled `alg`.
+
+
+
+
+_**default value**_:
+```js
+false
+```
+<a id="credential-request-encryption-requiring-encrypted-credential-requests"></a><details><summary>Example: (Click to expand) Requiring encrypted Credential Requests.</summary><br>
+
+```js
+{
+  required: true,
+}
+```
+</details>
+
+#### credentialResponseEncryption
+
+Configures [Credential Response encryption](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-final.html#section-12.2.4). Requires `features.encryption.enabled` and `credentialRequestEncryption`. Set to `true` to support optional encryption, `{ required: true }` to require encryption, or `false` to disable it. Algorithms are configured through `enabledJWA.credentialEncryptionAlgValues` and `enabledJWA.credentialEncryptionEncValues`. Requests asking for response encryption must themselves be encrypted.
+
+
+
+
+_**default value**_:
+```js
+false
+```
+<a id="credential-response-encryption-requiring-encrypted-credential-responses"></a><details><summary>Example: (Click to expand) Requiring encrypted Credential Responses.</summary><br>
+
+```js
+{
+  required: true,
+}
+```
+</details>
 
 #### getKeyAttestationSignaturePublicKey
 
@@ -3745,6 +3787,46 @@ _**default value**_:
 ]
 ```
 </details>
+
+---
+
+### enabledJWA.credentialEncryptionAlgValues
+
+JWE "alg" Algorithm values the authorization server supports for OpenID4VCI Credential Request and Credential Response encryption
+
+
+_**default value**_:
+```js
+[
+  'RSA-OAEP',
+  'RSA-OAEP-256',
+  'RSA-OAEP-384',
+  'RSA-OAEP-512',
+  'ECDH-ES',
+  'ECDH-ES+A128KW',
+  'ECDH-ES+A192KW',
+  'ECDH-ES+A256KW'
+]
+```
+
+---
+
+### enabledJWA.credentialEncryptionEncValues
+
+JWE "enc" Content Encryption Algorithm values the authorization server supports for OpenID4VCI Credential Request and Credential Response encryption
+
+
+_**default value**_:
+```js
+[
+  'A128CBC-HS256',
+  'A128GCM',
+  'A192CBC-HS384',
+  'A192GCM',
+  'A256CBC-HS512',
+  'A256GCM'
+]
+```
 
 ---
 

@@ -91,6 +91,9 @@ export namespace errors {
     class InvalidCredentialRequest extends OIDCProviderError {
         constructor(description?: string, options?: string | OIDCProviderErrorOptions);
     }
+    class InvalidEncryptionParameters extends OIDCProviderError {
+        constructor(description?: string, options?: string | OIDCProviderErrorOptions);
+    }
     class InvalidNonce extends OIDCProviderError {
         constructor(description?: string, options?: string | OIDCProviderErrorOptions);
     }

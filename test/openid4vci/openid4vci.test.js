@@ -240,19 +240,16 @@ describe('features.openid4vci configuration', () => {
     }, (error) => { assert.ok(error.message.includes("features.openid4vci.credentialConfigurationsSupported['invalid'].credential_response_encryption is not supported")); return true; });
   });
 
-  it('rejects metadata with credential_response_encryption', { timeout: 3000 }, () => {
+  it('requires request encryption support with credentialResponseEncryption', { timeout: 3000 }, () => {
     const config = getConfig();
+    config.features.encryption = { enabled: true };
 
     config.features.openid4vci = {
       enabled: true,
       ack: 'experimental-01',
       nonceSecret: Buffer.alloc(32, 0),
-      metadata: {
-        credential_response_encryption: {
-          alg_values_supported: ['ECDH-ES'],
-          enc_values_supported: ['A128GCM'],
-          encryption_required: false,
-        },
+      credentialResponseEncryption: {
+        required: false,
       },
       credentialConfigurationsSupported: {
         valid: {
@@ -263,7 +260,7 @@ describe('features.openid4vci configuration', () => {
 
     assert.throws(() => {
       new Provider('http://localhost', config); // eslint-disable-line no-new
-    }, (error) => { assert.ok(error.message.includes('features.openid4vci.metadata.credential_response_encryption is not supported')); return true; });
+    }, (error) => { assert.ok(error.message.includes('features.openid4vci.credentialResponseEncryption requires credentialRequestEncryption')); return true; });
   });
 
   it('rejects key_attestations_required that is not a plain object', { timeout: 3000 }, () => {
