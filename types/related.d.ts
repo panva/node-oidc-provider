@@ -1,8 +1,8 @@
 /**
  * Source template for extension-facing declarations owned by oidc-provider.
  *
- * This file is not published. Its declarations are rendered into the matching
- * generated region in @types/oidc-provider.
+ * This file is not published. Its declarations are assembled into the complete
+ * index.d.ts handed over to @types/oidc-provider.
  */
 
 declare class Checks extends Array<interactionPolicy.Check> {

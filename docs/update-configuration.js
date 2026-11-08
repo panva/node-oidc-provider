@@ -22,6 +22,7 @@ import {
   renderConfigurationJSDoc,
   renderEventMapContract,
   renderEventsDocumentation,
+  renderIndexDeclaration,
   renderProviderContract,
   validateEvents,
 } from './type-contracts.js';
@@ -33,7 +34,7 @@ import {
 //     Prints configuration documentation and declared types as JSON without
 //     modifying docs/README.md. Paths are resolved relative to this script.
 //   node docs/update-configuration.js --types-json
-//     Prints the provider-owned declaration fragments consumed by DefinitelyTyped.
+//     Prints the complete declaration files and tests consumed by DefinitelyTyped.
 //   node docs/update-configuration.js --check
 //     Verifies generated documentation without modifying it.
 const [mode, ...extraArguments] = process.argv.slice(2);
@@ -1005,8 +1006,8 @@ try {
       clientAuthMethods: readClientAuthMethodsContract(),
       oidcContext: readOIDCContextContract(),
     };
-    const files = readTypeReleaseFiles();
-    const contents = { indexFragments, files };
+    const files = readTypeReleaseFiles(renderIndexDeclaration(indexFragments));
+    const contents = { files };
     const artifact = {
       schemaVersion: TYPES_SCHEMA_VERSION,
       providerVersion: packageJson.version,

@@ -80,8 +80,29 @@ function declarationValueNames(members) {
 
 function declaration(ast, type, name) {
   return ast.program.body
-    .map((node) => node.type === 'ExportNamedDeclaration' ? node.declaration : node)
+    .map((node) => node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration' ? node.declaration : node)
     .find((node) => node?.type === type && node.id?.name === name);
+}
+
+function indexFixture() {
+  return {
+    fragments: {
+      contracts: 'export interface Configuration {}',
+      providerMembers: 'extension(): void;',
+      relatedContracts: 'export interface Related {}',
+      clientAuthMethods: 'export type ClientAuthMethod = "none";',
+      oidcContext: 'export declare class OIDCContext {}',
+    },
+    template: `export interface JWK { pub?: string; }
+// @generate contracts
+export declare class Provider {
+    // @generate providerMembers
+}
+// @generate relatedContracts
+// @generate clientAuthMethods
+// @generate oidcContext
+`,
+  };
 }
 
 function propertySignatures(node, name) {
@@ -131,16 +152,19 @@ const sourceAvailable = existsSync(generatorUrl) && existsSync(typeContractsUrl)
 
 describe('provider-owned type contracts', () => {
   let artifact;
+  let index;
   let events;
   let renderEventsDocumentation;
+  let renderIndexDeclaration;
   let readConfigurationContract;
   let validateEvents;
 
   before(async () => {
     if (!sourceAvailable) return;
     artifact = JSON.parse(generateTypes());
+    index = parse(artifact.files['index.d.ts'], parserOptions);
     ({ default: events } = await import(eventSourceUrl.href));
-    ({ readConfigurationContract, renderEventsDocumentation, validateEvents } = await import(typeContractsUrl.href));
+    ({ readConfigurationContract, renderEventsDocumentation, renderIndexDeclaration, validateEvents } = await import(typeContractsUrl.href));
   }, { timeout: 3000 });
 
   it('emits a deterministic, versioned, hash-valid artifact without rewriting documentation', { timeout: 3000, skip: !sourceAvailable }, () => {
@@ -158,42 +182,27 @@ describe('provider-owned type contracts', () => {
       'schemaVersion',
       'providerVersion',
       'hash',
-      'indexFragments',
       'files',
     ]);
-    assert.equal(parsed.schemaVersion, 3);
+    assert.equal(parsed.schemaVersion, 4);
     assert.equal(parsed.providerVersion, JSON.parse(readFileSync(packageUrl)).version);
     assert.match(parsed.hash, /^[a-f0-9]{64}$/);
-    assert.deepEqual(Object.keys(parsed.indexFragments), [
-      'contracts',
-      'providerMembers',
-      'relatedContracts',
-      'clientAuthMethods',
-      'oidcContext',
-    ]);
     assert.deepEqual(Object.keys(parsed.files), [
+      'index.d.ts',
       'lib/helpers/grants.d.ts',
       'oidc-provider-tests.ts',
     ]);
 
-    for (const fragment of Object.values(parsed.indexFragments)) {
-      ((actual) => { assert.equal(typeof actual, 'string'); assert.notEqual(actual.length, 0); })(fragment);
+    for (const source of Object.values(parsed.files)) {
+      assert.equal(typeof source, 'string');
+      assert.notEqual(source.length, 0);
+      parse(source, parserOptions);
     }
-    ((actual) => { assert.equal(typeof actual, 'string'); assert.notEqual(actual.length, 0); })(parsed.files['lib/helpers/grants.d.ts']);
 
-    const payload = {
-      indexFragments: parsed.indexFragments,
-      files: parsed.files,
-    };
+    const payload = { files: parsed.files };
     assert.equal(parsed.hash, createHash('sha256').update(JSON.stringify(payload)).digest('hex'));
 
-    const contracts = parse(parsed.indexFragments.contracts, parserOptions);
-    parse(`declare class Provider {\n${parsed.indexFragments.providerMembers}\n}`, parserOptions);
-    parse(parsed.indexFragments.relatedContracts, parserOptions);
-    parse(parsed.indexFragments.clientAuthMethods, parserOptions);
-    parse(parsed.indexFragments.oidcContext, parserOptions);
-    parse(parsed.files['lib/helpers/grants.d.ts'], parserOptions);
-    parse(parsed.files['oidc-provider-tests.ts'], parserOptions);
+    const contracts = parse(parsed.files['index.d.ts'], parserOptions);
 
     const conditionalFeatures = declaration(
       contracts,
@@ -218,7 +227,7 @@ describe('provider-owned type contracts', () => {
     const [inactiveTypes] = propertySignatures(inactiveRar, 'types');
     assert.notEqual(inactiveTypes, undefined);
     assert.equal(hasJSDocContaining(inactiveTypes, 'authorization details type identifiers'), true);
-    assert.ok(!(parsed.indexFragments.contracts.includes('@configuration-docs')));
+    assert.doesNotMatch(parsed.files['index.d.ts'], /@configuration-(?:path|docs|dynamic)|@generate\b|(?:BEGIN|END) GENERATED OIDC-PROVIDER/);
   });
 
   it('copies the grant-helper declaration byte-for-byte', { timeout: 3000, skip: !sourceAvailable }, () => {
@@ -227,20 +236,124 @@ describe('provider-owned type contracts', () => {
 
   it('carries the client authentication and context declarations required by the release', { timeout: 3000, skip: !sourceAvailable }, () => {
     const clientAuth = declaration(
-      parse(artifact.indexFragments.clientAuthMethods, parserOptions),
+      index,
       'TSTypeAliasDeclaration',
       'ClientAuthMethod',
     );
     assert.ok(clientAuth.typeAnnotation.types.map((type) => type.literal.value).includes('attest_jwt_client_auth_dpop'));
 
     const context = declaration(
-      parse(artifact.indexFragments.oidcContext, parserOptions),
+      index,
       'ClassDeclaration',
       'OIDCContext',
     );
     const attestation = context.body.body.find((member) => member.key?.name === 'clientAttestation');
     ((actual) => { assert.ok("optional" in Object(actual)); assert.equal(actual.optional, true); assert.ok("readonly" in Object(actual)); assert.equal(actual.readonly, true); })(attestation);
-    assert.ok(artifact.indexFragments.oidcContext.includes('"dpop_combined"'));
+    assert.ok(artifact.files['index.d.ts'].slice(context.start, context.end).includes('"dpop_combined"'));
+  });
+
+  it('owns JWK, JWKS, and client metadata declarations in the complete index', { timeout: 3000, skip: !sourceAvailable }, () => {
+    const jwk = declaration(index, 'TSInterfaceDeclaration', 'JWK');
+    for (const name of ['alg', 'kty', 'pub', 'priv', 'x', 'd']) {
+      const [property] = propertySignatures(jwk, name);
+      assert.equal(property.optional, true);
+      assert.deepEqual(property.typeAnnotation.typeAnnotation.types.map(({ type }) => type), ['TSStringKeyword', 'TSUndefinedKeyword']);
+    }
+    const jwks = declaration(index, 'TSInterfaceDeclaration', 'JWKS');
+    const [keys] = propertySignatures(jwks, 'keys');
+    const array = keys.typeAnnotation.typeAnnotation;
+    assert.equal(array.typeName.name, 'ReadonlyArray');
+    assert.deepEqual(array.typeArguments.params[0].types.map(({ typeName }) => typeName.name), ['JWK', 'ExternalSigningKey']);
+
+    const metadata = declaration(index, 'TSInterfaceDeclaration', 'AllClientMetadata');
+    for (const name of [
+      'client_id',
+      'jwks',
+      'token_endpoint_auth_method',
+      'id_token_encrypted_response_alg',
+      'authorization_details_types',
+      'token_endpoint_auth_methods_supported',
+    ]) {
+      assert.equal(propertySignatures(metadata, name)[0]?.optional, true, name);
+    }
+    const clientMetadata = declaration(index, 'TSInterfaceDeclaration', 'ClientMetadata');
+    assert.equal(clientMetadata.extends[0].expression.name, 'AllClientMetadata');
+    assert.notEqual(propertySignatures(clientMetadata, 'client_id')[0].optional, true);
+  });
+
+  it('owns model declarations and the Provider core alongside generated extensions', { timeout: 3000, skip: !sourceAvailable }, () => {
+    const provider = declaration(index, 'ClassDeclaration', 'Provider');
+    assert.equal(provider.superClass.name, 'Koa');
+    const initializer = provider.body.body.find((member) => member.kind === 'constructor');
+    assert.deepEqual(initializer.params.map(({ name }) => name), ['issuer', 'configuration']);
+    const issuer = provider.body.body.find((member) => member.key?.name === 'issuer');
+    assert.equal(issuer.readonly, true);
+    assert.equal(issuer.typeAnnotation.typeAnnotation.type, 'TSStringKeyword');
+
+    for (const name of [
+      'AccessToken', 'AuthorizationCode', 'BackchannelAuthenticationRequest', 'BaseToken',
+      'Claims', 'Client', 'ClientCredentials', 'DeviceCode', 'Grant', 'IdToken',
+      'InitialAccessToken', 'Interaction', 'PreAuthorizedCode', 'PushedAuthorizationRequest',
+      'RefreshToken', 'RegistrationAccessToken', 'ReplayDetection', 'Session',
+    ]) {
+      assert.ok(declaration(index, 'ClassDeclaration', name), name);
+      const exposed = provider.body.body.find((member) => member.key?.name === name);
+      assert.equal(exposed?.readonly, true, name);
+      assert.equal(exposed.typeAnnotation.typeAnnotation.exprName.name, name);
+    }
+    for (const name of [...extensionMethods, ...listenerMethods]) {
+      assert.ok(provider.body.body.some((member) => member.type === 'TSDeclareMethod' && member.key?.name === name), name);
+    }
+    assert.ok(index.program.body.some((node) => node.type === 'ExportDefaultDeclaration' && node.declaration === provider));
+    assert.ok(index.program.body.some((node) => node.type === 'ExportNamedDeclaration'
+      && node.specifiers.some((specifier) => specifier.exported?.name === 'Provider')));
+  });
+
+  it('owns the signing and encryption algorithm unions', { timeout: 3000, skip: !sourceAvailable }, () => {
+    for (const [name, expected] of [
+      ['AsymmetricSigningAlgorithm', ['RS256', 'Ed25519', 'ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87']],
+      ['SymmetricSigningAlgorithm', ['HS256', 'HS384', 'HS512']],
+      ['EncryptionAlgValues', ['ECDH-ES', 'ECDH-ES+A256KW', 'RSA-OAEP-256', 'dir']],
+      ['EncryptionEncValues', ['A128CBC-HS256', 'A128GCM', 'A256GCM']],
+    ]) {
+      const alias = declaration(index, 'TSTypeAliasDeclaration', name);
+      const values = alias.typeAnnotation.types.map(({ literal }) => literal.value);
+      for (const value of expected) assert.ok(values.includes(value), `${name}: ${value}`);
+    }
+    const signing = declaration(index, 'TSTypeAliasDeclaration', 'SigningAlgorithm');
+    assert.deepEqual(signing.typeAnnotation.types.map(({ typeName }) => typeName.name), ['AsymmetricSigningAlgorithm', 'SymmetricSigningAlgorithm']);
+  });
+
+  it('renders all index fragments while preserving declarations owned by the template', { timeout: 3000, skip: !sourceAvailable }, () => {
+    const { fragments, template } = indexFixture();
+    const rendered = renderIndexDeclaration(fragments, template);
+    const ast = parse(rendered, parserOptions);
+    assert.ok(declaration(ast, 'TSInterfaceDeclaration', 'JWK'));
+    assert.ok(declaration(ast, 'TSInterfaceDeclaration', 'Configuration'));
+    assert.ok(declaration(ast, 'TSInterfaceDeclaration', 'Related'));
+    assert.ok(declaration(ast, 'TSTypeAliasDeclaration', 'ClientAuthMethod'));
+    assert.ok(declaration(ast, 'ClassDeclaration', 'OIDCContext'));
+    const provider = declaration(ast, 'ClassDeclaration', 'Provider');
+    assert.equal(provider.body.body[0].key.name, 'extension');
+    assert.doesNotMatch(rendered, /@generate\b/);
+  });
+
+  it('rejects missing, extra, duplicate, and malformed index generation directives', { timeout: 3000, skip: !sourceAvailable }, () => {
+    const { fragments, template } = indexFixture();
+    for (const name of Object.keys(fragments)) {
+      assert.throws(() => renderIndexDeclaration(fragments, template.replace(`// @generate ${name}`, '')), /missing declaration directives:/);
+      assert.throws(() => renderIndexDeclaration(fragments, `${template}// @generate ${name}\n`), /duplicate declaration directive/);
+    }
+    assert.throws(() => renderIndexDeclaration(fragments, `${template}// @generate unknown\n`), /unknown declaration directive unknown/);
+    assert.throws(() => renderIndexDeclaration(fragments, `${template}// @generate contracts extra\n`), /invalid declaration directive/);
+  });
+
+  it('rejects missing fragments and invalid TypeScript in the complete declaration', { timeout: 3000, skip: !sourceAvailable }, () => {
+    const { fragments, template } = indexFixture();
+    for (const name of Object.keys(fragments)) {
+      assert.throws(() => renderIndexDeclaration({ ...fragments, [name]: '' }, template), /missing declaration fragment/);
+    }
+    assert.throws(() => renderIndexDeclaration({ ...fragments, contracts: 'export interface Configuration {' }, template), SyntaxError);
   });
 
   it('copies the canonical DT tests byte-for-byte', { timeout: 3000, skip: !sourceAvailable }, () => {

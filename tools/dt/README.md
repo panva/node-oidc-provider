@@ -1,10 +1,12 @@
 # oidc-provider DefinitelyTyped release handoff
 
-The provider owns the release synchronization tools in `tools/dt`, the declaration
-sources in `types`, and the generated configuration contracts. The schema 3
-artifact includes the client authentication methods and complete `OIDCContext`
-declaration, the grant helper declarations, and the DT test suite. Synchronization
-tools stay in provider and the downloaded release bundle.
+The provider owns the release synchronization tools in `tools/dt` and all
+of its declaration sources and TypeScript tests in `types`. The schema 4 artifact
+contains the complete `index.d.ts`, grant helper declarations, and DT test suite.
+The updater replaces the complete declaration files; no declaration regions are
+maintained separately in DT. Synchronization tools stay in provider and the
+downloaded release bundle. DT package metadata and compiler/publishing
+configuration remain in DT; the updater manages the package version.
 
 ## Provider development
 
@@ -21,7 +23,7 @@ authorize a DT update.
 DT synchronization is a separate, explicitly requested task after a provider
 release. Use the released tag's handoff bundle and `sync-release.mjs` below.
 Do not use an unreleased provider checkout to prepare a DT release update, and
-do not edit generated DT declaration regions or the mirrored test file by hand.
+do not edit the generated DT declaration files or mirrored test file by hand.
 
 ## Release synchronization
 
@@ -119,13 +121,14 @@ major/minor version lines.
 The updater requires an explicit absolute `--package-dir` path. It validates
 the exact schema, provider version, and SHA-256 hash before writing. It accepts
 only the fixed managed file list and refuses symbolic links in output paths.
-Existing DT declarations without the client authentication and context markers
-are migrated only when each declaration can be identified exactly once;
-missing, duplicate, or partial regions fail.
+The artifact includes the entire declaration index, so synchronization does not
+require region markers or declarations from the target checkout. Changes to any
+DT declaration, including formerly unmanaged types, are detected and replaced
+from the provider sources.
 
 The updater uses only Node.js built-ins and the dprint installation from the DT
-repository. It formats `index.d.ts` and copies the managed source files
-byte-for-byte. Install DT's dependencies before running it.
+repository. It adds artifact provenance and formats `index.d.ts`, then copies the grant
+helper declaration and canonical TypeScript tests byte-for-byte. Install DT's dependencies before running it.
 
 The updater integration checks read the supplied DT package as a baseline and
 apply changes only to temporary copies. To test development sources without

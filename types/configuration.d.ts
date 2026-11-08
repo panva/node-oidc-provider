@@ -5,8 +5,8 @@
  * DefinitelyTyped. Configuration prose and defaults remain canonical in
  * `lib/helpers/defaults.js`.
  *
- * Types referenced but not declared here are stable supporting declarations retained by
- * DefinitelyTyped.
+ * Supporting declarations live in `types/index.d.ts` and the other provider-owned
+ * templates assembled into the complete declaration file.
  */
 
 export type FindAccount = (

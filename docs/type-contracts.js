@@ -5,7 +5,7 @@ import { parse } from '@babel/parser';
 
 import events from '../types/events.js';
 
-export const TYPES_SCHEMA_VERSION = 3;
+export const TYPES_SCHEMA_VERSION = 4;
 
 const parserOptions = {
   plugins: ['typescript'],
@@ -18,6 +18,7 @@ const relatedUrl = new URL('../types/related.d.ts', import.meta.url);
 const grantsUrl = new URL('../types/lib/helpers/grants.d.ts', import.meta.url);
 const clientAuthMethodsUrl = new URL('../types/client-auth.d.ts', import.meta.url);
 const oidcContextUrl = new URL('../types/oidc-context.d.ts', import.meta.url);
+const indexUrl = new URL('../types/index.d.ts', import.meta.url);
 
 function visit(value, callback, ancestors = []) {
   if (Array.isArray(value)) {
@@ -540,8 +541,27 @@ export function readGrantHelperContract() {
   return source;
 }
 
-export function readTypeReleaseFiles() {
+export function renderIndexDeclaration(fragments, template = readFileSync(indexUrl, 'utf8')) {
+  const names = ['contracts', 'providerMembers', 'relatedContracts', 'clientAuthMethods', 'oidcContext'];
+  const remaining = new Set(names);
+  const source = withoutTemplateHeader(template.replaceAll('\r\n', '\n'));
+  const rendered = source.replace(/^([\t ]*)\/\/ @generate ([^\s]+)[\t ]*$/gm, (_directive, indentation, name) => {
+    if (!names.includes(name)) throw new TypeError(`unknown declaration directive ${name}`);
+    if (!remaining.delete(name)) throw new TypeError(`duplicate declaration directive ${name}`);
+    if (typeof fragments[name] !== 'string' || !fragments[name].trim()) {
+      throw new TypeError(`missing declaration fragment ${name}`);
+    }
+    return fragments[name].trim().split('\n').map((line) => line ? `${indentation}${line}` : '').join('\n');
+  });
+  if (remaining.size) throw new TypeError(`missing declaration directives: ${[...remaining].join(', ')}`);
+  if (/^[\t ]*\/\/ @generate\b/m.test(rendered)) throw new TypeError('invalid declaration directive');
+  parse(rendered, parserOptions);
+  return `${rendered.trim()}\n`;
+}
+
+export function readTypeReleaseFiles(index) {
   const files = {
+    'index.d.ts': index,
     'lib/helpers/grants.d.ts': readGrantHelperContract(),
     'oidc-provider-tests.ts': readFileSync(new URL('../types/oidc-provider-tests.ts', import.meta.url), 'utf8'),
   };

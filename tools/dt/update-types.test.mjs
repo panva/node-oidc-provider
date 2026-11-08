@@ -40,8 +40,7 @@ if (arguments_.length === 1 && arguments_[0] !== "--artifact") {
 }
 const repositoryDirectory = resolve(packageDirectory, "..", "..");
 const updaterPath = fileURLToPath(new URL("./update-types.mjs", import.meta.url));
-const fragmentNames = ["contracts", "providerMembers", "relatedContracts", "clientAuthMethods", "oidcContext"];
-const managedFiles = ["lib/helpers/grants.d.ts", "oidc-provider-tests.ts"];
+const managedFiles = ["index.d.ts", "lib/helpers/grants.d.ts", "oidc-provider-tests.ts"];
 
 function run(command, args, cwd) {
     return spawnSync(command, args, {
@@ -63,7 +62,6 @@ if (providerDirectory !== undefined) {
 
 function canonicalContent(artifact) {
     return JSON.stringify({
-        indexFragments: Object.fromEntries(fragmentNames.map((name) => [name, artifact.indexFragments[name]])),
         files: Object.fromEntries(managedFiles.map((path) => [path, artifact.files[path]])),
     });
 }
@@ -91,6 +89,16 @@ const olderVersion = baselineVersion.minor > 0
     ? version(baselineVersion.major, baselineVersion.minor - 1, 999)
     : version(baselineVersion.major - 1, 999, 999);
 
+assert.equal(baselineArtifact.schemaVersion, 4);
+assert.deepEqual(Object.keys(baselineArtifact).sort(), ["files", "hash", "providerVersion", "schemaVersion"]);
+assert.deepEqual(Object.keys(baselineArtifact.files), managedFiles);
+for (const path of managedFiles) {
+    assert.equal(typeof baselineArtifact.files[path], "string", `${path} must be canonical provider content`);
+    assert.ok(baselineArtifact.files[path].trim(), `${path} must not be empty`);
+    assert.equal(baselineArtifact.files[path].includes("\r"), false, `${path} must use LF line endings`);
+}
+assert.doesNotMatch(baselineArtifact.files["index.d.ts"], /BEGIN GENERATED OIDC-PROVIDER|END GENERATED OIDC-PROVIDER/);
+
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "oidc-provider-types-"));
 
 try {
@@ -104,6 +112,8 @@ try {
     const indexPath = join(temporaryPackage, "index.d.ts");
     const packagePath = join(temporaryPackage, "package.json");
     const grantsPath = join(temporaryGrants, "grants.d.ts");
+    const originalIndexSource = readFileSync(join(packageDirectory, "index.d.ts"), "utf8");
+    const originalPackage = JSON.parse(readFileSync(join(packageDirectory, "package.json"), "utf8"));
 
     mkdirSync(temporaryGrants, { recursive: true });
     mkdirSync(fakeProviderDocs, { recursive: true });
@@ -112,6 +122,7 @@ try {
     for (const path of ["index.d.ts", "package.json"]) {
         copyFileSync(join(packageDirectory, path), join(temporaryPackage, path));
     }
+    writeFileSync(indexPath, `${readFileSync(indexPath, "utf8")}\nexport interface PortableUpdaterBootstrap {}\n`);
     copyFileSync(join(repositoryDirectory, ".dprint.jsonc"), join(temporaryRepository, ".dprint.jsonc"));
     copyFileSync(join(packageDirectory, "lib", "helpers", "grants.d.ts"), grantsPath);
     symlinkSync(
@@ -169,9 +180,9 @@ try {
         return result;
     }
 
-    function contractsChange(artifact, text = "export interface StatusOnlyContract { value: string; }") {
+    function declarationChange(artifact, text = "export interface StatusOnlyContract { value: string; }") {
         const result = structuredClone(artifact);
-        result.indexFragments.contracts += `\n${text}\n`;
+        result.files["index.d.ts"] += `\n${text}\n`;
         return updateHash(result);
     }
 
@@ -179,7 +190,11 @@ try {
     writeArtifact(baselineArtifact);
     const initialUpdate = updater(["--artifact", artifactPath]);
     assert.equal(initialUpdate.status, 0, initialUpdate.stderr);
-    baselineFiles = new Map(["index.d.ts", "package.json", ...managedFiles].map((path) => [
+    assert.deepEqual({
+        ...JSON.parse(readFileSync(packagePath, "utf8")),
+        version: originalPackage.version,
+    }, originalPackage, "the updater must preserve DT package metadata other than the tracked version");
+    baselineFiles = new Map([...managedFiles, "package.json"].map((path) => [
         path,
         readFileSync(join(temporaryPackage, path), "utf8"),
     ]));
@@ -246,13 +261,30 @@ try {
         /provider types artifact hash mismatch/,
     );
 
-    const missingFragment = structuredClone(baselineArtifact);
-    delete missingFragment.indexFragments.providerMembers;
-    writeArtifact(missingFragment);
+    const tamperedIndex = structuredClone(baselineArtifact);
+    tamperedIndex.files["index.d.ts"] += "\nexport interface UnhashedType {}\n";
+    writeArtifact(tamperedIndex);
     expectFailure(
-        "missing fragment",
+        "index declaration content tampering",
         ["--status", "--artifact", artifactPath],
-        /indexFragments must have exactly these keys/,
+        /provider types artifact hash mismatch/,
+    );
+
+    const missingIndex = structuredClone(baselineArtifact);
+    delete missingIndex.files["index.d.ts"];
+    writeArtifact(missingIndex);
+    expectFailure(
+        "missing index declaration",
+        ["--status", "--artifact", artifactPath],
+        /files must have exactly these keys/,
+    );
+
+    const obsoleteFragments = { ...baselineArtifact, indexFragments: {} };
+    writeArtifact(obsoleteFragments);
+    expectFailure(
+        "obsolete partial declaration schema",
+        ["--status", "--artifact", artifactPath],
+        /provider types artifact must have exactly these keys/,
     );
 
     writeFileSync(artifactPath, "not json\n");
@@ -291,7 +323,7 @@ try {
     assert.equal(majorStatus.currentHash, majorStatus.candidateHash);
     assert.deepEqual(majorStatus.changedFiles, ["index.d.ts", "package.json"]);
 
-    const olderArtifact = withProviderVersion(contractsChange(baselineArtifact), olderVersion);
+    const olderArtifact = withProviderVersion(declarationChange(baselineArtifact), olderVersion);
     const olderStatus = status(olderArtifact);
     assert.equal(olderStatus.updateRequired, false);
     assert.deepEqual(olderStatus.reasons, []);
@@ -306,20 +338,37 @@ try {
         );
     }
 
-    const changedContracts = contractsChange(baselineArtifact);
+    const changedContracts = declarationChange(baselineArtifact);
     const declarationStatus = status(changedContracts);
     assert.equal(declarationStatus.updateRequired, true);
     assert.deepEqual(declarationStatus.reasons, ["declarations"]);
     assert.notEqual(declarationStatus.currentHash, declarationStatus.candidateHash);
     assert.deepEqual(declarationStatus.changedFiles, ["index.d.ts"]);
 
-    const documentationChange = contractsChange(
+    const documentationChange = declarationChange(
         baselineArtifact,
         "/** Status-only generated documentation. */\nexport interface DocumentedStatusContract {}",
     );
     const documentationStatus = status(documentationChange);
     assert.equal(documentationStatus.updateRequired, true);
     assert.deepEqual(documentationStatus.reasons, ["declarations"]);
+
+    const supportingTypeChange = structuredClone(baselineArtifact);
+    supportingTypeChange.files["index.d.ts"] = supportingTypeChange.files["index.d.ts"].replace(
+        "export type EncryptionAlgValues =",
+        "export type EncryptionAlgValues = \"future-provider-algorithm\"",
+    );
+    assert.notEqual(supportingTypeChange.files["index.d.ts"], baselineArtifact.files["index.d.ts"]);
+    updateHash(supportingTypeChange);
+    const supportingTypeStatus = status(supportingTypeChange);
+    assert.equal(supportingTypeStatus.updateRequired, true);
+    assert.deepEqual(supportingTypeStatus.reasons, ["declarations"]);
+    assert.deepEqual(supportingTypeStatus.changedFiles, ["index.d.ts"]);
+    const supportingTypeUpdate = updater(["--artifact", artifactPath]);
+    assert.equal(supportingTypeUpdate.status, 0, supportingTypeUpdate.stderr);
+    assert.match(readFileSync(indexPath, "utf8"), /"future-provider-algorithm"/);
+    assert.equal(check(["--artifact", artifactPath]).status, 0);
+    restorePackage();
 
     const grantsChange = structuredClone(baselineArtifact);
     grantsChange.files["lib/helpers/grants.d.ts"] += "\nexport interface StatusOnlyGrantHelper {}\n";
@@ -352,7 +401,6 @@ try {
     assert.equal(readFileSync(packagePath, "utf8"), baselineFiles.get("package.json"));
 
     const formattingOnly = structuredClone(baselineArtifact);
-    formattingOnly.indexFragments.contracts += "\n\n";
     for (const path of managedFiles) formattingOnly.files[path] += "\n\n";
     updateHash(formattingOnly);
     const formattingStatus = status(formattingOnly);
@@ -418,39 +466,24 @@ try {
     assert.equal(restoreMissing.status, 0, restoreMissing.stderr);
     assert.equal(readFileSync(managedTestPath, "utf8"), baselineArtifact.files["oidc-provider-tests.ts"]);
 
-    const aliasRegion =
-        /\/\/ BEGIN GENERATED OIDC-PROVIDER CLIENT AUTH METHODS\n([\s\S]*?)\n\/\/ END GENERATED OIDC-PROVIDER CLIENT AUTH METHODS/;
-    const contextRegion =
-        /\/\/ BEGIN GENERATED OIDC-PROVIDER OIDC CONTEXT\n([\s\S]*?)\n\/\/ END GENERATED OIDC-PROVIDER OIDC CONTEXT/;
-    const markedIndex = baselineFiles.get("index.d.ts");
-    const legacyIndex = markedIndex.replace(aliasRegion, "$1").replace(contextRegion, "$1");
-    assert.notEqual(legacyIndex, markedIndex, "expected both generated regions to be installed");
-    writeFileSync(indexPath, legacyIndex);
-    const migration = updater(["--artifact", artifactPath]);
-    assert.equal(migration.status, 0, migration.stderr);
-    assert.equal(readFileSync(indexPath, "utf8"), markedIndex);
-    for (
-        const [label, source, pattern] of [
-            [
-                "duplicate legacy alias",
-                `${legacyIndex}\nexport type ClientAuthMethod = "duplicate";\n`,
-                /exactly one clientAuthMethods declaration/,
-            ],
-            [
-                "duplicate legacy context",
-                `${legacyIndex}\ndeclare class OIDCContext {}\n`,
-                /exactly one oidcContext declaration/,
-            ],
-            ["missing alias", markedIndex.replace(aliasRegion, ""), /exactly one clientAuthMethods declaration/],
-            [
-                "partial context marker",
-                markedIndex.replace("// END GENERATED OIDC-PROVIDER OIDC CONTEXT", ""),
-                /does not contain the generated oidcContext region/,
-            ],
-        ]
-    ) {
-        writeFileSync(indexPath, source);
-        expectFailure(label, ["--artifact", artifactPath], pattern);
+    for (const [label, source] of [
+        ["legacy declaration index", `${originalIndexSource}\nexport interface DTOnlyDeclaration {}\n`],
+        ["unmarked declaration index", "export interface DTOnlyDeclaration { value: string; }\n"],
+        ["minimal declaration index", "export {};\n"],
+        ["partial obsolete region", "// BEGIN GENERATED OIDC-PROVIDER OIDC CONTEXT\nexport {};\n"],
+        ["missing declaration index", undefined],
+    ]) {
+        restorePackage();
+        if (source === undefined) rmSync(indexPath);
+        else writeFileSync(indexPath, source);
+        const replacementStatus = status(baselineArtifact);
+        assert.equal(replacementStatus.updateRequired, true, label);
+        assert.deepEqual(replacementStatus.reasons, ["declarations"], label);
+        assert.deepEqual(replacementStatus.changedFiles, ["index.d.ts"], label);
+        const replacement = updater(["--artifact", artifactPath]);
+        assert.equal(replacement.status, 0, `${label}: ${replacement.stderr}`);
+        assert.equal(readFileSync(indexPath, "utf8"), baselineFiles.get("index.d.ts"), label);
+        assert.doesNotMatch(readFileSync(indexPath, "utf8"), /DTOnlyDeclaration/, label);
     }
     restorePackage();
     const outside = join(temporaryDirectory, "outside.ts");
@@ -485,14 +518,21 @@ try {
     restorePackage();
     const index = readFileSync(indexPath, "utf8");
     const altered = index.replace("export type TokenFormat =", "export type AlteredTokenFormat =");
-    assert.notEqual(altered, index, "expected to alter the generated contracts region");
+    assert.notEqual(altered, index, "expected to alter a provider declaration");
     writeFileSync(indexPath, altered);
     writeArtifact(baselineArtifact);
     expectFailure(
-        "altered generated region",
+        "DT-only declaration alteration",
         ["--check", "--artifact", artifactPath],
         /declaration mirrors are not up to date/,
     );
+    const alteredStatus = status(baselineArtifact);
+    assert.equal(alteredStatus.updateRequired, true);
+    assert.deepEqual(alteredStatus.reasons, ["declarations"]);
+    assert.deepEqual(alteredStatus.changedFiles, ["index.d.ts"]);
+    const restoreAltered = updater(["--artifact", artifactPath]);
+    assert.equal(restoreAltered.status, 0, restoreAltered.stderr);
+    assert.equal(readFileSync(indexPath, "utf8"), baselineFiles.get("index.d.ts"));
 
     if (providerDirectory !== undefined) {
         const artifactOnlyRun = run(

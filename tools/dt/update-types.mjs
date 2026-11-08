@@ -5,37 +5,9 @@ import { createHash } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const STATUS_SCHEMA_VERSION = 1;
-const GRANTS_PATH = "lib/helpers/grants.d.ts";
-const FRAGMENT_NAMES = ["contracts", "providerMembers", "relatedContracts", "clientAuthMethods", "oidcContext"];
-const FILE_PATHS = [GRANTS_PATH, "oidc-provider-tests.ts"];
-const REGIONS = {
-    contracts: {
-        start: "// BEGIN GENERATED OIDC-PROVIDER CONTRACTS",
-        end: "// END GENERATED OIDC-PROVIDER CONTRACTS",
-    },
-    providerMembers: {
-        start: "    // BEGIN GENERATED OIDC-PROVIDER MEMBERS",
-        end: "    // END GENERATED OIDC-PROVIDER MEMBERS",
-    },
-    clientAuthMethods: {
-        start: "// BEGIN GENERATED OIDC-PROVIDER CLIENT AUTH METHODS",
-        end: "// END GENERATED OIDC-PROVIDER CLIENT AUTH METHODS",
-        legacy: /^export type ClientAuthMethod =[\s\S]*?;$/gm,
-        declaration: /^export type ClientAuthMethod\s*=/gm,
-    },
-    oidcContext: {
-        start: "// BEGIN GENERATED OIDC-PROVIDER OIDC CONTEXT",
-        end: "// END GENERATED OIDC-PROVIDER OIDC CONTEXT",
-        legacy: /^declare class OIDCContext \{[\s\S]*?^\}$/gm,
-        declaration: /^declare class OIDCContext\s*\{/gm,
-    },
-    relatedContracts: {
-        start: "// BEGIN GENERATED OIDC-PROVIDER RELATED CONTRACTS",
-        end: "// END GENERATED OIDC-PROVIDER RELATED CONTRACTS",
-    },
-};
+const FILE_PATHS = ["index.d.ts", "lib/helpers/grants.d.ts", "oidc-provider-tests.ts"];
 const PROVENANCE_PATTERN = /^\/\/ oidc-provider types artifact .*; schema \d+; sha256 [a-f0-9]{64}\n?/m;
 
 function fail(message) {
@@ -159,9 +131,8 @@ function dprintExecutable(repositoryDirectory) {
     return executable;
 }
 
-function canonicalContent(indexFragments, files) {
+function canonicalContent(files) {
     return JSON.stringify({
-        indexFragments: Object.fromEntries(FRAGMENT_NAMES.map((name) => [name, indexFragments[name]])),
         files: Object.fromEntries(FILE_PATHS.map((path) => [path, files[path]])),
     });
 }
@@ -169,7 +140,7 @@ function canonicalContent(indexFragments, files) {
 function validateArtifact(payload, expectedProviderVersion) {
     exactKeys(
         payload,
-        ["schemaVersion", "providerVersion", "hash", "indexFragments", "files"],
+        ["schemaVersion", "providerVersion", "hash", "files"],
         "provider types artifact",
     );
     if (payload.schemaVersion !== SCHEMA_VERSION) {
@@ -187,15 +158,11 @@ function validateArtifact(payload, expectedProviderVersion) {
         fail("provider types artifact hash must be a lowercase hexadecimal SHA-256 digest");
     }
 
-    exactKeys(payload.indexFragments, FRAGMENT_NAMES, "provider types indexFragments");
     exactKeys(payload.files, FILE_PATHS, "provider types files");
-    for (const name of FRAGMENT_NAMES) {
-        declarationText(payload.indexFragments[name], `provider types indexFragments.${name}`);
-    }
     for (const path of FILE_PATHS) declarationText(payload.files[path], `provider types files.${path}`);
 
     const actualHash = createHash("sha256")
-        .update(canonicalContent(payload.indexFragments, payload.files))
+        .update(canonicalContent(payload.files))
         .digest("hex");
     if (actualHash !== payload.hash) {
         fail(`provider types artifact hash mismatch: expected ${payload.hash}, calculated ${actualHash}`);
@@ -208,41 +175,6 @@ function artifactMetadata(payload) {
     return `// oidc-provider types artifact ${
         JSON.stringify(payload.providerVersion)
     }; schema ${payload.schemaVersion}; sha256 ${payload.hash}`;
-}
-
-function replaceRegion(source, fragment, { start, end, legacy, declaration }, label) {
-    if (declaration && [...source.matchAll(declaration)].length !== 1) {
-        fail(`index.d.ts must contain exactly one ${label} declaration`);
-    }
-    if (fragment.includes(start) || fragment.includes(end)) {
-        fail(`provider ${label} fragment contains a generated-region marker`);
-    }
-    if (legacy && !source.includes(start) && !source.includes(end)) {
-        const matches = [...source.matchAll(legacy)];
-        if (matches.length !== 1) fail(`index.d.ts must contain exactly one unambiguous legacy ${label} declaration`);
-        const match = matches[0];
-        const normalized = fragment.replace(/^\n+|\n+$/g, "");
-        return `${source.slice(0, match.index)}${start}\n${normalized}\n${end}${
-            source.slice(match.index + match[0].length)
-        }`;
-    }
-    const startIndex = source.indexOf(start);
-    const endIndex = source.indexOf(end);
-    if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-        fail(`index.d.ts does not contain the generated ${label} region`);
-    }
-    if (
-        source.indexOf(start, startIndex + start.length) !== -1
-        || source.indexOf(end, endIndex + end.length) !== -1
-    ) {
-        fail(`index.d.ts must contain exactly one generated ${label} region`);
-    }
-    if (fragment.includes(start) || fragment.includes(end)) {
-        fail(`provider ${label} fragment contains a generated-region marker`);
-    }
-
-    const normalized = fragment.replace(/^\n+|\n+$/g, "");
-    return `${source.slice(0, startIndex + start.length)}\n${normalized}\n${source.slice(endIndex)}`;
 }
 
 function formatDeclaration(source, packageDirectory, declarationPath) {
@@ -308,7 +240,7 @@ function readOptional(path) {
 
 function safeOutput(packageDirectory, path) {
     const normalized = path.split(sep).join("/");
-    if (!["index.d.ts", "package.json", ...FILE_PATHS].includes(normalized)) {
+    if (!["package.json", ...FILE_PATHS].includes(normalized)) {
         fail(`unmanaged output path: ${path}`);
     }
     const target = resolve(packageDirectory, path);
@@ -355,18 +287,12 @@ if (mode === "check" && lineComparison !== 0) {
     );
 }
 
-const currentIndex = readFileSync(indexPath, "utf8");
-let generatedIndex = currentIndex;
-for (const name of FRAGMENT_NAMES) {
-    const fragment = name === "contracts"
-        ? `${artifactMetadata(artifact)}\n${artifact.indexFragments[name]}`
-        : artifact.indexFragments[name];
-    generatedIndex = replaceRegion(generatedIndex, fragment, REGIONS[name], name);
-}
-const candidateOutputs = new Map([
-    ["index.d.ts", formatDeclaration(generatedIndex, packageDirectory, indexPath)],
-    ...FILE_PATHS.map((path) => [path, artifact.files[path]]),
-]);
+const candidateOutputs = new Map(FILE_PATHS.map((path) => [
+    path,
+    path === "index.d.ts"
+        ? formatDeclaration(`${artifactMetadata(artifact)}\n${artifact.files[path]}`, packageDirectory, indexPath)
+        : artifact.files[path],
+]));
 const exactOutputs = new Map(
     [...candidateOutputs].map(([path, contents]) => [resolve(packageDirectory, path), contents]),
 );
