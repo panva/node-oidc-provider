@@ -4,6 +4,7 @@ import * as url from 'node:url';
 import { hash, randomBytes, randomUUID } from 'node:crypto';
 
 import sinon from 'sinon';
+import timekeeper from 'timekeeper';
 import {
   SignJWT, exportJWK, calculateJwkThumbprint, decodeJwt, generateKeyPair,
 } from 'jose';
@@ -19,7 +20,7 @@ function ath(accessToken) {
   return hash('sha256', accessToken, 'base64url');
 }
 
-async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined) {
+async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefined, iat = epochTime()) {
   return new SignJWT({
     htu,
     htm,
@@ -27,7 +28,7 @@ async function DPoP(keypair, htu, htm, nonce = undefined, accessToken = undefine
     ath: accessToken ? ath(accessToken) : undefined,
   }).setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: await exportJWK(keypair.publicKey) })
     .setJti(nanoid())
-    .setIssuedAt()
+    .setIssuedAt(iat)
     .sign(keypair.privateKey);
 }
 
@@ -607,6 +608,57 @@ describe('features.dPoP', () => {
       assert.ok(spy.args[0][1] instanceof InvalidRequest);
     });
 
+    for (const offset of [0, 295, 300, 295.5]) {
+      it(`rejects replays throughout the iat window with a ${offset}s clock offset`, { timeout: 3000 }, async () => {
+        const now = epochTime();
+        const { configuration } = i(fixture7.provider);
+        const { clockTolerance } = configuration;
+        configuration.clockTolerance = 0;
+        timekeeper.freeze(now * 1000);
+
+        try {
+          const proof = await DPoP(
+            fixture7.keypair,
+            `${fixture7.provider.issuer}${fixture7.suitePath('/request')}`,
+            'POST',
+            undefined,
+            undefined,
+            now + offset,
+          );
+          const request = () => fixture7.agent.post('/request')
+            .auth('client', 'secret')
+            .send({ response_type: 'code', client_id: 'client' })
+            .set('DPoP', proof)
+            .type('form');
+          const replay = () => request().expect(400).expect({
+            error: 'invalid_request',
+            error_description: 'DPoP proof JWT Replay detected',
+          });
+
+          await request().expect(201);
+          await replay();
+
+          if (offset > 0) {
+            timekeeper.freeze((now + CHALLENGE_OK_WINDOW + 5) * 1000);
+            await replay();
+          }
+
+          const lastAccepted = Math.floor(now + offset + CHALLENGE_OK_WINDOW);
+          timekeeper.freeze(lastAccepted * 1000);
+          await replay();
+
+          timekeeper.freeze((lastAccepted + 1) * 1000);
+          await request().expect(400).expect({
+            error: 'use_dpop_nonce',
+            error_description: 'DPoP proof iat is not recent enough, use a DPoP nonce instead',
+          });
+        } finally {
+          configuration.clockTolerance = clockTolerance;
+          timekeeper.reset();
+        }
+      });
+    }
+
     it('checks dpop_jkt equals the jwk thumbprint when both are present', { timeout: 3000 }, async () => {
       await fixture7.agent.post('/request')
         .auth('client', 'secret')
@@ -990,6 +1042,51 @@ describe('features.dPoP', () => {
         ((actual) => { assert.ok('jkt' in Object(actual)); assert.equal(actual.jkt, fixture16.thumbprint); })(RefreshToken);
       });
 
+      it('rejects a future-dated proof replay after the original replay TTL', { timeout: 3000 }, async () => {
+        const now = epochTime();
+        const { configuration } = i(fixture16.provider);
+        const { clockTolerance } = configuration;
+        configuration.clockTolerance = 0;
+        timekeeper.freeze(now * 1000);
+
+        try {
+          const proof = await DPoP(
+            fixture16.keypair,
+            `${fixture16.provider.issuer}${fixture16.suitePath('/token')}`,
+            'POST',
+            undefined,
+            undefined,
+            now + 295,
+          );
+          const request = () => fixture16.agent.post('/token')
+            .send({
+              client_id: 'client-none',
+              grant_type: 'refresh_token',
+              refresh_token: fixture16.rt,
+            })
+            .set('DPoP', proof)
+            .type('form');
+
+          await request().expect(200);
+
+          for (const elapsed of [0, CHALLENGE_OK_WINDOW + 5]) {
+            timekeeper.freeze((now + elapsed) * 1000);
+            const spy = sinon.spy();
+            fixture16.provider.once('grant.error', spy);
+            await request().expect(400).expect({
+              error: 'invalid_grant',
+              error_description: 'grant request is invalid',
+            });
+            assert.ok(spy.calledOnce);
+            assert.ok(spy.firstCall.args[1] instanceof InvalidGrant);
+            assert.equal(spy.firstCall.args[1].error_detail, 'DPoP proof JWT Replay detected');
+          }
+        } finally {
+          configuration.clockTolerance = clockTolerance;
+          timekeeper.reset();
+        }
+      });
+
       it('verifies the request made with the same cert jwk', { timeout: 3000 }, async () => {
         const spy = sinon.spy();
         fixture16.provider.once('grant.error', spy);
@@ -1085,7 +1182,9 @@ describe('features.dPoP', () => {
         ((actual) => { assert.ok('calledOnce' in Object(actual)); assert.equal(actual.calledOnce, true); })(unique);
         assert.equal(unique.firstCall.args[0], 'client');
         assert.equal(unique.firstCall.args[1], decodeJwt(proof).jti);
-        ((value) => { assert.equal(typeof value, 'number'); assert.ok(value >= before + CHALLENGE_OK_WINDOW && value <= after + CHALLENGE_OK_WINDOW); })(unique.firstCall.args[2]);
+        const ttl = (2 * CHALLENGE_OK_WINDOW) + 1;
+        assert.ok(unique.firstCall.args[2] >= before + ttl);
+        assert.ok(unique.firstCall.args[2] <= after + ttl);
 
         const spy = sinon.spy();
         fixture17.provider.once('grant.error', spy);
