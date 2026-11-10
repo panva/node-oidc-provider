@@ -9,6 +9,7 @@ import sinon from 'sinon';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import nanoid from '../../lib/helpers/nanoid.js';
+import { createMemoryAdapter } from '../../lib/adapters/memory_adapter.js';
 import Provider from '../../lib/index.js';
 import bootstrap, { assertNoPendingInterceptors, mock } from '../test_helper.js';
 import clientKey from '../client.sig.key.js';
@@ -1153,6 +1154,49 @@ describe('client authentication methods', () => {
 
     describe('JTI uniqueness', () => {
       const fixture7 = Object.create(fixture5);
+
+      it('rejects replay until a fractional expiration is no longer accepted', { timeout: 3000 }, async (t) => {
+        const issuedAt = Math.floor(Date.now() / 1000);
+        let now = issuedAt * 1000;
+        t.mock.method(Date, 'now', () => now);
+        const { clockTolerance } = i(fixture7.provider).configuration;
+        const exp = issuedAt + 10.5;
+        const assertion = await JWT.sign({
+          jti: nanoid(),
+          aud: fixture7.provider.issuer,
+          sub: 'client-jwt-secret',
+          iss: 'client-jwt-secret',
+          exp,
+        }, fixture7.key, 'HS256');
+        const adapter = fixture7.provider.ReplayDetection.adapter;
+        // The shared test adapter does not expire entries according to their storage TTL.
+        const expiring = createMemoryAdapter(0)('ReplayDetection');
+        t.mock.method(adapter, 'find', expiring.find.bind(expiring));
+        t.mock.method(adapter, 'upsert', expiring.upsert.bind(expiring));
+        const authenticate = () => fixture7.agent.post(route)
+          .send({
+            client_assertion: assertion,
+            grant_type: 'foo',
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          })
+          .type('form');
+
+        await authenticate().expect(200).expect(tokenAuthSucceeded);
+
+        now = (exp + clockTolerance + 0.1) * 1000;
+        const replay = sinon.spy();
+        fixture7.provider.once('grant.error', replay);
+        await authenticate().expect(401).expect(tokenAuthRejected);
+        assert.equal(replay.calledOnce, true);
+        assert.equal(errorDetail(replay), 'client assertion tokens must only be used once');
+
+        now = Math.ceil(exp + clockTolerance) * 1000;
+        const expired = sinon.spy();
+        fixture7.provider.once('grant.error', expired);
+        await authenticate().expect(401).expect(tokenAuthRejected);
+        assert.equal(expired.calledOnce, true);
+        assert.equal(errorDetail(expired), 'jwt expired');
+      });
 
       it('fails closed when an atomic adapter rejects concurrent assertion reuse', { timeout: 3000 }, async () => {
         const assertion = await JWT.sign({
