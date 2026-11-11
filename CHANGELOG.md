@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.14.0](https://github.com/panva/node-oidc-provider/compare/v9.13.3...v9.14.0) (2026-11-11)
+
+### Features
+
+* support OpenID4VCI credential encryption ([0e5a377](https://github.com/panva/node-oidc-provider/commit/0e5a377968540c40b5d1edc392999ddab7815b0d))
+
+### Fixes
+
+* extend dpop replay record retention ([9fec9d6](https://github.com/panva/node-oidc-provider/commit/9fec9d67d7f855aba481f70d90cb826cc5fd685e))
+* round up jwt client assertion replay expiry ([5f95881](https://github.com/panva/node-oidc-provider/commit/5f95881a58dde86ed746c77c3d14472b4daadcb2))
+
+### Documentation
+
+* recommend atomic consumption in adapters ([3ed87be](https://github.com/panva/node-oidc-provider/commit/3ed87bef95d0f02b72917b9eb7d17ef5c3b2313b))
+
+### Refactor
+
+* own all DefinitelyTyped declarations ([9886cea](https://github.com/panva/node-oidc-provider/commit/9886cea30629a19001885b85397d18af56b621e6))
+* reject key_ops in provider jwks ([c8639cf](https://github.com/panva/node-oidc-provider/commit/c8639cf5051c34063fb19379c27dbc732326797e))
+
 ## [9.13.3](https://github.com/panva/node-oidc-provider/compare/v9.13.2...v9.13.3) (2026-10-29)
 
 ### Documentation
