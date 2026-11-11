@@ -40,11 +40,6 @@ jobs:
           path: provider
           persist-credentials: false
           ref: ${{ github.ref }}
-          sparse-checkout: |
-            docs
-            lib/helpers
-            tools/dt
-            types
 
       - name: Checkout DefinitelyTyped master
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
