@@ -365,7 +365,7 @@ describe('grant_type=authorization_code', () => {
       fixture3.provider.on('grant.error', spy);
 
       return fixture3.agent.post(route)
-        .auth('client', 'secret')
+        .auth('client2', 'secret')
         .send({
           code: fixture3.ac,
           grant_type: 'authorization_code',
@@ -657,7 +657,7 @@ describe('grant_type=authorization_code', () => {
           ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /code/); })(response.body);
         }));
 
-    it('redirect_uri presence (more then one registered)', { timeout: 3000 }, () => fixture6.agent.post(route)
+    it('rejects an invalid code when redirect_uri is omitted', { timeout: 3000 }, () => fixture6.agent.post(route)
         .auth('client', 'secret')
         .send({
           grant_type: 'authorization_code',
@@ -666,9 +666,7 @@ describe('grant_type=authorization_code', () => {
         .type('form')
         .expect(400)
         .expect((response) => {
-          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_request'); })(response.body);
-          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /missing required parameter/); })(response.body);
-          ((actual) => { assert.ok('error_description' in Object(actual)); assert.match(actual.error_description, /redirect_uri/); })(response.body);
+          ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'invalid_grant'); })(response.body);
         }));
 
     it('code being "found"', { timeout: 3000 }, () => {

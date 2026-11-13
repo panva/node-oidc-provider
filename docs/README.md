@@ -3377,6 +3377,8 @@ Specifies whether clients may omit the `redirect_uri` parameter in authorization
 
 When disabled, all authorization requests MUST explicitly include the `redirect_uri` parameter regardless of the number of registered redirect URIs.
 
+At the token endpoint, `redirect_uri` may be omitted after successful S256 PKCE verification, regardless of this setting. For codes issued without PKCE, this setting controls whether the sole registered redirect URI is inferred. Any supplied URI must match the one used in the authorization request.
+
 
 _**default value**_:
 ```js
