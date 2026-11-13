@@ -624,7 +624,7 @@ Callable default values below use TypeScript syntax. Unqualified types are expor
   - [userinfo](#featuresuserinfo) - OIDC Core 1.0 - UserInfo Endpoint
   - Experimental features:
     - [attestClientAuth](#featuresattestclientauth) - draft-ietf-oauth-attestation-based-client-auth-12 - OAuth 2.0 Attestation-Based Client Authentication
-    - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - draft-ietf-oauth-client-id-metadata-document-02 - OAuth Client ID Metadata Document (CIMD)
+    - [clientIdMetadataDocument](#featuresclientidmetadatadocument) - draft-ietf-oauth-client-id-metadata-document-03 - OAuth Client ID Metadata Document (CIMD)
     - [externalSigningSupport](#featuresexternalsigningsupport) - External Signing Support
     - [openid4vci](#featuresopenid4vci) - OpenID for Verifiable Credential Issuance 1.0
     - [webMessageResponseMode](#featureswebmessageresponsemode) - draft-sakimura-oauth-wmrm-01 - OAuth 2.0 Web Message Response Mode
@@ -2596,12 +2596,16 @@ function getAttestationSignaturePublicKey(ctx, header, payload, client) {
 
 ### features.clientIdMetadataDocument
 
-[draft-ietf-oauth-client-id-metadata-document-02](https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-02.html) - OAuth Client ID Metadata Document (CIMD)
+[draft-ietf-oauth-client-id-metadata-document-03](https://www.ietf.org/archive/id/draft-ietf-oauth-client-id-metadata-document-03.html) - OAuth Client ID Metadata Document (CIMD)
 
 > [!NOTE]
 > This is an experimental feature.
 
 Specifies whether the authorization server shall support resolving client metadata from Client Identifier URLs used as `client_id` values. When enabled, if a `client_id` is an HTTPS URL conforming to the specification's requirements, the authorization server shall fetch the Client ID Metadata Document from that URL and use it as the client's registration data, without requiring prior client registration.
+
+The `token_endpoint_auth_methods_supported` client metadata property is processed even when `features.rpMetadataChoices` is disabled. When `private_key_jwt` is advertised and supported by the server, it is selected regardless of the client's array order or singular authentication method preference. When neither authentication property is provided, the client's authentication method is `none`.
+
+When displaying a client's `logo_uri`, applications must prefetch and validate the image and serve it from a trusted server. Applications should display the hostname of the Client Identifier URL to help users identify the client and apply their own trust policies to client-provided metadata.
 
 
 
@@ -2640,7 +2644,7 @@ async function allowClient(
 
 #### allowFetch
 
-Specifies a helper function that shall be invoked before fetching a Client ID Metadata Document from a Client Identifier URL. This function enables enforcement of domain allowlisting, rate limiting, or other security policies. Return `true` to allow the fetch, or `false` to reject the `client_id`.
+Specifies a helper function that shall be invoked before fetching a Client ID Metadata Document from a Client Identifier URL. This function enables enforcement of domain allowlisting, rate limiting, or other security policies. Return `true` to allow the fetch, or `false` to reject the `client_id`. Reject identifiers of trusted authorization servers and resource servers to avoid identity confusion. The provider's own issuer identifier is rejected automatically.
 
 
 _**default value**_:

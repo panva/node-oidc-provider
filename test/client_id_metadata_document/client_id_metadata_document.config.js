@@ -6,9 +6,10 @@ const config = getConfig();
 
 merge(config, {
   features: {
+    pushedAuthorizationRequests: { enabled: true },
     clientIdMetadataDocument: {
       enabled: true,
-      ack: 'draft-02',
+      ack: 'draft-03',
     },
   },
   pkce: {

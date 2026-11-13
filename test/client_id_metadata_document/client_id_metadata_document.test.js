@@ -21,13 +21,16 @@ const VALID_METADATA = {
   client_name: 'Test App',
 };
 
-function createProvider(feature = {}) {
+function createProvider(feature = {}, configuration = {}) {
   return new Provider('https://op.example.com', {
+    ...configuration,
     adapter: TestAdapter,
     features: {
+      rpMetadataChoices: { enabled: false },
+      ...configuration.features,
       clientIdMetadataDocument: {
         enabled: true,
-        ack: 'draft-02',
+        ack: 'draft-03',
         ...feature,
       },
     },
@@ -81,10 +84,11 @@ describe('Client ID Metadata Document', () => {
       assert.equal(isValidClientIdUrl('HTTPS://example.com/client'), true);
     });
 
-    it('accepts root-equivalent URLs', { timeout: 3000 }, () => {
-      assert.equal(isValidClientIdUrl('https://example.com'), true);
-      assert.equal(isValidClientIdUrl('https://example.com/'), true);
-      assert.equal(isValidClientIdUrl('https://example.com?foo=bar'), true);
+    it('rejects root-equivalent URLs', { timeout: 3000 }, () => {
+      assert.equal(isValidClientIdUrl('https://example.com'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/'), false);
+      assert.equal(isValidClientIdUrl('https://example.com?foo=bar'), false);
+      assert.equal(isValidClientIdUrl('https://example.com/?foo=bar'), false);
     });
 
     it('rejects non-HTTPS URLs', { timeout: 3000 }, () => {
@@ -252,7 +256,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -276,7 +280,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -300,7 +304,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -324,7 +328,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -348,7 +352,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -373,7 +377,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -424,7 +428,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -467,7 +471,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -492,7 +496,7 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
 
@@ -669,6 +673,289 @@ describe('Client ID Metadata Document', () => {
         }));
   });
 
+  describe('client authentication metadata', () => {
+    it('defaults to none when both authentication properties are omitted', { timeout: 3000 }, async () => {
+      const provider = createProvider();
+      const id = 'https://default-auth.example.com/client';
+      mockMetadata(id, { token_endpoint_auth_method: undefined });
+
+      assert.equal((await resolve(provider, id)).clientAuthMethod, 'none');
+    });
+
+    for (const enabled of [false, true]) {
+      it(`ignores configured authentication defaults with rpMetadataChoices ${enabled ? 'enabled' : 'disabled'}`, { timeout: 3000 }, async () => {
+        const provider = createProvider({}, {
+          features: { rpMetadataChoices: { enabled } },
+          clientDefaults: {
+            token_endpoint_auth_method: 'private_key_jwt',
+            token_endpoint_auth_methods_supported: ['private_key_jwt'],
+          },
+        });
+        const id = 'https://configured-default-auth.example.com/client';
+        mockMetadata(id, { token_endpoint_auth_method: undefined });
+
+        assert.equal((await resolve(provider, id)).clientAuthMethod, 'none');
+      });
+    }
+
+    it('preserves the default for clients registered by other means', { timeout: 3000 }, () => {
+      const provider = createProvider();
+      const client = new provider.Client({
+        client_id: 'registered',
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+
+      assert.equal(client.clientAuthMethod, 'client_secret_basic');
+    });
+
+    for (const [methods, expected, jwks] of [
+      [['unsupported', 'none'], 'none'],
+      [['unsupported', 'private_key_jwt'], 'private_key_jwt', { keys: [publicKey] }],
+    ]) {
+      it(`selects ${expected} from authentication choices with rpMetadataChoices disabled`, { timeout: 3000 }, async () => {
+        const provider = createProvider();
+        const id = `https://auth-choices.example.com/${expected}`;
+        mockMetadata(id, {
+          token_endpoint_auth_method: undefined,
+          token_endpoint_auth_methods_supported: methods,
+          jwks,
+        });
+
+        assert.equal((await resolve(provider, id)).clientAuthMethod, expected);
+      });
+    }
+
+    for (const enabled of [false, true]) {
+      for (const methods of [['none', 'private_key_jwt'], ['private_key_jwt', 'none']]) {
+        it(`selects private_key_jwt from ${JSON.stringify(methods)} with rpMetadataChoices ${enabled ? 'enabled' : 'disabled'}`, { timeout: 3000 }, async () => {
+          const provider = createProvider({}, { features: { rpMetadataChoices: { enabled } } });
+          const id = `https://auth-method-preference.example.com/${enabled}/${methods[0]}`;
+          mockMetadata(id, {
+            token_endpoint_auth_method: undefined,
+            token_endpoint_auth_methods_supported: methods,
+            jwks: { keys: [publicKey] },
+          });
+
+          assert.equal((await resolve(provider, id)).clientAuthMethod, 'private_key_jwt');
+        });
+      }
+
+      it(`requires advertised private_key_jwt despite an explicit none and server ordering with rpMetadataChoices ${enabled ? 'enabled' : 'disabled'}`, { timeout: 3000 }, async () => {
+        const provider = createProvider({}, {
+          features: { rpMetadataChoices: { enabled } },
+          clientAuthMethods: ['none', 'private_key_jwt'],
+        });
+        const id = `https://explicit-auth-method-preference.example.com/${enabled}`;
+        mockMetadata(id, {
+          token_endpoint_auth_method: 'none',
+          token_endpoint_auth_methods_supported: ['none', 'private_key_jwt'],
+          jwks: { keys: [publicKey] },
+        });
+
+        assert.equal((await resolve(provider, id)).clientAuthMethod, 'private_key_jwt');
+      });
+    }
+
+    it('falls back to none when private_key_jwt is not supported by the authorization server', { timeout: 3000 }, async () => {
+      const provider = createProvider({}, { clientAuthMethods: ['none'] });
+      const id = 'https://auth-method-fallback.example.com/client';
+      mockMetadata(id, {
+        token_endpoint_auth_method: undefined,
+        token_endpoint_auth_methods_supported: ['private_key_jwt', 'none'],
+        jwks: { keys: [publicKey] },
+      });
+
+      assert.equal((await resolve(provider, id)).clientAuthMethod, 'none');
+    });
+
+    it('does not fall back to none unless the client advertises it', { timeout: 3000 }, async () => {
+      const provider = createProvider({}, { clientAuthMethods: ['none'] });
+      const id = 'https://auth-method-no-fallback.example.com/client';
+      mockMetadata(id, {
+        token_endpoint_auth_method: undefined,
+        token_endpoint_auth_methods_supported: ['private_key_jwt'],
+        jwks: { keys: [publicKey] },
+      });
+
+      await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+    });
+
+    it('requires client authentication when private_key_jwt and none are both advertised', { timeout: 3000 }, async () => {
+      const id = 'https://auth-method-required.example.com/client';
+      mockMetadata(id, {
+        token_endpoint_auth_method: undefined,
+        token_endpoint_auth_methods_supported: ['none', 'private_key_jwt'],
+        jwks: { keys: [publicKey] },
+      });
+
+      await fixture.agent.post('/token')
+        .type('form')
+        .send({ client_id: id, grant_type: 'authorization_code', code: 'code' })
+        .expect(401)
+        .expect(({ body }) => assert.equal(body.error, 'invalid_client'));
+    });
+
+    it('rejects inconsistent singular and plural authentication methods', { timeout: 3000 }, async () => {
+      const provider = createProvider();
+      const id = 'https://inconsistent-auth.example.com/client';
+      mockMetadata(id, {
+        token_endpoint_auth_method: 'none',
+        token_endpoint_auth_methods_supported: ['private_key_jwt'],
+        jwks: { keys: [publicKey] },
+      });
+
+      await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+    });
+
+    for (const method of ['client_secret_basic', 'client_secret_post', 'client_secret_jwt']) {
+      it(`rejects ${method} in authentication choices even when none can be selected`, { timeout: 3000 }, async () => {
+        const provider = createProvider();
+        const id = `https://secret-auth-choices.example.com/${method}`;
+        mockMetadata(id, { token_endpoint_auth_methods_supported: ['none', method] });
+
+        await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+      });
+    }
+
+    for (const methods of [[], ['unsupported'], 'none', [null]]) {
+      it(`rejects invalid or unsupported authentication choices ${JSON.stringify(methods)}`, { timeout: 3000 }, async () => {
+        const provider = createProvider();
+        const id = 'https://invalid-auth-choices.example.com/client';
+        mockMetadata(id, {
+          token_endpoint_auth_method: undefined,
+          token_endpoint_auth_methods_supported: methods,
+        });
+
+        await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+      });
+    }
+
+    for (const [name, metadata] of [
+      ['private_key_jwt without keys', { token_endpoint_auth_method: 'private_key_jwt' }],
+      ['private_key_jwt choices without keys', { token_endpoint_auth_method: undefined, token_endpoint_auth_methods_supported: ['private_key_jwt'] }],
+      ['private_key_jwt and none choices without keys', { token_endpoint_auth_method: undefined, token_endpoint_auth_methods_supported: ['none', 'private_key_jwt'] }],
+      ['both jwks and jwks_uri', { jwks: { keys: [publicKey] }, jwks_uri: 'https://client.example.com/jwks' }],
+    ]) {
+      it(`rejects ${name}`, { timeout: 3000 }, async () => {
+        const provider = createProvider();
+        const id = 'https://invalid-key-metadata.example.com/client';
+        mockMetadata(id, metadata);
+
+        await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+      });
+    }
+  });
+
+  describe('discovery error responses', () => {
+    for (const path of ['/token', '/request']) {
+      for (const [name, metadata] of [
+        ['mismatched client_id', { client_id: 'https://other.example.com/client' }],
+        ['invalid client metadata', { redirect_uris: ['not a uri'] }],
+        ['unsupported authentication methods', {
+          token_endpoint_auth_method: undefined,
+          token_endpoint_auth_methods_supported: ['unsupported'],
+        }],
+      ]) {
+        it(`returns invalid_client at ${path} for ${name}`, { timeout: 3000 }, async () => {
+          const id = `https://endpoint-errors.example.com${path}/${name.replaceAll(' ', '-')}`;
+          mockMetadata(id, metadata);
+
+          await fixture.agent.post(path)
+            .type('form')
+            .send({
+              client_id: id,
+              grant_type: 'authorization_code',
+              code: 'code',
+              response_type: 'code',
+              redirect_uri: 'https://client.example.com/cb',
+              scope: 'openid',
+            })
+            .expect(400)
+            .expect((response) => {
+              assert.equal(response.body.error, 'invalid_client');
+              assert.equal(response.headers.location, undefined);
+            });
+        });
+      }
+    }
+
+    for (const failure of ['network', 'mismatched client_id']) {
+      it(`does not redirect after a ${failure} failure when a later lookup succeeds`, { timeout: 3000 }, async () => {
+        const id = `https://retry-authorization-error.example.com/${failure.replaceAll(' ', '-')}`;
+        if (failure === 'network') {
+          const url = new URL(id);
+          mock(url.origin).intercept({ path: url.pathname }).replyWithError(new Error('network error'));
+        } else {
+          mockMetadata(id, { client_id: 'https://other.example.com/client' });
+        }
+        mockMetadata(id);
+
+        await fixture.agent.get('/auth')
+          .query({
+            client_id: id,
+            redirect_uri: 'https://client.example.com/cb',
+            response_type: 'code',
+            scope: 'openid',
+          })
+          .expect(400)
+          .expect((response) => {
+            assert.match(response.text, /invalid_client\b/);
+            assert.equal(response.headers.location, undefined);
+          });
+      });
+    }
+
+    it('rejects client authentication when the document defaults to none', { timeout: 3000 }, async () => {
+      const id = 'https://default-auth-token.example.com/client';
+      mockMetadata(id, { token_endpoint_auth_method: undefined });
+
+      await fixture.agent.post('/token')
+        .auth(id, 'secret')
+        .type('form')
+        .send({ grant_type: 'authorization_code', code: 'code' })
+        .expect(401)
+        .expect((response) => {
+          assert.equal(response.body.error, 'invalid_client');
+        });
+    });
+
+    it('does not fetch root-equivalent client IDs', { timeout: 3000 }, async () => {
+      let fetches = 0;
+      const provider = createProvider({
+        async allowFetch() {
+          fetches += 1;
+          return true;
+        },
+      });
+
+      for (const id of ['https://root.example.com', 'https://root.example.com/', 'https://root.example.com?client=1', 'https://root.example.com/?client=1']) {
+        assert.equal(await provider.Client.find(id), undefined);
+      }
+      assert.equal(fetches, 0);
+    });
+
+    it('rejects the authorization server issuer as a client ID before fetching', { timeout: 3000 }, async () => {
+      const provider = new Provider('https://op.example.com/issuer', {
+        adapter: TestAdapter,
+        features: {
+          clientIdMetadataDocument: {
+            enabled: true,
+            ack: 'draft-03',
+            async allowFetch() {
+              assert.fail('issuer identifiers must not be fetched');
+            },
+          },
+        },
+      });
+
+      await assert.rejects(provider.Client.find(provider.issuer), {
+        error: 'invalid_client',
+        allow_redirect: false,
+      });
+    });
+  });
+
   describe('metadata document cache', () => {
     afterEach(() => timekeeper.reset(), { timeout: 3000 });
 
@@ -706,6 +993,17 @@ describe('Client ID Metadata Document', () => {
 
       mockMetadata(target, { client_name: 'refetched' });
       assert.equal((await resolve(provider, target)).clientName, 'refetched');
+    });
+
+    it('does not cache invalid metadata documents', { timeout: 3000 }, async () => {
+      const provider = createProvider();
+      const id = 'https://invalid-cache.example.com/client';
+      mockMetadata(id, { token_endpoint_auth_methods_supported: ['unsupported'], token_endpoint_auth_method: undefined });
+
+      await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+
+      mockMetadata(id, { client_name: 'corrected document' });
+      assert.equal((await resolve(provider, id)).clientName, 'corrected document');
     });
 
     it('isolates entries per provider', { timeout: 3000 }, async () => {
@@ -866,9 +1164,22 @@ describe('Client ID Metadata Document', () => {
         })
         .expect(400)
         .expect((response) => {
-          assert.ok(response.text.includes('invalid_client_metadata'));
+          assert.match(response.text, /invalid_client\b/);
         });
     });
+
+    for (const [property, values] of [
+      ['grant_types', []],
+      ['response_types', ['unsupported']],
+    ]) {
+      it(`rejects ${property} with no supported values ${JSON.stringify(values)}`, { timeout: 3000 }, async () => {
+        const provider = createProvider();
+        const id = 'https://empty-intersection.example.com/client';
+        mockMetadata(id, { [property]: values });
+
+        await assert.rejects(resolve(provider, id), { error: 'invalid_client' });
+      });
+    }
 
     it('filters unsupported response_types and keeps supported ones', { timeout: 3000 }, () => {
       mock('https://filter-rt.example.com')

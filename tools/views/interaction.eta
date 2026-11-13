@@ -1,5 +1,5 @@
 <div class="login-client-image">
-  <% if (it.client.logoUri) { %><img src="<%= it.client.logoUri %>"><% } %>
+  <% if (it.client.logoUri && !it.client.clientIdMetadataDocument) { %><img src="<%= it.client.logoUri %>"><% } %>
 </div>
 
 <ul>

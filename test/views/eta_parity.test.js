@@ -40,6 +40,17 @@ const locals = [
   {
     title: '', dbg: { params: '', prompt: '' }, uid: '', client: {}, params: {}, details: {}, session: undefined,
   },
+  {
+    title: 'Consent', dbg: {}, uid: 'uid', client: { logoUri: 'https://client.example.com/logo.png' }, params: {}, details: {},
+  },
+  {
+    title: 'Consent',
+    dbg: {},
+    uid: 'uid',
+    client: { logoUri: 'https://client.example.com/logo.png', clientIdMetadataDocument: true },
+    params: {},
+    details: {},
+  },
 ];
 
 describe('views render identically to eta', () => {
@@ -64,6 +75,24 @@ describe('views render identically to eta', () => {
       });
     }
   }
+
+  it('displays logos for registered clients', { timeout: 3000 }, () => {
+    const logoUri = 'https://client.example.com/logo.png';
+    const rendered = interaction({ ...locals[0], client: { logoUri } });
+
+    assert.ok(rendered.includes(`<img src="${logoUri}">`));
+  });
+
+  it('omits logos from client metadata documents', { timeout: 3000 }, () => {
+    const logoUri = 'https://client.example.com/logo.png';
+    const rendered = interaction({
+      ...locals[0],
+      client: { logoUri, clientIdMetadataDocument: true },
+    });
+
+    assert.ok(!rendered.includes('<img'));
+    assert.ok(!rendered.includes(logoUri));
+  });
 
   // lib/views/*.js are pre-compiled eta output; their sources live in
   // tools/views/*.eta, which is not published. Nothing else links the two, so
