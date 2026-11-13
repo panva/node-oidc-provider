@@ -3298,14 +3298,17 @@ const ttl: {
     return 10 * 60; // 10 minutes in seconds
   },
   RefreshToken: function RefreshToken(ctx, token, client) {
+    const rotated = ctx?.oidc?.entities.RotatedRefreshToken;
     if (
-      ctx?.oidc?.entities.RotatedRefreshToken
-      && client.applicationType === 'web'
-      && client.clientAuthMethod === 'none'
-      && !token.isSenderConstrained()
+      rotated
+      && (
+        (client.applicationType === 'web' && client.clientAuthMethod === 'none')
+        || rotated.totalLifetime() >= 365.25 * 24 * 60 * 60
+      )
     ) {
-      // Non-Sender Constrained SPA RefreshTokens do not have infinite expiration through rotation
-      return ctx.oidc.entities.RotatedRefreshToken.remainingTTL;
+      // Preserve browser token expiration and stop extending other chains after one year.
+      token.exp = rotated.exp;
+      return rotated.remainingTTL;
     }
     return 14 * 24 * 60 * 60; // 14 days in seconds
   },
@@ -5076,9 +5079,11 @@ Specifies the refresh token rotation policy that shall be applied by the authori
 - `function` - a function returning true/false that shall be invoked to determine whether rotation should occur based on request context and authorization server policy
 
 The default configuration value implements a sensible refresh token rotation policy that:
-- only allows refresh tokens to be rotated (have their TTL prolonged by issuing a new one) for one year
-- otherwise always rotates public client tokens that are not sender-constrained
+- always rotates public client tokens that are not sender-constrained
+- otherwise stops rotating once the original token chain is one year old
 - otherwise only rotates tokens if they're being used close to their expiration (>= 70% TTL passed)
+
+The default `ttl.RefreshToken` preserves the previous token's expiration for public web clients and, after one year, for every rotated token.
 
 The RefreshToken and Client are available as `ctx.oidc.entities.RefreshToken` and `ctx.oidc.entities.Client`. `true` consumes the presented token and issues a rotated refresh token; `false` continues without rotation. A configured literal Boolean applies that decision without invoking a function.
 
@@ -5087,17 +5092,16 @@ _**default value**_:
 ```ts
 function rotateRefreshToken(ctx: KoaContextWithOIDC): CanBePromise<boolean> {
   const { RefreshToken: refreshToken, Client: client } = ctx.oidc.entities;
-  // cap the maximum amount of time a refresh token can be
-  // rotated for up to 1 year, afterwards its TTL is final
-  if (refreshToken.totalLifetime() >= 365.25 * 24 * 60 * 60) {
-    return false;
-  }
   // rotate non sender-constrained public client refresh tokens
   if (
     client.clientAuthMethod === 'none'
     && !refreshToken.isSenderConstrained()
   ) {
     return true;
+  }
+  // Other refresh token chains stop rotating after one year.
+  if (refreshToken.totalLifetime() >= 365.25 * 24 * 60 * 60) {
+    return false;
   }
   // rotate if the token is nearing expiration (it's beyond 70% of its lifetime)
   return refreshToken.ttlPercentagePassed() >= 70;
