@@ -248,7 +248,7 @@ describe('grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code', () =
         })
         .expect(400)
         .expect({
-          error: 'invalid_request',
+          error: 'unauthorized_client',
           error_description: 'requested grant type is not allowed for this client',
         });
     });

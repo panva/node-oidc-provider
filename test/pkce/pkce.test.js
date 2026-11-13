@@ -163,6 +163,40 @@ describe('PKCE RFC7636', () => {
 
     before(() => fixture3.login(), { timeout: 3000 });
 
+    it('rejects code_verifier when the authorization code has no codeChallenge', { timeout: 3000 }, async () => {
+      const authCode = new fixture3.provider.AuthorizationCode({
+        accountId: fixture3.loggedInAccountId,
+        grantId: fixture3.getGrantId(),
+        scope: 'openid',
+        clientId: 'client',
+        redirectUri: 'com.example.myapp:/localhost/cb',
+      });
+      const code = await authCode.save();
+      const request = {
+        client_id: 'client',
+        code,
+        grant_type: 'authorization_code',
+        redirect_uri: 'com.example.myapp:/localhost/cb',
+      };
+
+      await fixture3.agent.post('/token')
+        .type('form')
+        .send({
+          ...request,
+          code_verifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
+        })
+        .expect(400)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'code_verifier must not be provided without a code_challenge',
+        });
+
+      return fixture3.agent.post('/token')
+        .type('form')
+        .send(request)
+        .expect(200);
+    });
+
     it('passes with S256 values', { timeout: 3000 }, async () => {
       const authCode = new fixture3.provider.AuthorizationCode({
         accountId: fixture3.loggedInAccountId,

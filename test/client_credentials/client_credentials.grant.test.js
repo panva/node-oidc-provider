@@ -56,6 +56,26 @@ describe('grant_type=client_credentials', () => {
     ((actual) => { assert.ok('scope' in Object(actual)); assert.equal(actual.scope, 'api:read'); })(token);
   });
 
+  it('returns unauthorized_client when the authenticated client cannot use the grant', { timeout: 3000 }, async () => {
+    const client = await fixture.provider.Client.find('client');
+    const original = client.grantTypes;
+    client.grantTypes = ['authorization_code'];
+
+    try {
+      await fixture.agent.post(route)
+        .auth('client', 'secret')
+        .type('form')
+        .send({ grant_type: 'client_credentials', scope: 'api:read' })
+        .expect(400)
+        .expect({
+          error: 'unauthorized_client',
+          error_description: 'requested grant type is not allowed for this client',
+        });
+    } finally {
+      client.grantTypes = original;
+    }
+  });
+
   it('checks clients scope allow list', { timeout: 3000 }, async () => fixture.agent.post(route)
       .auth('client', 'secret')
       .send({

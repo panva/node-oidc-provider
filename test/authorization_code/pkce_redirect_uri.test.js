@@ -112,7 +112,7 @@ describe('PKCE authorization code redirect_uri omission', () => {
 
     await exchange(issued)
       .expect(400)
-      .expect(({ body }) => assert.equal(body.error, 'invalid_grant'));
+      .expect(({ body }) => assert.equal(body.error, 'invalid_request'));
   });
 
   it('preserves redirect_uri requirements for codes issued without PKCE', { timeout: 3000 }, async () => {
