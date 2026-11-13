@@ -3343,7 +3343,7 @@ Configure `ttl` for a given token type with a function like so, this must return
 
 Query Parameter Access Tokens
 
-Controls whether access tokens may be transmitted via URI query parameters. Several OAuth 2.0 and OpenID Connect profiles require that access tokens be transmitted exclusively via the Authorization header. When set to false, the authorization server shall reject requests attempting to transmit access tokens via query parameters.
+Controls whether access tokens may be transmitted via URI query parameters. When set to false, access tokens in URI query parameters are ignored. Clients must supply a token using the Authorization header or form-encoded request body instead.
 
 
 

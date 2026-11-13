@@ -16,7 +16,7 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
 
     before(() => fixture1.login(), { timeout: 3000 });
 
-    it('does not allow query string bearer token', { timeout: 3000 }, async () => {
+    it('ignores query string bearer tokens', { timeout: 3000 }, async () => {
       const at = await new fixture1.provider.AccessToken({
         client: await fixture1.provider.Client.find('client'),
         accountId: fixture1.loggedInAccountId,
@@ -26,16 +26,18 @@ describe('Financial-grade API Security Profile 1.0 - Part 2: Advanced (FINAL) be
 
       await fixture1.agent.get('/me')
         .query({ access_token: at })
-        .expect(fixture1.failWith(400, 'invalid_request', 'access tokens must not be provided via query parameter'));
+        .expect(fixture1.failWith(401, 'invalid_token', 'no access token provided'));
 
       await fixture1.agent.get('/me')
         .auth(at, { type: 'bearer' })
+        .query({ access_token: 'ignored-query-token' })
         .expect(200)
         .expect({ sub: fixture1.loggedInAccountId });
 
       await fixture1.agent.post('/me')
         .type('form')
         .send({ access_token: at })
+        .query({ access_token: 'ignored-query-token' })
         .expect(200)
         .expect({ sub: fixture1.loggedInAccountId });
     });

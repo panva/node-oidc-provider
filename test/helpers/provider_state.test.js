@@ -4,14 +4,17 @@ import assert from 'node:assert/strict';
 import Provider from '../../lib/index.js';
 import instance, { get } from '../../lib/helpers/weak_cache.js';
 
-function context(provider, { headers = {}, query = {} } = {}) {
+function context(provider, {
+  headers = {}, query = {}, body, contentType = 'application/x-www-form-urlencoded',
+} = {}) {
   const ctx = {
     headers,
     query,
-    is() { return false; },
+    is(type) { return body !== undefined && type === contentType; },
     get(name) { return headers[name.toLowerCase()] || ''; },
   };
   ctx.oidc = new provider.OIDCContext(ctx);
+  ctx.oidc.body = body;
   return ctx.oidc;
 }
 
@@ -133,11 +136,127 @@ describe('provider state access', () => {
     assert.equal(first.getAccessToken(), 'first');
     configuration.acceptQueryParamAccessTokens = false;
     assert.equal(first.getAccessToken(), 'first');
-    ((actual) => { assert.throws(actual, (error) => { assert.ok('error_description' in Object(error)); assert.equal(error.error_description, 'access tokens must not be provided via query parameter'); return true; }); })(() => context(provider, { query: { access_token: 'second' } }).getAccessToken());
+    assert.throws(() => context(provider, { query: { access_token: 'second' } }).getAccessToken(), {
+      error_description: 'no access token provided',
+    });
 
     configuration.acceptQueryParamAccessTokens = true;
     configuration.features.fapi = { ...configuration.features.fapi, enabled: true };
-    ((actual) => { assert.throws(actual, (error) => { assert.ok('error_description' in Object(error)); assert.equal(error.error_description, 'access tokens must not be provided via query parameter'); return true; }); })(() => context(provider, { query: { access_token: 'third' } }).getAccessToken());
+    assert.throws(() => context(provider, { query: { access_token: 'third' } }).getAccessToken(), {
+      error_description: 'no access token provided',
+    });
+  });
+
+  it('honors explicit query-token parsing options and retains already parsed tokens', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+    const first = context(provider, { query: { access_token: 'query-token' } });
+
+    assert.equal(first.getAccessToken({ acceptQueryParam: true }), 'query-token');
+    assert.equal(first.getAccessToken({ acceptQueryParam: false }), 'query-token');
+
+    instance(provider).configuration.acceptQueryParamAccessTokens = true;
+    assert.throws(() => context(provider, {
+      query: { access_token: 'query-token' },
+    }).getAccessToken({ acceptQueryParam: false }), {
+      error_description: 'no access token provided',
+    });
+  });
+
+  it('ignores query tokens alongside accepted header or body tokens', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+    const query = { access_token: 'ignored-query-token' };
+
+    assert.equal(context(provider, {
+      headers: { authorization: 'Bearer header-token' },
+      query,
+    }).getAccessToken({ acceptQueryParam: false }), 'header-token');
+
+    assert.equal(context(provider, {
+      body: { access_token: 'body-token' },
+      query,
+    }).getAccessToken({ acceptQueryParam: false }), 'body-token');
+
+    assert.throws(() => context(provider, {
+      headers: { authorization: 'Bearer header-token' },
+      body: { access_token: 'body-token' },
+      query,
+    }).getAccessToken({ acceptQueryParam: false }), {
+      error_description: 'access token must only be provided using one mechanism',
+    });
+
+    assert.throws(() => context(provider, {
+      headers: { authorization: 'Bearer header-token' },
+      query,
+    }).getAccessToken({ acceptQueryParam: true }), {
+      error_description: 'access token must only be provided using one mechanism',
+    });
+  });
+
+  it('rejects repeated form body access tokens before choosing another mechanism', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+
+    for (const alternative of [
+      {},
+      { headers: { authorization: 'Bearer header-token' } },
+      { query: { access_token: 'query-token' } },
+    ]) {
+      assert.throws(() => context(provider, {
+        ...alternative,
+        body: { access_token: ['first', 'second'] },
+      }).getAccessToken({ acceptQueryParam: true }), {
+        error_description: "'access_token' parameter must not be provided twice",
+      });
+    }
+  });
+
+  it('rejects repeated accepted query access tokens before choosing another mechanism', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+
+    for (const alternative of [
+      {},
+      { headers: { authorization: 'Bearer header-token' } },
+      { body: { access_token: 'body-token' } },
+    ]) {
+      assert.throws(() => context(provider, {
+        ...alternative,
+        query: { access_token: ['first', 'second'] },
+      }).getAccessToken({ acceptQueryParam: true }), {
+        error_description: "'access_token' parameter must not be provided twice",
+      });
+    }
+  });
+
+  it('ignores repeated query access tokens when query tokens are not accepted', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+    const query = { access_token: ['first', 'second'] };
+
+    assert.throws(() => context(provider, { query }).getAccessToken({ acceptQueryParam: false }), {
+      error_description: 'no access token provided',
+    });
+    assert.equal(context(provider, {
+      headers: { authorization: 'Bearer header-token' },
+      query,
+    }).getAccessToken({ acceptQueryParam: false }), 'header-token');
+    assert.equal(context(provider, {
+      body: { access_token: 'body-token' },
+      query,
+    }).getAccessToken({ acceptQueryParam: false }), 'body-token');
+  });
+
+  it('ignores access token arrays in non-form bodies', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+    const ignored = {
+      body: { access_token: ['first', 'second'] },
+      contentType: 'application/json',
+    };
+
+    assert.throws(() => context(provider, ignored).getAccessToken(), {
+      error_description: 'no access token provided',
+    });
+    assert.equal(context(provider, {
+      ...ignored,
+      headers: { authorization: 'Bearer header-token' },
+    }).getAccessToken(), 'header-token');
   });
 
   it('reads a replaced DPoP feature configuration when parsing an access token', { timeout: 3000 }, () => {
