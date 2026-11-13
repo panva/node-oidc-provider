@@ -259,6 +259,33 @@ describe('provider state access', () => {
     }).getAccessToken(), 'header-token');
   });
 
+  it('accepts one or more ASCII spaces after Bearer and DPoP schemes', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+
+    for (const scheme of ['bEaReR', 'dPoP']) {
+      for (const spaces of [' ', '  ', '     ']) {
+        const headers = { authorization: `${scheme}${spaces}token` };
+        if (scheme === 'dPoP') headers.dpop = 'proof';
+
+        assert.equal(context(provider, { headers }).getAccessToken({ acceptDPoP: true }), 'token');
+      }
+    }
+  });
+
+  it('does not treat other whitespace as authorization separators or merge credential parts', { timeout: 3000 }, () => {
+    const provider = new Provider('https://op.example.com');
+
+    for (const scheme of ['Bearer', 'DPoP']) {
+      for (const suffix of ['\ttoken', '\u00a0token', '  first second']) {
+        assert.throws(() => context(provider, {
+          headers: { authorization: `${scheme}${suffix}`, dpop: 'proof' },
+        }).getAccessToken({ acceptDPoP: true }), {
+          error_description: 'invalid authorization header value format',
+        });
+      }
+    }
+  });
+
   it('reads a replaced DPoP feature configuration when parsing an access token', { timeout: 3000 }, () => {
     const provider = new Provider('https://op.example.com');
     const { configuration } = instance(provider);

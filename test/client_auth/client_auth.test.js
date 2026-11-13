@@ -363,6 +363,39 @@ describe('client authentication methods', () => {
         .expect(200)
         .expect(tokenAuthSucceeded));
 
+    for (const spaces of ['  ', '     ']) {
+      it(`accepts ${spaces.length} ASCII spaces after the Basic scheme`, { timeout: 3000 }, () => fixture3.agent.post(route)
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .set('Authorization', `bAsIc${spaces}${btoa('client-basic:secret')}`)
+          .expect(200)
+          .expect(tokenAuthSucceeded));
+    }
+
+    for (const separator of ['\t', '\u00a0', ' \t']) {
+      it(`rejects a non-space Basic separator ${JSON.stringify(separator)}`, { timeout: 3000 }, () => fixture3.agent.post(route)
+          .send({ grant_type: 'foo' })
+          .type('form')
+          .set('Authorization', `Basic${separator}${btoa('client-basic:secret')}`)
+          .expect(400)
+          .expect(noW3A)
+          .expect({
+            error: 'invalid_request',
+            error_description: 'invalid authorization header value format',
+          }));
+    }
+
+    it('does not merge space-separated Basic credential parts', { timeout: 3000 }, () => fixture3.agent.post(route)
+        .send({ grant_type: 'foo' })
+        .type('form')
+        .set('Authorization', `Basic  ${btoa('client-basic:secret').slice(0, 8)} ${btoa('client-basic:secret').slice(8)}`)
+        .expect(400)
+        .expect(noW3A)
+        .expect({
+          error: 'invalid_request',
+          error_description: 'invalid authorization header value format',
+        }));
+
     it('accepts the auth (but client configured with post)', { timeout: 3000 }, () => fixture3.agent.post(route)
         .send({
           grant_type: 'foo',

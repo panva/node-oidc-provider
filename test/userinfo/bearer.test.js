@@ -6,6 +6,16 @@ describe('providing Bearer token', () => {
   const fixture = {};
 
   before(bootstrap(import.meta.url, fixture), { timeout: 3000 });
+
+  async function accessToken() {
+    return new fixture.provider.AccessToken({
+      client: await fixture.provider.Client.find('client'),
+      accountId: fixture.loggedInAccountId,
+      grantId: fixture.getGrantId(),
+      scope: 'openid',
+    }).save();
+  }
+
   describe('invalid requests', () => {
     const fixture1 = Object.create(fixture);
 
@@ -46,17 +56,22 @@ describe('providing Bearer token', () => {
         .expect(fixture1.failWith(401, 'invalid_token', 'no access token provided', undefined, 'DPoP')));
   });
 
-  describe('query access tokens', () => {
+  describe('authorization header separator', () => {
     before(() => fixture.login(), { timeout: 3000 });
 
-    async function accessToken() {
-      return new fixture.provider.AccessToken({
-        client: await fixture.provider.Client.find('client'),
-        accountId: fixture.loggedInAccountId,
-        grantId: fixture.getGrantId(),
-        scope: 'openid',
-      }).save();
-    }
+    it('accepts multiple ASCII spaces after the Bearer scheme', { timeout: 3000 }, async () => {
+      const token = await accessToken();
+
+      for (const spaces of ['  ', '     ']) {
+        await fixture.agent.get('/me')
+          .set('Authorization', `bEaReR${spaces}${token}`)
+          .expect(200);
+      }
+    });
+  });
+
+  describe('query access tokens', () => {
+    before(() => fixture.login(), { timeout: 3000 });
 
     it('ignores query-only access tokens by default', { timeout: 3000 }, async () => {
       const token = await accessToken();
