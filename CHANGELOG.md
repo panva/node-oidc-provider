@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.15.0](https://github.com/panva/node-oidc-provider/compare/v9.14.0...v9.15.0) (2026-11-13)
+
+### Features
+
+* allow redirect_uri omission with S256 PKCE ([ad4cf82](https://github.com/panva/node-oidc-provider/commit/ad4cf822f4d96359c13135e5167c11a3dcea7a67))
+* bump CIMD draft to -03 ([f8246a1](https://github.com/panva/node-oidc-provider/commit/f8246a13448240e277545ef7a30f57ccc63f3630))
+
+### Fixes
+
+* accept multiple spaces in authorization headers ([f8d2ad2](https://github.com/panva/node-oidc-provider/commit/f8d2ad21be476cd67582956021993f996050bba2))
+* correct default refresh token policies ([9c0d956](https://github.com/panva/node-oidc-provider/commit/9c0d956116a947228dbbf7aaf9adb85b65e2d243))
+* correct token endpoint error codes ([4df6076](https://github.com/panva/node-oidc-provider/commit/4df6076b284e359cacffed1cdf22d108db11116f))
+
+### Refactor
+
+* ignore instead of reject query access tokens when disabled ([b6ca93b](https://github.com/panva/node-oidc-provider/commit/b6ca93bd7a01cd7e84ca92a064e4077b742650cd))
+
 ## [9.14.0](https://github.com/panva/node-oidc-provider/compare/v9.13.3...v9.14.0) (2026-11-11)
 
 ### Features
