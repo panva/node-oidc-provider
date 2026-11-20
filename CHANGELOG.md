@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.15.1](https://github.com/panva/node-oidc-provider/compare/v9.15.0...v9.15.1) (2026-11-20)
+
+### Fixes
+
+* apply current resource scopes to front-channel tokens ([335ce47](https://github.com/panva/node-oidc-provider/commit/335ce477fb0611661a2ee18b70f6007187bdd9ca))
+* correct the pushed authorization request trusted type ([1acb799](https://github.com/panva/node-oidc-provider/commit/1acb799581d78521f90b7e9d94f53e280d51aa5c))
+* honor remember on subsequent logins ([a3f9673](https://github.com/panva/node-oidc-provider/commit/a3f9673240e679312559136eb8f4e0abc21f12bb))
+* preserve CIBA denial descriptions ([c6e0cbb](https://github.com/panva/node-oidc-provider/commit/c6e0cbb26736a9fe112d41ee0ab22e71089331dc))
+* preserve CIBA request lifetime on completion ([161863f](https://github.com/panva/node-oidc-provider/commit/161863f8b3547c23cd7ff3ec955c96f07bc19f66))
+* preserve client keys on JWKS refresh failure ([2be05be](https://github.com/panva/node-oidc-provider/commit/2be05be735b52ae244e58e1b71992cef0bf1b6b0))
+* return inactive tokens for deleted clients ([f5e8965](https://github.com/panva/node-oidc-provider/commit/f5e8965d5f598210ab988109101d6a5a8ffbfd59))
+* validate embedded key attestation nonces ([6aee2f4](https://github.com/panva/node-oidc-provider/commit/6aee2f476355d0eaff595e94989d3667cfcf37e7))
+* validate key attestations per proof ([e90fd72](https://github.com/panva/node-oidc-provider/commit/e90fd72d5f0ec8a5e7085f645356bd2cbd160266))
+* validate refresh token resources before rotation ([5591d2c](https://github.com/panva/node-oidc-provider/commit/5591d2c87d3dc0ed49d98edc68617806786f5337))
+
+### Refactor
+
+* pass explicit base64url slice bounds ([8ae1a08](https://github.com/panva/node-oidc-provider/commit/8ae1a0860938bbe7005b1d79160251a8b590fa4c))
+
 ## [9.15.0](https://github.com/panva/node-oidc-provider/compare/v9.14.0...v9.15.0) (2026-11-13)
 
 ### Features
