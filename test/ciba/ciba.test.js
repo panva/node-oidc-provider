@@ -827,7 +827,8 @@ describe('features.ciba', () => {
 
       it('skips grant revocation when an already consumed request has no grantId', { timeout: 3000 }, async () => {
         const request = new fixture6.provider.BackchannelAuthenticationRequest({ clientId: 'client' });
-        await fixture6.provider.backchannelResult(request, new AccessDenied());
+        const description = 'The user declined the login request';
+        await fixture6.provider.backchannelResult(request, new AccessDenied(description));
 
         await fixture6.agent.post('/token')
           .send({
@@ -836,10 +837,7 @@ describe('features.ciba', () => {
             grant_type,
           })
           .type('form')
-          .expect(400)
-          .expect((response) => {
-            ((actual) => { assert.ok('error' in Object(actual)); assert.equal(actual.error, 'access_denied'); })(response.body);
-          });
+          .expect(400, { error: 'access_denied', error_description: description });
 
         const sandbox = sinon.createSandbox();
         try {
