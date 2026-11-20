@@ -1686,6 +1686,7 @@ describe('features.openid4vci', () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const ka = await keyAttestation([await exportJWK(fixture7.keypair.publicKey)], {
+          nonce,
           withExp: true,
           withIss: false,
           kid: 'trusted-attester',
@@ -1711,7 +1712,7 @@ describe('features.openid4vci', () => {
           { kty: 'urn:example:unrecognized-key-type' },
           await exportJWK(fixture7.keypair.publicKey),
         ];
-        const ka = await keyAttestation(attestedKeys, { withExp: true });
+        const ka = await keyAttestation(attestedKeys, { nonce, withExp: true });
         const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka,
@@ -1734,11 +1735,37 @@ describe('features.openid4vci', () => {
           });
       });
 
+      it('requires renewal of an expired key attestation nonce', async (t) => {
+        let now = Date.now();
+        t.mock.method(Date, 'now', () => now);
+        const nonce = await getCNonce.call(fixture7);
+        const key = await exportJWK(fixture7.keypair.publicKey);
+        const attestation = await keyAttestation([key], { nonce, withExp: true });
+
+        now += 5 * 60_000;
+        const accessToken = await getAccessToken.call(fixture7);
+        const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
+          nonce: await getCNonce.call(fixture7),
+          key_attestation: attestation,
+        });
+        await fixture7.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            proofs: { jwt: [proof] },
+          })
+          .expect(400)
+          .expect({
+            error: 'invalid_nonce',
+            error_description: 'jwt proof key_attestation nonce is invalid, retrieve a new c_nonce from the nonce endpoint',
+          });
+      });
+
       it('rejects key_attestation without exp', { timeout: 3000 }, async () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
-        const ka = await keyAttestation(attestedKeys);
+        const ka = await keyAttestation(attestedKeys, { nonce });
         const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka,
@@ -1763,7 +1790,7 @@ describe('features.openid4vci', () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const otherKeys = [await exportJWK(fixture7.otherKeypair.publicKey)];
-        const ka = await keyAttestation(otherKeys, { withExp: true });
+        const ka = await keyAttestation(otherKeys, { nonce, withExp: true });
         const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka,
@@ -1790,6 +1817,7 @@ describe('features.openid4vci', () => {
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
         const wrongKey = await generateKeyPair('ES256', { extractable: true });
         const ka = await keyAttestation(attestedKeys, {
+          nonce,
           withExp: true, signingKey: wrongKey.privateKey,
         });
         const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
@@ -1816,7 +1844,7 @@ describe('features.openid4vci', () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
-        const ka = await keyAttestation(attestedKeys, { withExp: true, typ: 'JWT' });
+        const ka = await keyAttestation(attestedKeys, { nonce, withExp: true, typ: 'JWT' });
         const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka,
@@ -1841,7 +1869,7 @@ describe('features.openid4vci', () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
-        const ka = await keyAttestation(attestedKeys, { withExp: true, withIat: false });
+        const ka = await keyAttestation(attestedKeys, { nonce, withExp: true, withIat: false });
         const proof = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka,
@@ -1867,6 +1895,7 @@ describe('features.openid4vci', () => {
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
         const ka = await keyAttestation(attestedKeys, {
+          nonce,
           withExp: true,
           iss: 'https://unknown-provider.example.com',
         });
@@ -1915,6 +1944,7 @@ describe('features.openid4vci', () => {
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
         const ka = await keyAttestation(attestedKeys, {
+          nonce,
           withExp: true,
           key_storage: ['iso_18045_moderate'],
           user_authentication: ['iso_18045_moderate'],
@@ -1943,6 +1973,7 @@ describe('features.openid4vci', () => {
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
         const ka = await keyAttestation(attestedKeys, {
+          nonce,
           withExp: true,
           key_storage: ['iso_18045_basic'],
           user_authentication: ['iso_18045_moderate'],
@@ -1972,6 +2003,7 @@ describe('features.openid4vci', () => {
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
         const ka = await keyAttestation(attestedKeys, {
+          nonce,
           withExp: true,
           key_storage: ['iso_18045_high'],
         });
@@ -2002,8 +2034,8 @@ describe('features.openid4vci', () => {
           await exportJWK(fixture7.keypair.publicKey),
           await exportJWK(fixture7.otherKeypair.publicKey),
         ];
-        const ka1 = await keyAttestation(attestedKeys, { withExp: true });
-        const ka2 = await keyAttestation(attestedKeys, { withExp: true });
+        const ka1 = await keyAttestation(attestedKeys, { nonce, withExp: true });
+        const ka2 = await keyAttestation(attestedKeys, { nonce, withExp: true });
         const proof1 = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka1,
@@ -2035,7 +2067,7 @@ describe('features.openid4vci', () => {
           await exportJWK(fixture7.keypair.publicKey),
           await exportJWK(fixture7.otherKeypair.publicKey),
         ];
-        const ka = await keyAttestation(attestedKeys, { withExp: true });
+        const ka = await keyAttestation(attestedKeys, { nonce, withExp: true });
         const proof1 = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka,
