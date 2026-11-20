@@ -505,6 +505,18 @@ describe('resume after consent', () => {
         });
     });
 
+    it('makes a transient session persistent when the user remembers a subsequent login', { timeout: 3000 }, async () => {
+      sinon.stub(fixture10.provider.Grant.prototype, 'getOIDCScope').returns('openid');
+      const auth = new fixture10.AuthorizationRequest({ response_type: 'code', scope: 'openid' });
+      const accountId = nanoid();
+      await setup.call(fixture10, auth, { login: { accountId, remember: true } }, { accountId, transient: true });
+
+      const response = await fixture10.agent.get('/auth/resume').expect(303).expect(auth.validateClientLocation);
+      const cookie = response.headers['set-cookie'].find((value) => value.startsWith('_session='));
+      assert.match(cookie, /; expires=/i);
+      assert.equal(fixture10.getSession().transient, undefined);
+    });
+
     it('should process newly established temporary sessions', { timeout: 3000 }, async () => {
       sinon.stub(fixture10.provider.Grant.prototype, 'getOIDCScope').returns('openid');
       const auth = new fixture10.AuthorizationRequest({
