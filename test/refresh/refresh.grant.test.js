@@ -375,6 +375,24 @@ describe('grant_type=refresh_token', () => {
         .end(() => {});
     });
 
+    it('preserves the refresh token when the requested resource is invalid', async () => {
+      const params = { refresh_token: fixture3.rt, grant_type: 'refresh_token' };
+      await fixture3.agent.post(route)
+        .auth('client', 'secret')
+        .type('form')
+        .send({ ...params, resource: 'urn:example:ungranted' })
+        .expect(400)
+        .expect(({ body }) => assert.equal(body.error, 'invalid_target'));
+
+      const { body } = await fixture3.agent.post(route)
+        .auth('client', 'secret')
+        .type('form')
+        .send(params)
+        .expect(200);
+      assert.equal(typeof body.refresh_token, 'string');
+      assert.notEqual(body.refresh_token, fixture3.rt);
+    });
+
     it('issues a new refresh token and consumes the old one', { timeout: 3000 }, () => {
       const { rt } = fixture3;
       const consumeSpy = sinon.spy();
