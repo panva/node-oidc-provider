@@ -45,11 +45,19 @@ describe('features.ciba', () => {
         return assert.rejects(fixture2.provider.backchannelResult('notfound', result), { name: 'Error', message: 'BackchannelAuthenticationRequest not found' });
       });
 
-      it('"request" can be a BackchannelAuthenticationRequest instance', { timeout: 3000 }, async () => {
+      it('preserves the lifetime of a BackchannelAuthenticationRequest instance on completion', { timeout: 3000 }, async (t) => {
+        let now = Date.now();
+        t.mock.method(Date, 'now', () => now);
         const result = new fixture2.provider.Grant({ clientId: 'client', accountId: 'accountId' });
         const request = new fixture2.provider.BackchannelAuthenticationRequest({ clientId: 'client', accountId: 'accountId' });
-        await request.save();
-        return fixture2.provider.backchannelResult(request, result);
+        const id = await request.save();
+        const issued = await fixture2.provider.BackchannelAuthenticationRequest.find(id);
+
+        now += 30_000;
+        await fixture2.provider.backchannelResult(request, result);
+        const completed = await fixture2.provider.BackchannelAuthenticationRequest.find(id);
+        assert.equal(completed.iat, issued.iat);
+        assert.equal(completed.exp, issued.exp);
       });
 
       it('"request" must be a supported type', { timeout: 3000 }, async () => {
