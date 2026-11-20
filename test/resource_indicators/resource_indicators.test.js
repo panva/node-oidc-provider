@@ -94,6 +94,44 @@ describe('features.resourceIndicators', () => {
 
     afterEach(() => sandbox.restore(), { timeout: 3000 });
 
+    it('applies the current resource scopes to front-channel access tokens', async () => {
+      sandbox.stub(instance(fixture2.provider).features.resourceIndicators, 'getResourceServerInfo')
+        .returns({ scope: 'api:read', audience: resource });
+      const auth = new fixture2.AuthorizationRequest({
+        response_type: 'id_token token', resource, scope: `openid ${scope}`,
+      });
+
+      await fixture2.wrap({ route: '/auth', verb: 'get', auth })
+        .expect(303)
+        .expect(auth.validateFragment)
+        .expect(auth.validatePresence(['access_token', 'scope'], false));
+      assert.equal(auth.res.scope, 'api:read');
+      const token = await fixture2.provider.AccessToken.find(auth.res.access_token);
+      assert.equal(token.scope, 'api:read');
+    });
+
+    for (const response_type of ['id_token token', 'code id_token token']) {
+      it(`rejects ${response_type} before issuing tokens when no resource scope remains`, async () => {
+        sandbox.stub(instance(fixture2.provider).features.resourceIndicators, 'getResourceServerInfo')
+          .returns({ scope: 'api:admin', audience: resource });
+        const issued = sandbox.spy();
+        fixture2.provider.once('access_token.saved', issued);
+        fixture2.provider.once('access_token.issued', issued);
+        fixture2.provider.once('authorization_code.saved', issued);
+        const auth = new fixture2.AuthorizationRequest({
+          response_type, resource, scope: `openid ${scope}`,
+        });
+
+        await fixture2.wrap({ route: '/auth', verb: 'get', auth })
+          .expect(303)
+          .expect(auth.validateFragment)
+          .expect(auth.validatePresence(['error', 'error_description', 'state']))
+          .expect(auth.validateError('invalid_target'))
+          .expect(auth.validateState);
+        assert.equal(issued.callCount, 0);
+      });
+    }
+
     for (const [grant_type, authorize] of Object.entries(grantTypes)) {
       for (const accessTokenFormat of ['opaque', 'jwt']) {
         for (const [policy, currentScope, expectedScope] of [

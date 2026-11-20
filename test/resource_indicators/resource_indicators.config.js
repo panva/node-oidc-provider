@@ -71,6 +71,7 @@ export default {
       token_endpoint_auth_method: 'none',
       redirect_uris: ['https://client.example.com/cb'],
       response_types: [
+        'code id_token token',
         'id_token',
         'id_token token',
         'code',
