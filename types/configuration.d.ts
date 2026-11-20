@@ -90,12 +90,14 @@ export type OpenID4VCIProofs =
     | {
         jwt: readonly string[];
         key_attestation?: KeyAttestation | undefined;
+        key_attestations?: readonly (KeyAttestation | undefined)[] | undefined;
         attestation?: never;
     }
     | {
         attestation: KeyAttestation;
         jwt?: never;
         key_attestation?: never;
+        key_attestations?: never;
     };
 
 export interface OpenID4VCICredentialContext {

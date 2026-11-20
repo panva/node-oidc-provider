@@ -1379,6 +1379,7 @@ new Provider("https://op.example.com", {
                 if (details.proofs && "jwt" in details.proofs) {
                     details.proofs.jwt?.[0].substring(0);
                     details.proofs.key_attestation?.attestedKeys[0].kty;
+                    details.proofs.key_attestations?.[0]?.attestedKeys[0].kty;
                 }
                 return {
                     credentials: [{ credential: "serialized credential" }],

@@ -1682,6 +1682,28 @@ describe('features.openid4vci', () => {
     describe('jwt proof with key_attestation header', () => {
       const fixture7 = Object.create(fixture3);
 
+      it('keeps optional key attestations aligned with the corresponding proofs', async () => {
+        const accessToken = await getAccessToken.call(fixture7);
+        const nonce = await getCNonce.call(fixture7);
+        const key = await exportJWK(fixture7.keypair.publicKey);
+        const attestation = await keyAttestation([key], { nonce, withExp: true });
+        const attested = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
+          nonce, key_attestation: attestation,
+        });
+        const other = await credentialProof(fixture7.otherKeypair, fixture7.provider.issuer, { nonce });
+
+        const { body } = await fixture7.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            proofs: { jwt: [other, attested] },
+          })
+          .expect(200);
+        const issued = JSON.parse(body.credentials[0].credential);
+        assert.deepEqual(issued.proof_attested_keys, [null, [key]]);
+        assert.equal(issued.attested_keys_count, 1);
+      });
+
       it('resolves a trusted key_attestation key by kid when iss is omitted', { timeout: 3000 }, async () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
@@ -1939,10 +1961,13 @@ describe('features.openid4vci', () => {
           });
       });
 
-      it('issues credentials when key_attestations_required and attestation meets requirements', { timeout: 3000 }, async () => {
+      it('accepts a multi-key attestation on one proof and requires an explicit header on additional proofs', { timeout: 3000 }, async () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
-        const attestedKeys = [await exportJWK(fixture7.keypair.publicKey)];
+        const attestedKeys = [
+          await exportJWK(fixture7.keypair.publicKey),
+          await exportJWK(fixture7.otherKeypair.publicKey),
+        ];
         const ka = await keyAttestation(attestedKeys, {
           nonce,
           withExp: true,
@@ -1954,17 +1979,26 @@ describe('features.openid4vci', () => {
           key_attestation: ka,
         });
 
-        return fixture7.agent.post('/credential')
+        const { body } = await fixture7.agent.post('/credential')
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             credential_configuration_id: 'org.iso.18013.5.1.mDL.jwt.attestation_required',
-            proofs: {
-              jwt: [proof],
-            },
+            proofs: { jwt: [proof] },
           })
-          .expect(200)
-          .expect((response) => {
-            ((actual) => { assert.ok('credentials' in Object(actual)); assert.ok(Array.isArray(actual.credentials)); assert.equal(actual.credentials.length, 1); })(response.body);
+          .expect(200);
+        const issued = JSON.parse(body.credentials[0].credential);
+        assert.deepEqual(issued.proof_attested_keys, [attestedKeys]);
+
+        const otherProof = await credentialProof(fixture7.otherKeypair, fixture7.provider.issuer, { nonce });
+        await fixture7.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.jwt.attestation_required',
+            proofs: { jwt: [proof, otherProof] },
+          })
+          .expect(400, {
+            error: 'invalid_proof',
+            error_description: 'jwt proof must include a key_attestation header when key attestations are required',
           });
       });
 
@@ -2027,15 +2061,18 @@ describe('features.openid4vci', () => {
           });
       });
 
-      it('requires all batch jwt proofs to reference the same key_attestation', { timeout: 3000 }, async () => {
+      it('accepts distinct key attestations for different proofs in the same batch', { timeout: 3000 }, async () => {
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [
           await exportJWK(fixture7.keypair.publicKey),
           await exportJWK(fixture7.otherKeypair.publicKey),
         ];
-        const ka1 = await keyAttestation(attestedKeys, { nonce, withExp: true });
-        const ka2 = await keyAttestation(attestedKeys, { nonce, withExp: true });
+        const options = {
+          nonce, withExp: true, key_storage: ['iso_18045_moderate'], user_authentication: ['iso_18045_moderate'],
+        };
+        const ka1 = await keyAttestation([attestedKeys[0]], options);
+        const ka2 = await keyAttestation([attestedKeys[1]], options);
         const proof1 = await credentialProof(fixture7.keypair, fixture7.provider.issuer, {
           nonce,
           key_attestation: ka1,
@@ -2045,22 +2082,20 @@ describe('features.openid4vci', () => {
           key_attestation: ka2,
         });
 
-        return fixture7.agent.post('/credential')
+        const { body } = await fixture7.agent.post('/credential')
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
-            credential_configuration_id: 'org.iso.18013.5.1.mDL',
-            proofs: {
-              jwt: [proof1, proof2],
-            },
+            credential_configuration_id: 'org.iso.18013.5.1.mDL.jwt.attestation_required',
+            proofs: { jwt: [proof1, proof2] },
           })
-          .expect(400)
-          .expect({
-            error: 'invalid_proof',
-            error_description: 'all jwt proofs in a batch must reference the same key_attestation',
-          });
+          .expect(200);
+        const issued = JSON.parse(body.credentials[0].credential);
+        assert.deepEqual(issued.proof_attested_keys, [[attestedKeys[0]], [attestedKeys[1]]]);
+        assert.equal(issued.attested_keys_count, undefined);
       });
 
-      it('accepts batch jwt proofs with the same key_attestation', { timeout: 3000 }, async () => {
+      it('verifies a repeated key attestation once for the batch', { timeout: 3000 }, async (t) => {
+        const resolver = t.mock.method(i(fixture7.provider).features.openid4vci, 'getKeyAttestationSignaturePublicKey');
         const accessToken = await getAccessToken.call(fixture7);
         const nonce = await getCNonce.call(fixture7);
         const attestedKeys = [
@@ -2077,20 +2112,31 @@ describe('features.openid4vci', () => {
           key_attestation: ka,
         });
 
-        return fixture7.agent.post('/credential')
+        const { body } = await fixture7.agent.post('/credential')
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             credential_configuration_id: 'org.iso.18013.5.1.mDL',
-            proofs: {
-              jwt: [proof1, proof2],
-            },
+            proofs: { jwt: [proof1, proof2] },
           })
-          .expect(200)
-          .expect((response) => {
-            ((actual) => { assert.ok('credentials' in Object(actual)); assert.ok(Array.isArray(actual.credentials)); assert.equal(actual.credentials.length, 1); })(response.body);
-            const issued = JSON.parse(response.body.credentials[0].credential);
-            ((actual) => { assert.ok('attested_keys_count' in Object(actual)); assert.equal(actual.attested_keys_count, 2); })(issued);
+          .expect(200);
+        const issued = JSON.parse(body.credentials[0].credential);
+        assert.deepEqual(issued.proof_attested_keys, [attestedKeys, attestedKeys]);
+        assert.equal(issued.attested_keys_count, 2);
+        assert.equal(resolver.mock.callCount(), 1);
+
+        const otherKeypair = await generateKeyPair('ES256', { extractable: true });
+        const otherProof = await credentialProof(otherKeypair, fixture7.provider.issuer, { nonce, key_attestation: ka });
+        await fixture7.agent.post('/credential')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            credential_configuration_id: 'org.iso.18013.5.1.mDL',
+            proofs: { jwt: [proof1, otherProof] },
+          })
+          .expect(400, {
+            error: 'invalid_proof',
+            error_description: 'jwt proof jwk is not among the attested keys in key_attestation',
           });
+        assert.equal(resolver.mock.callCount(), 2);
       });
     });
 

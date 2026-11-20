@@ -170,6 +170,7 @@ config.features.openid4vci = {
           ...(proofType === 'jwt' && proofs.key_attestation?.attestedKeys
             ? { attested_keys_count: proofs.key_attestation.attestedKeys.length }
             : {}),
+          proof_attested_keys: proofs?.key_attestations?.map((attestation) => attestation?.attestedKeys),
         }),
       }],
     };

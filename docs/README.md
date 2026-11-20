@@ -2962,9 +2962,9 @@ Specifies a helper function that shall be invoked to perform actual credential i
 
 The returned object MUST contain a non-empty `credentials` array. The provider emits that array and the optional string `notification_id`; a missing or empty credentials array is a contract error.
 
-When `proofs` is present it contains a single key whose name is the proof type:
+When `proofs` is present, its contents depend on the proof type.
 
-- `jwt` The value is the original array of compact JWS strings. When the JWT proof(s) contain a `key_attestation` JOSE header parameter, the pre-parsed key attestation data is available as `proofs.key_attestation` with:
+- `jwt` The value is the original array of compact JWS strings. If any JWT carries a `key_attestation` header, `proofs.key_attestations[i]` holds the verified attestation for `proofs.jwt[i]`, or `undefined` if that JWT omitted the header. When exactly one distinct attestation is present, `proofs.key_attestation` also holds that attestation. Each verified attestation contains the following fields.
   - `jwt` {string} The Key Attestation JWT compact serialization.
   - `attestedKeys` {Object[]} The `attested_keys` claim (array of JWK objects).
   - `payload` {Object} The full Key Attestation JWT payload, including optional claims such as `key_storage`, `user_authentication`, and `certification`.
