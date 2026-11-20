@@ -294,6 +294,32 @@ describe('introspection features', () => {
         });
     });
 
+    it('returns inactive tokens after the issuing client is deleted', async () => {
+      const { Client, Grant, AccessToken, ClientCredentials } = fixture2.provider;
+      const clientId = 'deleted-client';
+      await Client.adapter.upsert(clientId, {
+        client_id: clientId,
+        client_secret: 'secret',
+        redirect_uris: ['https://client.example.com/cb'],
+      });
+      const client = await Client.find(clientId);
+      const accountId = 'accountId';
+      const grantId = await new Grant({ clientId, accountId }).save();
+      const tokens = [
+        await new AccessToken({ client, accountId, grantId }).save(),
+        await new ClientCredentials({ client }).save(),
+      ];
+
+      await Client.adapter.destroy(clientId);
+      for (const token of tokens) {
+        await fixture2.agent.post(route)
+          .auth('client-introspection', 'secret')
+          .type('form')
+          .send({ token })
+          .expect(200, { active: false });
+      }
+    });
+
     it('returns token-endpoint-like cache headers', { timeout: 3000 }, () => fixture2.agent.post(route)
         .auth('client', 'secret')
         .send({})
