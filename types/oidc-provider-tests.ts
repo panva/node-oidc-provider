@@ -1429,6 +1429,13 @@ const deviceCode = new provider.DeviceCode({
 });
 deviceCode.rar?.[0].type.substring(0);
 
+const pushedRequest = new provider.PushedAuthorizationRequest({ request: "request-object", trusted: true });
+// $ExpectType boolean | undefined
+pushedRequest.trusted;
+provider.PushedAuthorizationRequest.adapter.upsert("par", { trusted: false });
+provider.Interaction.adapter.upsert("interaction", { trusted: ["scope"] });
+provider.Interaction.find("interaction").then((interaction) => interaction?.trusted?.includes("scope"));
+
 const clientCredentials = new provider.ClientCredentials({
     client: null as unknown as oidc.Client,
     scope: "api:read",

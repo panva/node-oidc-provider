@@ -376,13 +376,13 @@ declare class PushedAuthorizationRequest extends BaseModel {
         request: string;
         attestationJkt?: string | undefined;
         dpopJkt?: string | undefined;
-        trusted?: string[] | undefined;
+        trusted?: boolean | undefined;
     });
     readonly kind: "PushedAuthorizationRequest";
     request: string;
     attestationJkt?: string | undefined;
     dpopJkt?: string | undefined;
-    trusted?: string[] | undefined;
+    trusted?: boolean | undefined;
     consumed: unknown;
 
     consume(): Promise<void>;

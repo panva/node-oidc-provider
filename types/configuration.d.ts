@@ -260,7 +260,7 @@ export interface AdapterPayload extends AllClientMetadata {
         | undefined;
     sessionUid?: string | undefined;
     sid?: string | undefined;
-    trusted?: string[] | undefined;
+    trusted?: boolean | string[] | undefined;
     attestationJkt?: string | undefined;
     dpopJkt?: string | undefined;
     iss?: string | undefined;
