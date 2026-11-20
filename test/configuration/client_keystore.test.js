@@ -199,6 +199,27 @@ describe('client keystore refresh', () => {
   describe('caching', () => {
     const fixture1 = Object.create(fixture);
 
+    it('retains the last key set and retries after an unsuccessful refresh', { timeout: 3000 }, async () => {
+      const client = await fixture1.provider.Client.find('client');
+      const { asymmetricKeyStore: store } = new fixture1.provider.Client(client.metadata());
+      const original = [keys[0]];
+      setResponse({ keys: original });
+      await store.refresh();
+      store.freshUntil = epochTime() - 1;
+
+      for (const [status, body] of [[503, {}], [200, { keys: 'invalid' }]]) {
+        setResponse(body, status, { 'cache-control': 'max-age=3600' });
+        await assert.rejects(store.refresh(), { message: 'invalid_client_metadata' });
+        assert.equal(store.fresh(), false);
+        assert.deepEqual([...store], original);
+      }
+
+      setResponse({ keys: [] });
+      await store.refresh();
+      assert.equal(store.fresh(), true);
+      assert.deepEqual([...store], []);
+    });
+
     it('uses expires caching header to determine stale states', { timeout: 3000 }, async () => {
       const client = await fixture1.provider.Client.find('client');
       const until = moment().add(2, 'hours').toDate();
